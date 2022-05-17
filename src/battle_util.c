@@ -3335,7 +3335,6 @@ enum
     CANCELLER_FLAGS,
     CANCELLER_SKY_DROP,
     CANCELLER_ASLEEP,
-    CANCELLER_FROZEN,
     CANCELLER_TRUANT,
     CANCELLER_RECHARGE,
     CANCELLER_FLINCH,
@@ -3422,25 +3421,6 @@ u8 AtkCanceller_UnableToUseMove(void)
                     }
                 }
             }
-            gBattleStruct->atkCancellerTracker++;
-            break;
-        case CANCELLER_FROZEN: /*// check being frozen
-            if (gBattleMons[gBattlerAttacker].status1 & STATUS1_FREEZE && !(gBattleMoves[gCurrentMove].flags & FLAG_THAW_USER))
-            {
-                if (Random() % 5)
-                {
-                    gBattlescriptCurrInstr = BattleScript_MoveUsedIsFrozen;
-                    gHitMarker |= HITMARKER_NO_ATTACKSTRING;
-                }
-                else // unfreeze
-                {
-                    gBattleMons[gBattlerAttacker].status1 &= ~STATUS1_FREEZE;
-                    BattleScriptPushCursor();
-                    gBattlescriptCurrInstr = BattleScript_MoveUsedUnfroze;
-                    gBattleCommunication[MULTISTRING_CHOOSER] = B_MSG_DEFROSTED;
-                }
-                effect = 2;
-            }*/
             gBattleStruct->atkCancellerTracker++;
             break;
         case CANCELLER_TRUANT: // truant

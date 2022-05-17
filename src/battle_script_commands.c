@@ -11948,7 +11948,7 @@ static void Cmd_jumpifnopursuitswitchdmg(void)
 
     if (gChosenActionByBattler[gBattlerTarget] == B_ACTION_USE_MOVE
         && gBattlerAttacker == *(gBattleStruct->moveTarget + gBattlerTarget)
-        && !(gBattleMons[gBattlerTarget].status1 & (STATUS1_SLEEP)) //STATUS1_FREEZE
+        && !(gBattleMons[gBattlerTarget].status1 & (STATUS1_SLEEP))
         && gBattleMons[gBattlerAttacker].hp
         && !gDisableStructs[gBattlerTarget].truantCounter
         && gChosenMoveByBattler[gBattlerTarget] == MOVE_PURSUIT)
