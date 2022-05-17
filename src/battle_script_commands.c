@@ -3502,13 +3502,19 @@ void SetMoveEffect(bool32 primary, u32 certain)
 
 static void Cmd_seteffectwithchance(void)
 {
-    u32 percentChance;
+    u32 percentChance = gBattleMoves[gCurrentMove].secondaryEffectChance;
+
+    // Ice-type moves have a 20% additional chance to Freeze in Hail.
+    if (gBattleMoves[gCurrentMove].type == TYPE_ICE && gBattleWeather & B_WEATHER_HAIL
+        && (!gBattleScripting.moveEffect || gBattleScripting.moveEffect == MOVE_EFFECT_FREEZE))
+    {
+        gBattleScripting.moveEffect = MOVE_EFFECT_FREEZE;
+        percentChance += 20;
+    }
 
     if (GetBattlerAbility(gBattlerAttacker) == ABILITY_SERENE_GRACE)
-        percentChance = gBattleMoves[gCurrentMove].secondaryEffectChance * 2;
-    else
-        percentChance = gBattleMoves[gCurrentMove].secondaryEffectChance;
-
+        percentChance *= 2;
+    
     if (gBattleScripting.moveEffect & MOVE_EFFECT_CERTAIN
         && !(gMoveResultFlags & MOVE_RESULT_NO_EFFECT))
     {
