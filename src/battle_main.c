@@ -4498,6 +4498,9 @@ s8 GetMovePriority(u32 battlerId, u16 move)
         }
     }
 
+    if (gBattleMons[battlerId].status1 & STATUS1_FREEZE)
+        priority -= 1;
+
     return priority;
 }
 

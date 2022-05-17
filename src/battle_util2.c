@@ -173,7 +173,7 @@ u32 BattlePalace_TryEscapeStatus(u8 battlerId)
             gBattleCommunication[MULTIUSE_STATE]++;
             break;
         case 1:
-            if (gBattleMons[battlerId].status1 & STATUS1_FREEZE)
+            /*if (gBattleMons[battlerId].status1 & STATUS1_FREEZE)
             {
                 if (Random() % 5 != 0)
                 {
@@ -189,7 +189,7 @@ u32 BattlePalace_TryEscapeStatus(u8 battlerId)
                     gBattleCommunication[MULTISTRING_CHOOSER] = B_MSG_DEFROSTED;
                 }
                 effect = 2;
-            }
+            }*/
             gBattleCommunication[MULTIUSE_STATE]++;
             break;
         case 2:
