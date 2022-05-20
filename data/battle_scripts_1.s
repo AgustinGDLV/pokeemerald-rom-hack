@@ -7503,6 +7503,12 @@ BattleScript_MoveUsedIsParalyzed::
 	cancelmultiturnmoves BS_ATTACKER
 	goto BattleScript_MoveEnd
 
+BattleScript_MoveUsedShookOffParalysis::
+	printstring STRINGID_PKMNSHOOKOFFPARALYSIS
+	waitmessage B_WAIT_TIME_LONG
+	updatestatusicon BS_ATTACKER
+	return
+
 BattleScript_PowderMoveNoEffect::
 	attackstring
 	ppreduce

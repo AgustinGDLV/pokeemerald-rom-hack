@@ -3550,7 +3550,7 @@ u8 AtkCanceller_UnableToUseMove(void)
         case CANCELLER_PARALYSED: // paralysis
             if ((gBattleMons[gBattlerAttacker].status1 & STATUS1_PARALYSIS) && (Random() % 4) == 0)
             {
-                u8 toSub = 1;
+                u8 toSub = STATUS1_PARALYSIS_TURN(1);
                 if ((gBattleMons[gBattlerAttacker].status1 & STATUS1_PARALYSIS) < toSub)
                     gBattleMons[gBattlerAttacker].status1 &= ~STATUS1_PARALYSIS;
                 else
@@ -3566,8 +3566,7 @@ u8 AtkCanceller_UnableToUseMove(void)
                 else
                 {
                     BattleScriptPushCursor();
-                    gBattleCommunication[MULTISTRING_CHOOSER] = B_MSG_WOKE_UP;
-                    gBattlescriptCurrInstr = BattleScript_MoveUsedWokeUp;
+                    gBattlescriptCurrInstr = BattleScript_MoveUsedShookOffParalysis;
                     effect = 2;
                 }
             }
