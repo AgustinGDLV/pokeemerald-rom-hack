@@ -9827,6 +9827,7 @@ static void Cmd_trysetrest(void)
             gBattleCommunication[MULTISTRING_CHOOSER] = B_MSG_REST;
 
         gBattleMons[gBattlerTarget].status1 = STATUS1_SLEEP_TURN(3);
+        gBattleMons[gBattlerTarget].status1 |= STATUS1_SLEEP_REST;
         BtlController_EmitSetMonData(BUFFER_A, REQUEST_STATUS_BATTLE, 0, sizeof(gBattleMons[gActiveBattler].status1), &gBattleMons[gActiveBattler].status1);
         MarkBattlerForControllerExec(gActiveBattler);
         gBattlescriptCurrInstr += 5;

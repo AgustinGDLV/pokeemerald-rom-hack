@@ -100,6 +100,7 @@
 #define STATUS1_NONE                 0
 #define STATUS1_SLEEP                (1 << 0 | 1 << 1 | 1 << 2) // First 3 bits (Number of turns to sleep)
 #define STATUS1_SLEEP_TURN(num)      ((num) << 0) // Just for readability (or if rearranging statuses)
+#define STATUS1_SLEEP_REST           (1 << 14) // Used to mark Pokémon sleeping because of Rest.
 #define STATUS1_POISON               (1 << 3)
 #define STATUS1_BURN                 (1 << 4)
 #define STATUS1_FREEZE               (1 << 5)

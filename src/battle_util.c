@@ -10027,6 +10027,7 @@ bool32 IsBattlerWeatherAffected(u8 battlerId, u32 weatherFlags)
     return FALSE;
 }
 
+// Used to check Sleep Clause. Pokémon sleeping because of Rest are not counted.
 bool32 AnyPartyMemberAsleep(u8 battlerId)
 {
     struct Pokemon *party = NULL;
@@ -10039,7 +10040,8 @@ bool32 AnyPartyMemberAsleep(u8 battlerId)
 
     for (i = 0; i < PARTY_SIZE; i++)
     {
-        if (GetMonData(&party[i], MON_DATA_STATUS) & STATUS1_SLEEP)
+        u32 status = GetMonData(&party[i], MON_DATA_STATUS);
+        if (status & STATUS1_SLEEP && !(status & STATUS1_SLEEP_REST))
             return TRUE;
     }
 
