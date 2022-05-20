@@ -170,6 +170,7 @@ bool32 IsBattlerWeatherAffected(u8 battlerId, u32 weatherFlags);
 void TryToApplyMimicry(u8 battlerId, bool8 various);
 void TryToRevertMimicry(void);
 void RestoreBattlerOriginalTypes(u8 battlerId);
+bool32 AnyPartyMemberAsleep(u8 battlerId);
 
 // Ability checks
 bool32 IsRolePlayBannedAbilityAtk(u16 ability);

@@ -9892,6 +9892,10 @@ static void Cmd_jumpifcantmakeasleep(void)
     {
         gBattlescriptCurrInstr = jumpPtr;
     }
+    else if (B_SLEEP_CLAUSE && AnyPartyMemberAsleep(gBattlerTarget))
+    {
+        gBattlescriptCurrInstr = BattleScript_ButItFailed;
+    }
     else if (ability == ABILITY_INSOMNIA || ability == ABILITY_VITAL_SPIRIT)
     {
         gLastUsedAbility = ability;

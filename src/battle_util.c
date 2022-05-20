@@ -10026,3 +10026,22 @@ bool32 IsBattlerWeatherAffected(u8 battlerId, u32 weatherFlags)
     }
     return FALSE;
 }
+
+bool32 AnyPartyMemberAsleep(u8 battlerId)
+{
+    struct Pokemon *party = NULL;
+    u32 i;
+
+    if (GetBattlerSide(battlerId) == B_SIDE_PLAYER)
+        party = gPlayerParty;
+    else
+        party = gEnemyParty;
+
+    for (i = 0; i < PARTY_SIZE; i++)
+    {
+        if (GetMonData(&party[i], MON_DATA_STATUS) & STATUS1_SLEEP)
+            return TRUE;
+    }
+
+    return FALSE;
+}
