@@ -3550,12 +3550,26 @@ u8 AtkCanceller_UnableToUseMove(void)
         case CANCELLER_PARALYSED: // paralysis
             if ((gBattleMons[gBattlerAttacker].status1 & STATUS1_PARALYSIS) && (Random() % 4) == 0)
             {
-                gProtectStructs[gBattlerAttacker].prlzImmobility = TRUE;
-                // This is removed in Emerald for some reason
-                //CancelMultiTurnMoves(gBattlerAttacker);
-                gBattlescriptCurrInstr = BattleScript_MoveUsedIsParalyzed;
-                gHitMarker |= HITMARKER_UNABLE_TO_USE_MOVE;
-                effect = 1;
+                u8 toSub = 1;
+                if ((gBattleMons[gBattlerAttacker].status1 & STATUS1_PARALYSIS) < toSub)
+                    gBattleMons[gBattlerAttacker].status1 &= ~STATUS1_PARALYSIS;
+                else
+                    gBattleMons[gBattlerAttacker].status1 -= toSub;
+                if (gBattleMons[gBattlerAttacker].status1 & STATUS1_PARALYSIS)
+                {
+                    gProtectStructs[gBattlerAttacker].prlzImmobility = TRUE;
+                    CancelMultiTurnMoves(gBattlerAttacker);
+                    gBattlescriptCurrInstr = BattleScript_MoveUsedIsParalyzed;
+                    gHitMarker |= HITMARKER_UNABLE_TO_USE_MOVE;
+                    effect = 1;
+                }
+                else
+                {
+                    BattleScriptPushCursor();
+                    gBattleCommunication[MULTISTRING_CHOOSER] = B_MSG_WOKE_UP;
+                    gBattlescriptCurrInstr = BattleScript_MoveUsedWokeUp;
+                    effect = 2;
+                }
             }
             gBattleStruct->atkCancellerTracker++;
             break;

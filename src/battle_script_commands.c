@@ -2862,6 +2862,8 @@ void SetMoveEffect(bool32 primary, u32 certain)
 
             if (sStatusFlagsForMoveEffects[gBattleScripting.moveEffect] == STATUS1_SLEEP)
                 gBattleMons[gEffectBattler].status1 |= (B_SLEEP_TURNS >= GEN_5) ? ((Random() % 3) + 2) : ((Random() % 4) + 3);
+            else if (sStatusFlagsForMoveEffects[gBattleScripting.moveEffect] == STATUS1_PARALYSIS)
+                gBattleMons[gEffectBattler].status1 |= STATUS1_PARALYSIS_TURN(3);
             else
                 gBattleMons[gEffectBattler].status1 |= sStatusFlagsForMoveEffects[gBattleScripting.moveEffect];
 
