@@ -105,6 +105,7 @@ static void CheckMegaEvolutionBeforeTurn(void);
 static void CheckQuickClaw_CustapBerryActivation(void);
 static void FreeResetData_ReturnToOvOrDoEvolutions(void);
 static void ReturnFromBattleToOverworld(void);
+static void TryItemDrops(void);
 static void TryEvolvePokemon(void);
 static void WaitForEvoSceneToFinish(void);
 static void HandleEndTurn_ContinueBattle(void);
@@ -237,6 +238,7 @@ EWRAM_DATA bool8 gHasFetchedBall = FALSE;
 EWRAM_DATA u8 gLastUsedBall = 0;
 EWRAM_DATA u16 gLastThrownBall = 0;
 EWRAM_DATA bool8 gSwapDamageCategory = FALSE; // Photon Geyser, Shell Side Arm, Light That Burns the Sky
+EWRAM_DATA static bool8 sDroppedItems = FALSE;
 
 void (*gPreBattleCallback1)(void);
 void (*gBattleMainFunc)(void);
@@ -4969,7 +4971,17 @@ static void HandleEndTurn_BattleWon(void)
         gBattlescriptCurrInstr = BattleScript_PayDayMoneyAndPickUpItems;
     }
 
-    gBattleMainFunc = HandleEndTurn_FinishBattle;
+    if (!(gBattleTypeFlags & (BATTLE_TYPE_TRAINER // Items can't drop after a trainer battle.
+                               | BATTLE_TYPE_LINK
+                               | BATTLE_TYPE_RECORDED_LINK
+                               | BATTLE_TYPE_FIRST_BATTLE
+                               | BATTLE_TYPE_SAFARI
+                               | BATTLE_TYPE_EREADER_TRAINER
+                               | BATTLE_TYPE_WALLY_TUTORIAL
+                               | BATTLE_TYPE_FRONTIER)))
+            gBattleMainFunc = TryItemDrops;
+    else
+        gBattleMainFunc = HandleEndTurn_FinishBattle;
 }
 
 static void HandleEndTurn_BattleLost(void)
@@ -5130,6 +5142,17 @@ static void HandleEndTurn_FinishBattle(void)
         if (gBattleControllerExecFlags == 0)
             gBattleScriptingCommandsTable[gBattlescriptCurrInstr[0]]();
     }
+}
+
+static void TryItemDrops(void) // TODO
+{
+    // u16 *drops = GetItemDrops(gEnemyParty[0]);
+    // for (i = 0; i < NUM_DROPS; i++)
+    //     AddBagItem(drops[i]);
+    gLastUsedItem = ITEM_LEFTOVERS;
+    BattleScriptExecute(BattleScript_ItemDropped);
+    AddBagItem(ITEM_LEFTOVERS, 1);
+    gBattleMainFunc = HandleEndTurn_FinishBattle;
 }
 
 static void FreeResetData_ReturnToOvOrDoEvolutions(void)

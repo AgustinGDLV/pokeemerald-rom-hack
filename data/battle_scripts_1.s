@@ -9426,3 +9426,10 @@ BattleScript_MagicianActivates::
 	call BattleScript_AbilityPopUp
 	call BattleScript_ItemSteal
 	return
+
+BattleScript_ItemDropped::
+	setbyte BS_SCRIPTING BS_FAINTED
+	playse SE_BALL_BOUNCE_1
+	printstring STRINGID_PKMNDROPPEDITEM
+	waitmessage B_WAIT_TIME_LONG
+	end2
