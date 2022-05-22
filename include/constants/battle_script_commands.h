@@ -238,6 +238,7 @@
 #define VARIOUS_SAVE_BATTLER_ITEM                   148
 #define VARIOUS_RESTORE_BATTLER_ITEM                149
 #define VARIOUS_BATTLER_ITEM_TO_LAST_USED_ITEM      150
+#define VARIOUS_GIVE_DROPPED_ITEMS                  151
 
 // Cmd_manipulatedamage
 #define DMG_CHANGE_SIGN            0

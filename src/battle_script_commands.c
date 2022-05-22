@@ -9474,6 +9474,16 @@ static void Cmd_various(void)
     case VARIOUS_BATTLER_ITEM_TO_LAST_USED_ITEM:
         gBattleMons[gActiveBattler].item = gLastUsedItem;
         break;
+    case VARIOUS_GIVE_DROPPED_ITEMS:
+        gLastUsedItem = gBattleResources->battleHistory->heldItems[gActiveBattler];
+        if (gLastUsedItem)
+        {
+            AddBagItem(gLastUsedItem, 1);
+            BattleScriptPush(gBattlescriptCurrInstr + 3);
+            gBattlescriptCurrInstr = BattleScript_ItemDropped;
+            return;
+        }
+        break;
     } // End of switch (gBattlescriptCurrInstr[2])
 
     gBattlescriptCurrInstr += 3;

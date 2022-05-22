@@ -2120,3 +2120,7 @@
 	.macro skydropyawn
 	various 0, VARIOUS_SKY_DROP_YAWN
 	.endm
+
+	.macro givedroppeditems
+	various BS_FAINTED, VARIOUS_GIVE_DROPPED_ITEMS
+	.endm
