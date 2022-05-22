@@ -9476,7 +9476,10 @@ static void Cmd_various(void)
         break;
     case VARIOUS_GIVE_DROPPED_ITEMS:
         gLastUsedItem = gBattleResources->battleHistory->heldItems[gActiveBattler];
-        if (gLastUsedItem)
+        if (gLastUsedItem 
+            && !(gBattleTypeFlags & (BATTLE_TYPE_TRAINER
+                                    | BATTLE_TYPE_FIRST_BATTLE
+                                    | BATTLE_TYPE_WALLY_TUTORIAL)))
         {
             AddBagItem(gLastUsedItem, 1);
             BattleScriptPush(gBattlescriptCurrInstr + 3);
