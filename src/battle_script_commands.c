@@ -9481,7 +9481,10 @@ static void Cmd_various(void)
                                     | BATTLE_TYPE_FIRST_BATTLE
                                     | BATTLE_TYPE_WALLY_TUTORIAL)))
         {
-            AddBagItem(gLastUsedItem, 1);
+            if(AddBagItem(gLastUsedItem, 1))
+                gBattleCommunication[MULTISTRING_CHOOSER] = B_MSG_ITEM_DROPPED;
+            else
+                gBattleCommunication[MULTISTRING_CHOOSER] = B_MSG_BAG_IS_FULL;
             BattleScriptPush(gBattlescriptCurrInstr + 3);
             gBattlescriptCurrInstr = BattleScript_ItemDropped;
             return;
