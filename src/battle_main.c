@@ -3635,6 +3635,17 @@ static void TryDoEventsBeforeFirstTurn(void)
         }
     }
 
+    // Raid events
+    if (gBattleTypeFlags & BATTLE_TYPE_RAID && !gBattleStruct->raid.finishedIntro)
+    {
+        gBattlerAttacker = B_POSITION_OPPONENT_LEFT;
+        if (GetBattlerHoldEffect(gBattlerAttacker, FALSE) == HOLD_EFFECT_MEGA_STONE)
+            gBattleCommunication[MULTIUSE_STATE] = 1;
+        BattleScriptExecute(BattleScript_RaidIntro);
+        gBattleStruct->raid.finishedIntro = TRUE;
+        return;
+    }
+
     // Check neutralizing gas
     if (AbilityBattleEffects(ABILITYEFFECT_NEUTRALIZINGGAS, 0, 0, 0, 0) != 0)
         return;

@@ -733,9 +733,15 @@ static const u8 sText_PkmnAboutToBeAttackedByItsItem[] = _("{B_DEF_NAME_WITH_PRE
 static const u8 sText_CantEscapeBecauseOfCurrentMove[] = _("{B_DEF_NAME_WITH_PREFIX} can no longer escape\nbecause of {B_CURRENT_MOVE}!");
 static const u8 sText_NeutralizingGasEnters[] = _("Neutralizing Gas filled the area!");
 static const u8 sText_NeutralizingGasOver[] = _("The effects of Neutralizing\nGas wore off!");
+static const u8 sText_PkmnAppearsMassive[] = _("{B_ATK_NAME_WITH_PREFIX} appears\nto be massive!");
+static const u8 sText_BarrierAppeared[] = _("A mysterious barrier appeared\nin front of {B_DEF_NAME}\pand is protecting it from attacks!\p");
+static const u8 sText_BarrierDisappeared[] = _("The mysterious barrier that was\nprotecting {B_DEF_NAME}\pdisappeared!\p");
 
 const u8 *const gBattleStringsTable[BATTLESTRINGS_COUNT] =
 {
+    [STRINGID_PKMNAPPEARSMASSIVE - BATTLESTRINGS_TABLE_START] = sText_PkmnAppearsMassive,
+    [STRINGID_BARRIERAPPEARED - BATTLESTRINGS_TABLE_START] = sText_BarrierAppeared,
+    [STRINGID_BARRIERDISAPPEARED - BATTLESTRINGS_TABLE_START] = sText_BarrierDisappeared,
     [STRINGID_NEUTRALIZINGGASOVER - BATTLESTRINGS_TABLE_START] = sText_NeutralizingGasOver,
     [STRINGID_NEUTRALIZINGGASENTERS - BATTLESTRINGS_TABLE_START] = sText_NeutralizingGasEnters,
     [STRINGID_BATTLERTYPECHANGEDTO - BATTLESTRINGS_TABLE_START] = sText_BattlerTypeChangedTo,

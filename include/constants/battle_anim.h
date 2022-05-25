@@ -532,6 +532,7 @@
 #define B_ANIM_STRONG_WINDS             30
 #define B_ANIM_PRIMAL_REVERSION         31
 #define B_ANIM_AQUA_RING_HEAL           32
+#define B_ANIM_RAID_GROWTH              33
 
 // special animations table (gBattleAnims_Special)
 #define B_ANIM_LVL_UP                   0

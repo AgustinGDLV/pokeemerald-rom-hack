@@ -9426,3 +9426,20 @@ BattleScript_MagicianActivates::
 	call BattleScript_AbilityPopUp
 	call BattleScript_ItemSteal
 	return
+
+BattleScript_RaidIntro::
+	playanimation BS_ATTACKER, B_ANIM_RAID_GROWTH
+	printstring STRINGID_PKMNAPPEARSMASSIVE
+	waitmessage B_WAIT_TIME_LONG
+	jumpifbyte CMP_EQUAL, gBattleCommunication, 0x0, BattleScript_RaidIntroEnd
+	setbyte gIsCriticalHit, 0
+	handlemegaevo BS_ATTACKER, 0
+	handlemegaevo BS_ATTACKER, 1
+	playanimation BS_ATTACKER, B_ANIM_MEGA_EVOLUTION
+	waitanimation
+	handlemegaevo BS_ATTACKER, 2
+	printstring STRINGID_MEGAEVOEVOLVED
+	waitmessage B_WAIT_TIME_LONG
+	switchinabilities BS_ATTACKER
+BattleScript_RaidIntroEnd:
+	end2

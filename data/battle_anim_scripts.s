@@ -829,6 +829,7 @@ gBattleAnims_General::
 	.4byte General_StrongWinds              @ B_ANIM_STRONG_WINDS
 	.4byte General_PrimalReversion          @ B_ANIM_PRIMAL_REVERSION
 	.4byte General_AquaRingHeal             @ B_ANIM_AQUA_RING_HEAL
+	.4byte General_RaidGrowth				@ B_ANIM_RAID_GROWTH
 
 	.align 2
 gBattleAnims_Special::
@@ -24789,6 +24790,11 @@ SnatchMoveSwapMonForSubstitute:
 	createvisualtask AnimTask_SwapMonSpriteToFromSubstitute, 2, FALSE
 	waitforvisualfinish
 	goto SnatchMoveTrySwapToSubstituteEnd
+
+General_RaidGrowth::
+	playsewithpan SE_M_TAKE_DOWN, SOUND_PAN_ATTACKER
+	createvisualtask AnimTask_ScaleMonAndRestore, 5, -3, -3, 30, ANIM_ATTACKER, 0
+	end
 
 @ Healthbox blue flash effect on level up
 Special_LevelUp:
