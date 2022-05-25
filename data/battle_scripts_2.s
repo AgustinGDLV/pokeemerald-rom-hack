@@ -100,6 +100,12 @@ BattleScript_TrainerBallBlock::
 	waitmessage B_WAIT_TIME_LONG
 	finishaction
 
+BattleScript_RaidBallBlock::
+	waitmessage B_WAIT_TIME_LONG
+	printstring STRINGID_PKMNISTOOSTRONG
+	waitmessage B_WAIT_TIME_LONG
+	finishaction
+
 BattleScript_PlayerUsesItem::
 	moveendcase MOVEEND_MIRROR_MOVE
 	end

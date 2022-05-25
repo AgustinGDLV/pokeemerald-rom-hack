@@ -3313,6 +3313,8 @@ bool32 CanThrowLastUsedBall(void)
         return FALSE;
     if (!CheckBagHasItem(gLastThrownBall, 1))
         return FALSE;
+    if (gBattleTypeFlags & BATTLE_TYPE_RAID)
+        return FALSE;
 
     return TRUE;
 #endif

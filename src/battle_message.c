@@ -736,9 +736,13 @@ static const u8 sText_NeutralizingGasOver[] = _("The effects of Neutralizing\nGa
 static const u8 sText_PkmnAppearsMassive[] = _("{B_ATK_NAME_WITH_PREFIX} appears\nto be massive!");
 static const u8 sText_BarrierAppeared[] = _("A mysterious barrier appeared\nin front of {B_DEF_NAME}\pand is protecting it from attacks!\p");
 static const u8 sText_BarrierDisappeared[] = _("The mysterious barrier that was\nprotecting {B_DEF_NAME}\pdisappeared!\p");
+static const u8 sText_CatchRaidMon[] = _("{B_DEF_NAME} is weak!\nThrow a Ball?");
+static const u8 sText_PkmnIsTooStrong[] = _("{B_DEF_NAME_WITH_PREFIX} is\ntoo strong!");
 
 const u8 *const gBattleStringsTable[BATTLESTRINGS_COUNT] =
 {
+    [STRINGID_PKMNISTOOSTRONG - BATTLESTRINGS_TABLE_START] = sText_PkmnIsTooStrong,
+    [STRINGID_CATCHRAIDMON - BATTLESTRINGS_TABLE_START] = sText_CatchRaidMon,
     [STRINGID_PKMNAPPEARSMASSIVE - BATTLESTRINGS_TABLE_START] = sText_PkmnAppearsMassive,
     [STRINGID_BARRIERAPPEARED - BATTLESTRINGS_TABLE_START] = sText_BarrierAppeared,
     [STRINGID_BARRIERDISAPPEARED - BATTLESTRINGS_TABLE_START] = sText_BarrierDisappeared,
