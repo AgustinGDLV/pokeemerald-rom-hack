@@ -9031,6 +9031,21 @@ s32 CalculateMoveDamage(u16 move, u8 battlerAtk, u8 battlerDef, u8 moveType, s32
 
     if (dmg == 0)
         dmg = 1;
+    
+    // Prevent inflicting damage through a barrier in raid battles.
+    if (gBattleStruct->raid.barriers > 0 && GetBattlerPosition(battlerDef) == B_POSITION_OPPONENT_LEFT)
+    {
+        dmg = 0;
+        gBattleStruct->raid.barrierBitfield = SHOULD_BREAK_BARRIER;
+    }
+
+    // Prevent passing health threshold in raid battles.
+    else if (ShouldCreateBarrier(battlerDef, dmg))
+    {
+        dmg = gBattleMons[battlerDef].hp - GetNextHealthThreshold();
+        gBattleStruct->raid.thresholdsRemaining--;
+        gBattleStruct->raid.barrierBitfield = SHOULD_CREATE_BARRIERS;
+    }
 
     return dmg;
 }

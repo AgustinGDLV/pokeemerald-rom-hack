@@ -616,9 +616,7 @@ void StartRaidBattle(void)
 {
     ScriptContext2_Enable();
     gMain.savedCallback = CB2_EndScriptedWildBattle;
-    gBattleStruct->raid.starRating = gSpecialVar_0x8000;
-    gBattleStruct->raid.finishedIntro = FALSE;
-    gBattleTypeFlags = BATTLE_TYPE_RAID;
+    gBattleTypeFlags = BATTLE_TYPE_RAID;    
     CreateBattleStartTask(GetWildBattleTransition(), 0);
     IncrementGameStat(GAME_STAT_TOTAL_BATTLES);
     IncrementGameStat(GAME_STAT_WILD_BATTLES);

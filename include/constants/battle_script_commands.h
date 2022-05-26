@@ -238,6 +238,8 @@
 #define VARIOUS_SAVE_BATTLER_ITEM                   148
 #define VARIOUS_RESTORE_BATTLER_ITEM                149
 #define VARIOUS_BATTLER_ITEM_TO_LAST_USED_ITEM      150
+#define VARIOUS_SET_RAID_BARRIERS                   151
+#define VARIOUS_BREAK_RAID_BARRIERS                 152
 
 // Cmd_manipulatedamage
 #define DMG_CHANGE_SIGN            0
@@ -308,7 +310,8 @@
 #define MOVEEND_DANCER                            28
 #define MOVEEND_EMERGENCY_EXIT                    29
 #define MOVEEND_CLEAR_BITS                        30
-#define MOVEEND_COUNT                             31
+#define MOVEEND_RAID                              31
+#define MOVEEND_COUNT                             32
 
 // switch cases
 #define B_SWITCH_NORMAL     0

@@ -9443,3 +9443,13 @@ BattleScript_RaidIntro::
 	switchinabilities BS_ATTACKER
 BattleScript_RaidIntroEnd:
 	end2
+
+BattleScript_RaidBarrierAppeared::
+	printstring STRINGID_BARRIERAPPEARED
+	setraidbarriers
+	end2
+
+BattleScript_RaidBarrierDisappeared::
+	printstring STRINGID_BARRIERDISAPPEARED
+	breakraidbarriers
+	end2

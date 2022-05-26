@@ -418,5 +418,7 @@ extern const u8 BattleScript_NeutralizingGasExits[];
 extern const u8 BattleScript_MagicianActivates[];
 extern const u8 BattleScript_RaidIntro[];
 extern const u8 BattleScript_RaidBallBlock[];
+extern const u8 BattleScript_RaidBarrierAppeared[];
+extern const u8 BattleScript_RaidBarrierDisappeared[];
 
 #endif // GUARD_BATTLE_SCRIPTS_H

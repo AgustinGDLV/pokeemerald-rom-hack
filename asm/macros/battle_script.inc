@@ -2120,3 +2120,11 @@
 	.macro skydropyawn
 	various 0, VARIOUS_SKY_DROP_YAWN
 	.endm
+
+	.macro setraidbarriers
+	various 0, VARIOUS_SET_RAID_BARRIERS
+	.endm
+
+	.macro breakraidbarriers
+	various 1, VARIOUS_BREAK_RAID_BARRIERS
+	.endm

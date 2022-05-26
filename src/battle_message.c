@@ -734,8 +734,8 @@ static const u8 sText_CantEscapeBecauseOfCurrentMove[] = _("{B_DEF_NAME_WITH_PRE
 static const u8 sText_NeutralizingGasEnters[] = _("Neutralizing Gas filled the area!");
 static const u8 sText_NeutralizingGasOver[] = _("The effects of Neutralizing\nGas wore off!");
 static const u8 sText_PkmnAppearsMassive[] = _("{B_ATK_NAME_WITH_PREFIX} appears\nto be massive!");
-static const u8 sText_BarrierAppeared[] = _("A mysterious barrier appeared\nin front of {B_DEF_NAME}\pand is protecting it from attacks!\p");
-static const u8 sText_BarrierDisappeared[] = _("The mysterious barrier that was\nprotecting {B_DEF_NAME}\pdisappeared!\p");
+static const u8 sText_BarrierAppeared[] = _("A mysterious barrier appeared,\nprotecting {B_DEF_NAME} from attacks.\p");
+static const u8 sText_BarrierDisappeared[] = _("The mysterious barrier protecting\n{B_DEF_NAME} disappeared!\p");
 static const u8 sText_CatchRaidMon[] = _("{B_DEF_NAME} is weak!\nThrow a Ball?");
 static const u8 sText_PkmnIsTooStrong[] = _("{B_DEF_NAME_WITH_PREFIX} is\ntoo strong!");
 

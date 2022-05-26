@@ -5562,6 +5562,32 @@ static void Cmd_moveend(void)
             }
             gBattleScripting.moveendState++;
             break;
+        case MOVEEND_RAID:
+            if (gBattleStruct->raid.barrierBitfield & SHOULD_CREATE_BARRIERS)
+            {
+                gBattleStruct->raid.barrierBitfield &= ~SHOULD_CREATE_BARRIERS;
+                gBattlerTarget = B_POSITION_OPPONENT_LEFT;
+                gBattleStruct->raid.barriers = GetRaidBarrierNumber(gBattlerTarget);
+                BattleScriptPushCursor();
+                gBattlescriptCurrInstr = BattleScript_RaidBarrierAppeared;
+                return;
+            }
+            else if (gBattleStruct->raid.barrierBitfield & SHOULD_BREAK_BARRIER)
+            {
+                gBattleStruct->raid.barrierBitfield &= ~SHOULD_BREAK_BARRIER;
+                PlaySE(SE_BANG);
+                if (gBattleStruct->raid.barriers != 0)
+                    gBattleStruct->raid.barriers--;
+
+                if (gBattleStruct->raid.barriers == 0)
+                {
+                    BattleScriptPushCursor();
+                    gBattlescriptCurrInstr = BattleScript_RaidBarrierDisappeared;
+                    return;
+                }
+            }
+            gBattleScripting.moveendState++;
+            break;
         case MOVEEND_CLEAR_BITS: // Clear/Set bits for things like using a move for all targets and all hits.
             if (gSpecialStatuses[gBattlerAttacker].instructedChosenTarget)
                 *(gBattleStruct->moveTarget + gBattlerAttacker) = gSpecialStatuses[gBattlerAttacker].instructedChosenTarget & 0x3;
@@ -9473,6 +9499,12 @@ static void Cmd_various(void)
         break;
     case VARIOUS_BATTLER_ITEM_TO_LAST_USED_ITEM:
         gBattleMons[gActiveBattler].item = gLastUsedItem;
+        break;
+    case VARIOUS_SET_RAID_BARRIERS:
+        gBattleStruct->raid.barriers = GetRaidBarrierNumber(gActiveBattler); // gActiveBattler was set to 1
+        break;
+    case VARIOUS_BREAK_RAID_BARRIERS:
+        // inflict stored damage, lower stats, etc.
         break;
     } // End of switch (gBattlescriptCurrInstr[2])
 

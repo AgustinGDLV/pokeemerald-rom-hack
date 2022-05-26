@@ -13,6 +13,7 @@
 #include "battle_bg.h"
 #include "pokeball.h"
 #include "battle_debug.h"
+#include "battle_raid.h"
 
 #define GET_BATTLER_POSITION(battler)     (gBattlerPositions[battler])
 #define GET_BATTLER_SIDE(battler)         (GetBattlerPosition(battler) & BIT_SIDE)
@@ -484,8 +485,11 @@ struct StolenItem
 
 struct RaidBattleData
 {
-    bool8 finishedIntro;
     u8 starRating;
+    u8 thresholdsRemaining;
+    u8 barriers;
+    bool8 finishedIntro;
+    bool8 barrierBitfield;
 };
 
 struct BattleStruct
