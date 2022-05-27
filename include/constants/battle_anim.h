@@ -533,6 +533,9 @@
 #define B_ANIM_PRIMAL_REVERSION         31
 #define B_ANIM_AQUA_RING_HEAL           32
 #define B_ANIM_RAID_GROWTH              33
+#define B_ANIM_RAID_BARRIER_APPEARED    34
+#define B_ANIM_RAID_BARRIER_DISAPPEARED 35
+#define B_ANIM_RAID_BARRIER_BROKE       36
 
 // special animations table (gBattleAnims_Special)
 #define B_ANIM_LVL_UP                   0

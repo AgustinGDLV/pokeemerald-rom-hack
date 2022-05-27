@@ -3639,7 +3639,7 @@ static void TryDoEventsBeforeFirstTurn(void)
     if (gBattleTypeFlags & BATTLE_TYPE_RAID && !gBattleStruct->raid.finishedIntro)
     {
         InitRaidVariables();
-        gBattlerAttacker = B_POSITION_OPPONENT_LEFT;
+        gBattlerAttacker = GetBattlerAtPosition(B_POSITION_OPPONENT_LEFT);
         if (GetBattlerHoldEffect(gBattlerAttacker, FALSE) == HOLD_EFFECT_MEGA_STONE)
             gBattleCommunication[MULTIUSE_STATE] = 1;
         BattleScriptExecute(BattleScript_RaidIntro);    
@@ -3812,6 +3812,11 @@ u8 IsRunningFromBattleImpossible(void)
     gPotentialItemEffectBattler = gActiveBattler;
 
     if (gBattleTypeFlags & BATTLE_TYPE_FIRST_BATTLE) // Cannot ever run from saving Birch's battle.
+    {
+        gBattleCommunication[MULTISTRING_CHOOSER] = B_MSG_DONT_LEAVE_BIRCH;
+        return 1;
+    }
+    if (gBattleTypeFlags & BATTLE_TYPE_RAID)
     {
         gBattleCommunication[MULTISTRING_CHOOSER] = B_MSG_DONT_LEAVE_BIRCH;
         return 1;

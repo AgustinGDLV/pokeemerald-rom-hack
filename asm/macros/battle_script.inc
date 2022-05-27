@@ -2128,3 +2128,7 @@
 	.macro breakraidbarriers
 	various 1, VARIOUS_BREAK_RAID_BARRIERS
 	.endm
+
+	.macro nullifymons
+	various 0, VARIOUS_NULLIFY_MONS
+	.endm

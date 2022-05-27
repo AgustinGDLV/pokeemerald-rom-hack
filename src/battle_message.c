@@ -738,9 +738,11 @@ static const u8 sText_BarrierAppeared[] = _("A mysterious barrier appeared,\npro
 static const u8 sText_BarrierDisappeared[] = _("The mysterious barrier protecting\n{B_DEF_NAME} disappeared!\p");
 static const u8 sText_CatchRaidMon[] = _("{B_DEF_NAME} is weak!\nThrow a Ball?");
 static const u8 sText_PkmnIsTooStrong[] = _("{B_DEF_NAME_WITH_PREFIX} is\ntoo strong!");
+static const u8 sText_PkmnNullifiedOthers[] = _("{B_DEF_NAME} nullified the stat changes\nand abilities of other Pokémon!");
 
 const u8 *const gBattleStringsTable[BATTLESTRINGS_COUNT] =
 {
+    [STRINGID_PKMNNULLIFIEDOTHERS - BATTLESTRINGS_TABLE_START] = sText_PkmnNullifiedOthers,
     [STRINGID_PKMNISTOOSTRONG - BATTLESTRINGS_TABLE_START] = sText_PkmnIsTooStrong,
     [STRINGID_CATCHRAIDMON - BATTLESTRINGS_TABLE_START] = sText_CatchRaidMon,
     [STRINGID_PKMNAPPEARSMASSIVE - BATTLESTRINGS_TABLE_START] = sText_PkmnAppearsMassive,

@@ -47,7 +47,7 @@
 // Resets raid variables at the start of battle. Called in TryDoEventsBeforeFirstTurn
 void InitRaidVariables(void)
 {
-    gBattleStruct->raid.starRating = 5; // variable is set when battle is created.
+    gBattleStruct->raid.starRating = gSpecialVar_0x8000; // variable is set when battle is created.
     gBattleStruct->raid.barriers = 0;
     gBattleStruct->raid.storedDmg = 0;
     gBattleStruct->raid.thresholdsRemaining = GetRaidThresholdNumber();
@@ -56,19 +56,44 @@ void InitRaidVariables(void)
 // Returns how many barriers to create at a threshold. Based on star rating and stats.
 u8 GetRaidBarrierNumber(u8 battlerId)
 {
-    return 2; // TODO: will be based off Max HP + Defense + Sp. Defense (and star rating)
+    u16 species = GetMonData(&gEnemyParty[0], MON_DATA_SPECIES, NULL);
+    u8 hp = gBaseStats[species].baseHP;
+    u8 def = gBaseStats[species].baseDefense;
+    u8 spDef = gBaseStats[species].baseSpDefense;
+    u8 retVal;
+
+    switch (hp + def + spDef) // Currently uses the sum of defenses to determine barrier count.
+    {
+        case 0 ... 199:
+            retVal = 2;
+            break;
+        case 200 ... 300:
+            retVal = 3;
+            break;
+        default: // > 300
+            retVal = 4;
+            break;
+    }
+
+    if (gBattleStruct->raid.starRating >= 5)
+        retVal += 1;
+    
+    return retVal;
 }
 
 // Returns how many health thresholds a raid will have. Based on star rating.
 u8 GetRaidThresholdNumber(void)
 {
     u8 starRating = gBattleStruct->raid.starRating;
-    if (starRating >= 5)
-        return 2;
-    else if (starRating >= 3)
-        return 1;
-    else
-        return 0;
+    switch (starRating)
+    {
+        case 5:
+            return 2;
+        case 3 ... 4:
+            return 1;
+        default:
+            return 0;
+    }
 }
 
 // Returns the next health threshold of a Raid Boss.

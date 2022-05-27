@@ -5575,27 +5575,37 @@ static void Cmd_moveend(void)
             gBattleScripting.moveendState++;
             break;
         case MOVEEND_RAID:
-            if (gBattleStruct->raid.barrierBitfield & SHOULD_CREATE_BARRIERS)
+            if (gBattleTypeFlags & BATTLE_TYPE_RAID)
             {
-                gBattleStruct->raid.barrierBitfield &= ~SHOULD_CREATE_BARRIERS;
-                gBattlerTarget = B_POSITION_OPPONENT_LEFT;
-                gBattleStruct->raid.barriers = GetRaidBarrierNumber(gBattlerTarget);
-                BattleScriptPushCursor();
-                gBattlescriptCurrInstr = BattleScript_RaidBarrierAppeared;
-                return;
-            }
-            else if (gBattleStruct->raid.barrierBitfield & SHOULD_BREAK_BARRIER)
-            {
-                gBattleStruct->raid.barrierBitfield &= ~SHOULD_BREAK_BARRIER;
-                if (gBattleStruct->raid.barriers != 0)
-                    gBattleStruct->raid.barriers--;
+                if (gBattleStruct->raid.barrierBitfield & SHOULD_CREATE_BARRIERS)
+                {
+                    gBattleStruct->raid.barrierBitfield &= ~SHOULD_CREATE_BARRIERS;
+                    gBattlerTarget = B_POSITION_OPPONENT_LEFT;
+                    gBattleStruct->raid.barriers = GetRaidBarrierNumber(gBattlerTarget);
+                    BattleScriptPushCursor();
+                    gBattlescriptCurrInstr = BattleScript_RaidBarrierAppeared;
+                    return;
+                }
+                else if (gBattleStruct->raid.barrierBitfield & SHOULD_BREAK_BARRIER)
+                {
+                    gBattleStruct->raid.barrierBitfield &= ~SHOULD_BREAK_BARRIER;
+                    if (gBattleStruct->raid.barriers != 0)
+                        gBattleStruct->raid.barriers--;
 
-                BattleScriptPushCursor();
-                if (gBattleStruct->raid.barriers == 0)
-                    gBattlescriptCurrInstr = BattleScript_RaidBarrierDisappeared;
-                else
-                    gBattlescriptCurrInstr = BattleScript_RaidBarrierBroken;
-                return;
+                    BattleScriptPushCursor();
+                    if (gBattleStruct->raid.barriers == 0)
+                        gBattlescriptCurrInstr = BattleScript_RaidBarrierDisappeared;
+                    else
+                        gBattlescriptCurrInstr = BattleScript_RaidBarrierBroken;
+                    return;
+                }
+
+                if (GetBattlerPosition(gBattlerAttacker) == B_POSITION_OPPONENT_LEFT)
+                {
+                    BattleScriptPushCursor();
+                    gBattlescriptCurrInstr = BattleScript_RaidShockwave;
+                    return;
+                }
             }
             gBattleScripting.moveendState++;
             break;
@@ -9515,11 +9525,24 @@ static void Cmd_various(void)
         gBattleStruct->raid.barriers = GetRaidBarrierNumber(gActiveBattler); // gActiveBattler was set to 1
         break;
     case VARIOUS_BREAK_RAID_BARRIERS:
-        // inflict stored damage, lower stats, etc.
         gBattleMoveDamage = gBattleStruct->raid.storedDmg / 10;
         if (gBattleMoveDamage == 0)
             gBattleMoveDamage = 1;
         gBattleStruct->raid.storedDmg = 0;
+        break;
+    case VARIOUS_NULLIFY_MONS:
+        for (i = 0; i < gBattlersCount; i++)
+        {
+            if (GetBattlerPosition(i) == B_POSITION_OPPONENT_LEFT)
+                continue;
+            if (!IsGastroAcidBannedAbility(gBattleMons[gBattlerTarget].ability))
+            {
+                if (gBattleMons[i].ability == ABILITY_NEUTRALIZING_GAS)
+                    gSpecialStatuses[i].neutralizingGasRemoved = TRUE;
+                gStatuses3[i] |= STATUS3_GASTRO_ACID;
+            }
+            TryResetBattlerStatChanges(i);
+        }
         break;
     } // End of switch (gBattlescriptCurrInstr[2])
 

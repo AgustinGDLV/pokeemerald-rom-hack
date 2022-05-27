@@ -830,6 +830,9 @@ gBattleAnims_General::
 	.4byte General_PrimalReversion          @ B_ANIM_PRIMAL_REVERSION
 	.4byte General_AquaRingHeal             @ B_ANIM_AQUA_RING_HEAL
 	.4byte General_RaidGrowth				@ B_ANIM_RAID_GROWTH
+	.4byte General_RaidBarrierAppeared		@ B_ANIM_RAID_BARRIER_APPEARED
+	.4byte General_RaidBarrierDisappeared	@ B_ANIM_RAID_BARRIER_DISAPPEARED
+	.4byte General_RaidBarrierBroken		@ B_ANIM_RAID_BARRIER_BROKE
 
 	.align 2
 gBattleAnims_Special::
@@ -24794,6 +24797,46 @@ SnatchMoveSwapMonForSubstitute:
 General_RaidGrowth::
 	playsewithpan SE_M_TAKE_DOWN, SOUND_PAN_ATTACKER
 	createvisualtask AnimTask_ScaleMonAndRestore, 5, -3, -3, 30, ANIM_ATTACKER, 0
+	createvisualtask AnimTask_BlendColorCycle, 2, 2, 2, 2, 0, 12, RGB(30, 0, 0)
+	waitforvisualfinish
+	end
+
+@ Uses Reflect animation.
+General_RaidBarrierAppeared::
+	loadspritegfx ANIM_TAG_SPARKLE_4
+	loadspritegfx ANIM_TAG_BLUE_LIGHT_WALL
+	setalpha 0, 16
+	waitplaysewithpan SE_M_REFLECT, SOUND_PAN_ATTACKER, 15
+	createsprite gReflectWallSpriteTemplate, ANIM_ATTACKER, 1, 40, 0, ANIM_TAG_BLUE_LIGHT_WALL
+	delay 20
+	createsprite gReflectSparkleSpriteTemplate, ANIM_ATTACKER, 2, 30, 0, ANIM_ATTACKER, 1
+	delay 7
+	createsprite gReflectSparkleSpriteTemplate, ANIM_ATTACKER, 2, 19, -12, ANIM_ATTACKER, 1
+	delay 7
+	createsprite gReflectSparkleSpriteTemplate, ANIM_ATTACKER, 2, 10, 20, ANIM_ATTACKER, 1
+	waitforvisualfinish
+	delay 1
+	blendoff
+	end
+
+General_RaidBarrierDisappeared::
+	createsprite gSimplePaletteBlendSpriteTemplate, ANIM_ATTACKER, 0, 2, 7, 0, 9, RGB_RED
+	playsewithpan SE_M_DRAGON_RAGE, SOUND_PAN_ATTACKER
+	createvisualtask AnimTask_SlideMonForFocusBand, 5, 30, 128, 0, 1, 2, 0, 1
+	waitforvisualfinish
+	createsprite gSimplePaletteBlendSpriteTemplate, ANIM_ATTACKER, 0, 2, 4, 9, 0, RGB_RED
+	waitforvisualfinish
+	playsewithpan SE_M_BRICK_BREAK, SOUND_PAN_TARGET
+	delay 6
+	createsprite gSlideMonToOriginalPosSpriteTemplate, ANIM_ATTACKER, 0, 0, 0, 15
+	end
+
+General_RaidBarrierBroken::
+	playsewithpan SE_M_BRICK_BREAK, SOUND_PAN_TARGET
+	createvisualtask AnimTask_ShakeMon2, 2, ANIM_ATTACKER, 1, 0, 18, 2
+	createsprite gSimplePaletteBlendSpriteTemplate, ANIM_ATTACKER, 0, 2, 4, 9, 0, RGB_RED
+	waitforvisualfinish
+	delay 6
 	end
 
 @ Healthbox blue flash effect on level up

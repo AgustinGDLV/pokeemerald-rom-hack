@@ -9445,25 +9445,50 @@ BattleScript_RaidIntroEnd:
 	end2
 
 BattleScript_RaidBarrierAppeared::
-	playanimation BS_TARGET, B_ANIM_RAID_GROWTH
+	playanimation BS_TARGET, B_ANIM_RAID_BARRIER_APPEARED
 	printstring STRINGID_BARRIERAPPEARED
 	waitanimation
 	setraidbarriers
 	end2
 
 BattleScript_RaidBarrierDisappeared::
-	playse SE_BANG
-	playanimation BS_TARGET, B_ANIM_HANGED_ON
+	playanimation BS_TARGET, B_ANIM_RAID_BARRIER_DISAPPEARED
 	printstring STRINGID_BARRIERDISAPPEARED
 	waitanimation
 	breakraidbarriers
 	healthbarupdate BS_TARGET
 	datahpupdate BS_TARGET
 	tryfaintmon BS_TARGET
+	jumpifstat BS_TARGET, CMP_GREATER_THAN, STAT_DEF, MIN_STAT_STAGE, BattleScript_RaidDefenseDrop
+	jumpifstat BS_TARGET, CMP_EQUAL, STAT_SPDEF, MIN_STAT_STAGE, BattleScript_RaidBarrierDisappearedEnd
+BattleScript_RaidDefenseDrop:
+	setbyte sSTAT_ANIM_PLAYED, FALSE
+	playstatchangeanimation BS_TARGET, BIT_DEF | BIT_SPDEF, STAT_CHANGE_BY_TWO
+	setstatchanger STAT_DEF, 2, TRUE
+	statbuffchange STAT_BUFF_ALLOW_PTR, BattleScript_RaidSpDefenseDrop
+	jumpifbyte CMP_EQUAL, cMULTISTRING_CHOOSER, B_MSG_STAT_WONT_INCREASE, BattleScript_RaidSpDefenseDrop
+	printfromtable gStatDownStringIds
+	waitmessage B_WAIT_TIME_LONG
+BattleScript_RaidSpDefenseDrop:
+	setstatchanger STAT_SPDEF, 2, TRUE
+	statbuffchange STAT_BUFF_ALLOW_PTR, BattleScript_RaidBarrierDisappearedEnd
+	jumpifbyte CMP_EQUAL, cMULTISTRING_CHOOSER, B_MSG_STAT_WONT_INCREASE, BattleScript_RaidBarrierDisappearedEnd
+	printfromtable gStatDownStringIds
+	waitmessage B_WAIT_TIME_LONG
+BattleScript_RaidBarrierDisappearedEnd:
 	end2
 
 BattleScript_RaidBarrierBroken::
-	playse SE_BANG
-	playanimation BS_TARGET, B_ANIM_HANGED_ON
+	playanimation BS_TARGET, B_ANIM_RAID_BARRIER_BROKE
 	waitanimation
+	end2
+
+BattleScript_RaidShockwave::
+	playanimation BS_ATTACKER, B_ANIM_RAID_GROWTH
+	waitanimation
+	printstring STRINGID_PKMNNULLIFIEDOTHERS
+	waitmessage B_WAIT_TIME_LONG
+	nullifymons
+	clearstatus BS_ATTACKER
+	updatestatusicon BS_ATTACKER
 	end2
