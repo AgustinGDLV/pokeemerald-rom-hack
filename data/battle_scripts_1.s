@@ -9445,10 +9445,10 @@ BattleScript_RaidIntroEnd:
 	end2
 
 BattleScript_RaidBarrierAppeared::
+	setraidbarriers
 	playanimation BS_TARGET, B_ANIM_RAID_BARRIER_APPEARED
 	printstring STRINGID_BARRIERAPPEARED
 	waitanimation
-	setraidbarriers
 	end2
 
 BattleScript_RaidBarrierDisappeared::
@@ -9463,7 +9463,7 @@ BattleScript_RaidBarrierDisappeared::
 	jumpifstat BS_TARGET, CMP_EQUAL, STAT_SPDEF, MIN_STAT_STAGE, BattleScript_RaidBarrierDisappearedEnd
 BattleScript_RaidDefenseDrop:
 	setbyte sSTAT_ANIM_PLAYED, FALSE
-	playstatchangeanimation BS_TARGET, BIT_DEF | BIT_SPDEF, STAT_CHANGE_BY_TWO
+	playstatchangeanimation BS_TARGET, BIT_DEF | BIT_SPDEF, STAT_CHANGE_BY_TWO | STAT_CHANGE_NEGATIVE
 	setstatchanger STAT_DEF, 2, TRUE
 	statbuffchange STAT_BUFF_ALLOW_PTR, BattleScript_RaidSpDefenseDrop
 	jumpifbyte CMP_EQUAL, cMULTISTRING_CHOOSER, B_MSG_STAT_WONT_INCREASE, BattleScript_RaidSpDefenseDrop

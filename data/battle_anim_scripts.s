@@ -24820,13 +24820,13 @@ General_RaidBarrierAppeared::
 	end
 
 General_RaidBarrierDisappeared::
+	playsewithpan SE_M_BRICK_BREAK, SOUND_PAN_TARGET
 	createsprite gSimplePaletteBlendSpriteTemplate, ANIM_ATTACKER, 0, 2, 7, 0, 9, RGB_RED
 	playsewithpan SE_M_DRAGON_RAGE, SOUND_PAN_ATTACKER
 	createvisualtask AnimTask_SlideMonForFocusBand, 5, 30, 128, 0, 1, 2, 0, 1
 	waitforvisualfinish
 	createsprite gSimplePaletteBlendSpriteTemplate, ANIM_ATTACKER, 0, 2, 4, 9, 0, RGB_RED
 	waitforvisualfinish
-	playsewithpan SE_M_BRICK_BREAK, SOUND_PAN_TARGET
 	delay 6
 	createsprite gSlideMonToOriginalPosSpriteTemplate, ANIM_ATTACKER, 0, 0, 0, 15
 	end

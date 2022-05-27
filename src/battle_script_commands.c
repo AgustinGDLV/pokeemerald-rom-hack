@@ -5577,6 +5577,7 @@ static void Cmd_moveend(void)
         case MOVEEND_RAID:
             if (gBattleTypeFlags & BATTLE_TYPE_RAID)
             {
+                // Create / break barriers.
                 if (gBattleStruct->raid.barrierBitfield & SHOULD_CREATE_BARRIERS)
                 {
                     gBattleStruct->raid.barrierBitfield &= ~SHOULD_CREATE_BARRIERS;
@@ -5591,6 +5592,7 @@ static void Cmd_moveend(void)
                     gBattleStruct->raid.barrierBitfield &= ~SHOULD_BREAK_BARRIER;
                     if (gBattleStruct->raid.barriers != 0)
                         gBattleStruct->raid.barriers--;
+                    DestroyRaidBarrierSprite(gBattleStruct->raid.barriers);
 
                     BattleScriptPushCursor();
                     if (gBattleStruct->raid.barriers == 0)
@@ -5599,10 +5601,12 @@ static void Cmd_moveend(void)
                         gBattlescriptCurrInstr = BattleScript_RaidBarrierBroken;
                     return;
                 }
-
-                if (GetBattlerPosition(gBattlerAttacker) == B_POSITION_OPPONENT_LEFT)
+                // Do shockwave.
+                if (GetBattlerPosition(gBattlerAttacker) == B_POSITION_OPPONENT_LEFT
+                    && (Random() % 3) == 0)
                 {
                     BattleScriptPushCursor();
+                    gBattlerTarget = gBattlerAttacker;
                     gBattlescriptCurrInstr = BattleScript_RaidShockwave;
                     return;
                 }
@@ -9523,12 +9527,14 @@ static void Cmd_various(void)
         break;
     case VARIOUS_SET_RAID_BARRIERS:
         gBattleStruct->raid.barriers = GetRaidBarrierNumber(gActiveBattler); // gActiveBattler was set to 1
+        CreateAllRaidBarrierSprites(gActiveBattler, gBattleStruct->raid.barriers);
         break;
     case VARIOUS_BREAK_RAID_BARRIERS:
         gBattleMoveDamage = gBattleStruct->raid.storedDmg / 10;
         if (gBattleMoveDamage == 0)
             gBattleMoveDamage = 1;
         gBattleStruct->raid.storedDmg = 0;
+        //DestroyAllRaidBarrierSprites(1);
         break;
     case VARIOUS_NULLIFY_MONS:
         for (i = 0; i < gBattlersCount; i++)

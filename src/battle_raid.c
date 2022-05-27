@@ -44,13 +44,18 @@
 #include "constants/trainers.h"
 #include "constants/weather.h"
 
-// Resets raid variables at the start of battle. Called in TryDoEventsBeforeFirstTurn
+// Resets raid variables at the start of battle. Called in TryDoEventsBeforeFirstTurn.
 void InitRaidVariables(void)
 {
+    u8 i;
     gBattleStruct->raid.starRating = gSpecialVar_0x8000; // variable is set when battle is created.
     gBattleStruct->raid.barriers = 0;
     gBattleStruct->raid.storedDmg = 0;
     gBattleStruct->raid.thresholdsRemaining = GetRaidThresholdNumber();
+    for (i = 0; i < MAX_BARRIERS; i++)
+    {
+        gBattleStruct->raid.barrierSpriteIds[i] = MAX_SPRITES;
+    }
 }
 
 // Returns how many barriers to create at a threshold. Based on star rating and stats.
@@ -126,3 +131,156 @@ bool8 ShouldCreateBarrier(u8 battlerId, s32 dmg)
     else
         return FALSE;
 }
+
+// SPRITE DATA
+
+static const u8 sRaidBarrierGfx[] = INCBIN_U8("graphics/battle_interface/raid_barrier.4bpp");
+static const u16 sRaidBarrierPal[] = INCBIN_U16("graphics/battle_interface/raid_barrier.gbapal");
+
+static const struct SpriteSheet sSpriteSheet_RaidBarrier =
+{
+    sRaidBarrierGfx, sizeof(sRaidBarrierGfx), TAG_RAID_BARRIER_TILE
+};
+static const struct SpritePalette sSpritePalette_RaidBarrier =
+{
+    sRaidBarrierPal, TAG_RAID_BARRIER_PAL
+};
+
+static const struct OamData sOamData_RaidBarrier =
+{
+    .y = 0,
+    .affineMode = 0,
+    .objMode = 0,
+    .mosaic = 0,
+    .bpp = 0,
+    .shape = SPRITE_SHAPE(16x16),
+    .x = 0,
+    .matrixNum = 0,
+    .size = SPRITE_SIZE(16x16),
+    .tileNum = 0,
+    .priority = 1,
+    .paletteNum = 0,
+    .affineParam = 0,
+};
+
+static void SpriteCb_RaidBarrier(struct Sprite *sprite)
+{
+
+}
+
+static const struct SpriteTemplate sSpriteTemplate_RaidBarrier =
+{
+    .tileTag = TAG_RAID_BARRIER_TILE,
+    .paletteTag = TAG_RAID_BARRIER_PAL,
+    .oam = &sOamData_RaidBarrier,
+    .anims = gDummySpriteAnimTable,
+    .images = NULL,
+    .affineAnims = gDummySpriteAffineAnimTable,
+    .callback = SpriteCb_RaidBarrier,
+};
+
+// data fields for healthboxMain
+// oam.affineParam holds healthboxRight spriteId
+#define hMain_HealthBarSpriteId     data[5]
+#define hMain_Battler               data[6]
+#define hMain_Data7                 data[7]
+
+// data fields for healthboxRight
+#define hOther_HealthBoxSpriteId    data[5]
+#define hOther_IndicatorSpriteId    data[6] // For Mega Evo
+
+// data fields for healthbar
+#define hBar_HealthBoxSpriteId      data[5]
+#define hBar_Data6                  data[6]
+
+#define tBattler    data[0]
+#define tHide       data[1]
+
+u8 GetRaidBarrierSpriteId(u32 healthboxSpriteId)
+{
+    u8 spriteId = gSprites[healthboxSpriteId].oam.affineParam;
+    if (spriteId >= MAX_SPRITES)
+        return 0xFF;
+    return gSprites[spriteId].hOther_IndicatorSpriteId;
+}
+
+static const s8 sIndicatorPositions[][2] =
+{
+    [B_POSITION_PLAYER_LEFT] = {0, 0},
+    [B_POSITION_OPPONENT_LEFT] = {48, 6},
+    [B_POSITION_PLAYER_RIGHT] = {0, 0},
+    [B_POSITION_OPPONENT_RIGHT] = {0, 0},
+};
+
+u32 CreateRaidBarrierSprite(u32 battlerId, u8 index)
+{
+    u32 spriteId, position;
+    s16 x, y;
+
+    if (gBattleStruct->raid.barriers > 0 && GetBattlerPosition(battlerId) == B_POSITION_OPPONENT_LEFT)
+    {
+        LoadSpritePalette(&sSpritePalette_RaidBarrier);
+        LoadSpriteSheet(&sSpriteSheet_RaidBarrier);
+    }
+
+    position = GetBattlerPosition(battlerId);
+    GetBattlerHealthboxCoords(battlerId, &x, &y);
+
+    x += sIndicatorPositions[position][0];
+    y += sIndicatorPositions[position][1];
+
+    x -= (index * 10);
+
+    if (gBattleStruct->raid.barriers > 0 && GetBattlerPosition(battlerId) == B_POSITION_OPPONENT_LEFT)
+    {
+        spriteId = CreateSpriteAtEnd(&sSpriteTemplate_RaidBarrier, x, y, 0);
+    }
+
+    gSprites[spriteId].tBattler = battlerId;
+    return spriteId;
+}
+
+void CreateAllRaidBarrierSprites(u32 battlerId, u8 barriers)
+{
+    u8 i;
+    for (i = 0; i < barriers; i++)
+    {
+        if (gBattleStruct->raid.barrierSpriteIds[i] == MAX_SPRITES)
+            gBattleStruct->raid.barrierSpriteIds[i] = CreateRaidBarrierSprite(battlerId, i);
+    }
+}
+
+void DestroyRaidBarrierSprite(u8 index)
+{
+    if (gBattleStruct->raid.barrierSpriteIds[index] != MAX_SPRITES)
+    {
+        DestroySprite(&gSprites[gBattleStruct->raid.barrierSpriteIds[index]]);
+        gBattleStruct->raid.barrierSpriteIds[index] = MAX_SPRITES;
+    }
+
+    if (index == 0)
+    {
+        FreeSpritePaletteByTag(TAG_RAID_BARRIER_PAL);
+        FreeSpriteTilesByTag(TAG_RAID_BARRIER_TILE);
+    }
+}
+
+void DestroyAllRaidBarrierSprites(u8 index)
+{
+    u32 i;
+
+    for (i = 0; i < MAX_BARRIERS; i++)
+    {
+        if (gBattleStruct->raid.barrierSpriteIds[i] != MAX_SPRITES)
+        {
+            DestroySprite(&gSprites[gBattleStruct->raid.barrierSpriteIds[i]]);
+            gBattleStruct->raid.barrierSpriteIds[i] = MAX_SPRITES;
+        }
+    }
+    
+    FreeSpritePaletteByTag(TAG_RAID_BARRIER_PAL);
+    FreeSpriteTilesByTag(TAG_RAID_BARRIER_TILE);
+}
+
+#undef tBattler
+#undef tHide

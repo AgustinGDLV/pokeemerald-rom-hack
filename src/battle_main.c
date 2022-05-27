@@ -3818,7 +3818,7 @@ u8 IsRunningFromBattleImpossible(void)
     }
     if (gBattleTypeFlags & BATTLE_TYPE_RAID)
     {
-        gBattleCommunication[MULTISTRING_CHOOSER] = B_MSG_DONT_LEAVE_BIRCH;
+        gBattleCommunication[MULTISTRING_CHOOSER] = B_MSG_CANT_ESCAPE;
         return 1;
     }
     if (GetBattlerPosition(gActiveBattler) == B_POSITION_PLAYER_RIGHT && WILD_DOUBLE_BATTLE

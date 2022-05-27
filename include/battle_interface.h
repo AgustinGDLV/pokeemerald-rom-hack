@@ -54,6 +54,9 @@ enum
 #define TAG_ALPHA_INDICATOR_PAL         0xD779
 #define TAG_OMEGA_INDICATOR_PAL         0xD77A
 
+#define TAG_RAID_BARRIER_TILE           0xD77B
+#define TAG_RAID_BARRIER_PAL            0xD77B
+
 enum
 {
     HEALTHBOX_ALL,
@@ -70,6 +73,7 @@ enum
     HEALTHBOX_SAFARI_BALLS_TEXT
 };
 
+void GetBattlerHealthboxCoords(u8 battler, s16 *x, s16 *y);
 u8 GetMegaIndicatorSpriteId(u32 healthboxSpriteId);
 u8 CreateBattlerHealthboxSprites(u8 battler);
 u8 CreateSafariPlayerHealthboxSprites(void);
