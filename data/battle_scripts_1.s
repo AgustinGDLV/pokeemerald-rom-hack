@@ -9445,11 +9445,22 @@ BattleScript_RaidIntroEnd:
 	end2
 
 BattleScript_RaidBarrierAppeared::
+	playanimation BS_TARGET, B_ANIM_RAID_GROWTH
 	printstring STRINGID_BARRIERAPPEARED
+	waitanimation
 	setraidbarriers
 	end2
 
 BattleScript_RaidBarrierDisappeared::
+	playse SE_BANG
+	playanimation BS_TARGET, B_ANIM_HANGED_ON
 	printstring STRINGID_BARRIERDISAPPEARED
+	waitanimation
 	breakraidbarriers
+	end2
+
+BattleScript_RaidBarrierBroken::
+	playse SE_BANG
+	playanimation BS_TARGET, B_ANIM_HANGED_ON
+	waitanimation
 	end2

@@ -44,8 +44,6 @@
 #include "constants/trainers.h"
 #include "constants/weather.h"
 
-// **EVERY FUNCTION ASSUMES B_POSITION_OPPONENT_LEFT IS THE RELEVANT BATTLER
-
 // Resets raid variables at the start of battle. Called in TryDoEventsBeforeFirstTurn
 void InitRaidVariables(void)
 {
@@ -75,8 +73,7 @@ u8 GetRaidThresholdNumber(void)
 // Returns the next health threshold of a Raid Boss.
 u32 GetNextHealthThreshold()
 {
-    u8 battlerId = B_POSITION_OPPONENT_LEFT;
-    u32 maxHP = gBattleMons[battlerId].maxHP;
+    u32 maxHP = GetMonData(&gEnemyParty[0], MON_DATA_MAX_HP, NULL);
     u8 total = GetRaidThresholdNumber();
     u8 remaining = gBattleStruct->raid.thresholdsRemaining;
 
@@ -89,8 +86,7 @@ u32 GetNextHealthThreshold()
 // Returns whether a hit will reduce a Raid Boss to a health threshold.
 bool8 ShouldCreateBarrier(u8 battlerId, s32 dmg)
 {    
-    u32 hp = gBattleMons[battlerId].hp;
-    u32 maxHP = gBattleMons[battlerId].maxHP;
+    u32 hp = GetMonData(&gEnemyParty[0], MON_DATA_HP, NULL);
     
     if (!(gBattleTypeFlags & BATTLE_TYPE_RAID))
         return FALSE;
@@ -99,6 +95,8 @@ bool8 ShouldCreateBarrier(u8 battlerId, s32 dmg)
     if (gBattleStruct->raid.thresholdsRemaining == 0)
         return FALSE;
     
-    if (dmg > (hp - GetNextHealthThreshold()))
+    if ((hp - dmg) <= GetNextHealthThreshold())
         return TRUE;
+    else
+        return FALSE;
 }

@@ -5575,16 +5575,15 @@ static void Cmd_moveend(void)
             else if (gBattleStruct->raid.barrierBitfield & SHOULD_BREAK_BARRIER)
             {
                 gBattleStruct->raid.barrierBitfield &= ~SHOULD_BREAK_BARRIER;
-                PlaySE(SE_BANG);
                 if (gBattleStruct->raid.barriers != 0)
                     gBattleStruct->raid.barriers--;
 
+                BattleScriptPushCursor();
                 if (gBattleStruct->raid.barriers == 0)
-                {
-                    BattleScriptPushCursor();
                     gBattlescriptCurrInstr = BattleScript_RaidBarrierDisappeared;
-                    return;
-                }
+                else
+                    gBattlescriptCurrInstr = BattleScript_RaidBarrierBroken;
+                return;
             }
             gBattleScripting.moveendState++;
             break;
