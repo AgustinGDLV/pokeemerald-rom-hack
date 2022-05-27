@@ -1500,6 +1500,18 @@ static void Cmd_attackcanceler(void)
         }
     }
 
+    // Status moves cannot hit through barriers.
+    if (gBattleTypeFlags & BATTLE_TYPE_RAID
+        && GetBattlerPosition(gBattlerTarget) == B_POSITION_OPPONENT_LEFT
+        && GetBattlerPosition(gBattlerAttacker) != B_POSITION_OPPONENT_LEFT
+        && gBattleStruct->raid.barriers > 0
+        && gBattleMoves[gCurrentMove].split & SPLIT_STATUS)
+    {
+        gHitMarker |= HITMARKER_UNABLE_TO_USE_MOVE;
+        gBattlescriptCurrInstr = BattleScript_ButItFailedAtkStringPpReduce;
+        return;
+    }
+
     if (gSpecialStatuses[gBattlerTarget].lightningRodRedirected)
     {
         gSpecialStatuses[gBattlerTarget].lightningRodRedirected = FALSE;
@@ -9504,6 +9516,10 @@ static void Cmd_various(void)
         break;
     case VARIOUS_BREAK_RAID_BARRIERS:
         // inflict stored damage, lower stats, etc.
+        gBattleMoveDamage = gBattleStruct->raid.storedDmg / 10;
+        if (gBattleMoveDamage == 0)
+            gBattleMoveDamage = 1;
+        gBattleStruct->raid.storedDmg = 0;
         break;
     } // End of switch (gBattlescriptCurrInstr[2])
 

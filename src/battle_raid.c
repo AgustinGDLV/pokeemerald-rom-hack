@@ -49,6 +49,7 @@ void InitRaidVariables(void)
 {
     gBattleStruct->raid.starRating = 5; // variable is set when battle is created.
     gBattleStruct->raid.barriers = 0;
+    gBattleStruct->raid.storedDmg = 0;
     gBattleStruct->raid.thresholdsRemaining = GetRaidThresholdNumber();
 }
 

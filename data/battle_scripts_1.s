@@ -9457,6 +9457,9 @@ BattleScript_RaidBarrierDisappeared::
 	printstring STRINGID_BARRIERDISAPPEARED
 	waitanimation
 	breakraidbarriers
+	healthbarupdate BS_TARGET
+	datahpupdate BS_TARGET
+	tryfaintmon BS_TARGET
 	end2
 
 BattleScript_RaidBarrierBroken::

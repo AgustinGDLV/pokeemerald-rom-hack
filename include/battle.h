@@ -488,6 +488,7 @@ struct RaidBattleData
     u8 starRating;
     u8 thresholdsRemaining;
     u8 barriers;
+    u32 storedDmg;
     bool8 finishedIntro;
     bool8 barrierBitfield;
 };
