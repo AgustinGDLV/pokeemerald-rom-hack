@@ -57,7 +57,7 @@ static const struct UCoords8 sBattlerCoords[][MAX_BATTLERS_COUNT] =
         [B_POSITION_PLAYER_LEFT]    = { 32, 80 },
         [B_POSITION_OPPONENT_LEFT]  = { 176, 40 },
         [B_POSITION_PLAYER_RIGHT]   = { 90, 88 },
-        [B_POSITION_OPPONENT_RIGHT] = { DISPLAY_WIDTH, DISPLAY_HEIGHT },
+        [B_POSITION_OPPONENT_RIGHT]  = { 176, 40 },
     }
 };
 
