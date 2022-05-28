@@ -1022,6 +1022,9 @@ void UpdateOamPriorityInAllHealthboxes(u8 priority, bool32 hideHPBoxes)
         u8 healthbarSpriteId = gSprites[gHealthboxSpriteIds[i]].hMain_HealthBarSpriteId;
         u8 indicatorSpriteId = GetMegaIndicatorSpriteId(healthboxLeftSpriteId);
 
+        if (!IsBattlerAlive(i))
+            continue;
+
         gSprites[healthboxLeftSpriteId].oam.priority = priority;
         gSprites[healthboxRightSpriteId].oam.priority = priority;
         gSprites[healthbarSpriteId].oam.priority = priority;
@@ -1034,7 +1037,7 @@ void UpdateOamPriorityInAllHealthboxes(u8 priority, bool32 hideHPBoxes)
         }
 
         #if B_HIDE_HEALTHBOX_IN_ANIMS
-        if (hideHPBoxes && IsBattlerAlive(i))
+        if (hideHPBoxes)
             TryToggleHealboxVisibility(priority, healthboxLeftSpriteId, healthboxRightSpriteId, healthbarSpriteId, indicatorSpriteId);
         #endif
     }
@@ -1044,7 +1047,25 @@ void GetBattlerHealthboxCoords(u8 battler, s16 *x, s16 *y)
 {
     *x = 0, *y = 0;
 
-    if (!IsDoubleBattle())
+    if (gBattleTypeFlags & BATTLE_TYPE_RAID)
+    {
+        switch (GetBattlerPosition(battler))
+        {
+        case B_POSITION_PLAYER_LEFT:
+            *x = 159, *y = 76;
+            break;
+        case B_POSITION_PLAYER_RIGHT:
+            *x = 171, *y = 101;
+            break;
+        case B_POSITION_OPPONENT_LEFT:
+            *x = 44, *y = 30;
+            break;
+        case B_POSITION_OPPONENT_RIGHT:
+            *x = DISPLAY_WIDTH, *y = DISPLAY_HEIGHT;
+            break;
+        }
+    }
+    else if (!IsDoubleBattle())
     {
         if (GetBattlerSide(battler) != B_SIDE_PLAYER)
             *x = 44, *y = 30;
@@ -3139,7 +3160,7 @@ void CreateAbilityPopUp(u8 battlerId, u32 ability, bool32 isDoubleBattle)
     gBattleStruct->activeAbilityPopUps |= gBitTable[battlerId];
     battlerPosition = GetBattlerPosition(battlerId);
 
-    if (isDoubleBattle)
+    if (isDoubleBattle && !(gBattleTypeFlags & BATTLE_TYPE_RAID && GetBattlerSide(battlerId) == B_SIDE_OPPONENT))
         coords = sAbilityPopUpCoordsDoubles;
     else
         coords = sAbilityPopUpCoordsSingles;

@@ -692,6 +692,8 @@ u8 GetAnimBattlerId(u8 wantedBattler)
 
 bool8 IsBattlerSpriteVisible(u8 battlerId)
 {
+    if (gBattleTypeFlags & BATTLE_TYPE_RAID && GetBattlerPosition(battlerId) == B_POSITION_OPPONENT_RIGHT)
+        return FALSE;
     if (IsContest())
     {
         if (battlerId == gBattleAnimAttacker)

@@ -3580,7 +3580,8 @@ static void TryDoEventsBeforeFirstTurn(void)
     {
         for (i = 0; i < gBattlersCount; i++)
         {
-            if (gBattleMons[i].hp == 0 || gBattleMons[i].species == SPECIES_NONE)
+            if (gBattleMons[i].hp == 0 || gBattleMons[i].species == SPECIES_NONE
+                || (gBattleTypeFlags & BATTLE_TYPE_RAID && i == B_POSITION_OPPONENT_RIGHT))
                 gAbsentBattlerFlags |= gBitTable[i];
         }
     }

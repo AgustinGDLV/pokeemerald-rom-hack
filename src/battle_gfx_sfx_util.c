@@ -703,6 +703,27 @@ bool8 BattleLoadAllHealthBoxesGfx(u8 state)
             LoadSpritePalette(&sSpritePalettes_HealthBoxHealthBar[0]);
             LoadSpritePalette(&sSpritePalettes_HealthBoxHealthBar[1]);
         }
+        else if (gBattleTypeFlags & BATTLE_TYPE_RAID)
+        {
+            if (state == 2)
+                LoadCompressedSpriteSheet(&sSpriteSheets_DoublesPlayerHealthbox[0]);
+            else if (state == 3)
+                LoadCompressedSpriteSheet(&sSpriteSheets_DoublesPlayerHealthbox[1]);
+            else if (state == 4)
+                LoadCompressedSpriteSheet(&sSpriteSheet_SinglesOpponentHealthbox);
+            else if (state == 5)
+                LoadCompressedSpriteSheet(&sSpriteSheets_DoublesOpponentHealthbox[1]);
+            else if (state == 6)
+                LoadCompressedSpriteSheet(&sSpriteSheets_HealthBar[gBattlerPositions[0]]);
+            else if (state == 7)
+                LoadCompressedSpriteSheet(&sSpriteSheets_HealthBar[gBattlerPositions[1]]);
+            else if (state == 8)
+                LoadCompressedSpriteSheet(&sSpriteSheets_HealthBar[gBattlerPositions[2]]);
+            else if (state == 9)
+                LoadCompressedSpriteSheet(&sSpriteSheets_HealthBar[gBattlerPositions[3]]);
+            else
+                retVal = TRUE;
+        }
         else if (!IsDoubleBattle())
         {
             if (state == 2)
