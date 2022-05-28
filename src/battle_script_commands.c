@@ -5582,7 +5582,7 @@ static void Cmd_moveend(void)
                 {
                     gBattleStruct->raid.barrierBitfield &= ~SHOULD_CREATE_BARRIERS;
                     gBattlerTarget = B_POSITION_OPPONENT_LEFT;
-                    gBattleStruct->raid.barriers = GetRaidBarrierNumber(gBattlerTarget);
+                    gBattleStruct->raid.barriers = GetRaidBarrierNumber();
                     BattleScriptPushCursor();
                     gBattlescriptCurrInstr = BattleScript_RaidBarrierAppeared;
                     return;
@@ -9526,15 +9526,14 @@ static void Cmd_various(void)
         gBattleMons[gActiveBattler].item = gLastUsedItem;
         break;
     case VARIOUS_SET_RAID_BARRIERS:
-        gBattleStruct->raid.barriers = GetRaidBarrierNumber(gActiveBattler); // gActiveBattler was set to 1
-        CreateAllRaidBarrierSprites(gActiveBattler, gBattleStruct->raid.barriers);
+        gBattleStruct->raid.barriers = GetRaidBarrierNumber();
+        CreateAllRaidBarrierSprites();
         break;
     case VARIOUS_BREAK_RAID_BARRIERS:
         gBattleMoveDamage = gBattleStruct->raid.storedDmg / 10;
         if (gBattleMoveDamage == 0)
             gBattleMoveDamage = 1;
         gBattleStruct->raid.storedDmg = 0;
-        //DestroyAllRaidBarrierSprites(1);
         break;
     case VARIOUS_NULLIFY_MONS:
         for (i = 0; i < gBattlersCount; i++)

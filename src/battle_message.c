@@ -733,12 +733,14 @@ static const u8 sText_PkmnAboutToBeAttackedByItsItem[] = _("{B_DEF_NAME_WITH_PRE
 static const u8 sText_CantEscapeBecauseOfCurrentMove[] = _("{B_DEF_NAME_WITH_PREFIX} can no longer escape\nbecause of {B_CURRENT_MOVE}!");
 static const u8 sText_NeutralizingGasEnters[] = _("Neutralizing Gas filled the area!");
 static const u8 sText_NeutralizingGasOver[] = _("The effects of Neutralizing\nGas wore off!");
-static const u8 sText_PkmnAppearsMassive[] = _("{B_ATK_NAME_WITH_PREFIX} appears\nto be massive!");
-static const u8 sText_BarrierAppeared[] = _("A mysterious barrier appeared,\nprotecting {B_DEF_NAME} from attacks.\p");
-static const u8 sText_BarrierDisappeared[] = _("The mysterious barrier protecting\n{B_DEF_NAME} disappeared!\p");
-static const u8 sText_CatchRaidMon[] = _("{B_DEF_NAME} is weak!\nThrow a Ball?");
-static const u8 sText_PkmnIsTooStrong[] = _("{B_DEF_NAME_WITH_PREFIX} is\ntoo strong!");
-static const u8 sText_PkmnNullifiedOthers[] = _("{B_DEF_NAME} nullified the stat changes\nand abilities of other Pokémon!");
+static const u8 sText_PkmnAppearsMassive[] = _("{B_OPPONENT_MON1_NAME} appears\nto be massive!");
+static const u8 sText_BarrierAppeared[] = _("A mysterious barrier appeared,\nprotecting {B_OPPONENT_MON1_NAME} from attacks.");
+static const u8 sText_BarrierDisappeared[] = _("The mysterious barrier protecting\n{B_OPPONENT_MON1_NAME} disappeared!");
+static const u8 sText_CatchRaidMon[] = _("{B_OPPONENT_MON1_NAME} is weak!\nThrow a Ball?");
+static const u8 sText_PkmnIsTooStrong[] = _("{B_OPPONENT_MON1_NAME} is\ntoo strong!");
+static const u8 sText_PkmnNullifiedOthers[] = _("{B_OPPONENT_MON1_NAME} nullified the stat changes\nand abilities of other Pokémon!");
+static const u8 sText_RaidPkmnAppeared[] = _("{B_OPPONENT_MON1_NAME} appeared!");
+static const u8 sText_BlownOutOfDen[] = _("{B_PLAYER_NAME} was blown out\nof the den!");
 
 const u8 *const gBattleStringsTable[BATTLESTRINGS_COUNT] =
 {
@@ -2659,6 +2661,8 @@ void BufferStringBattle(u16 stringID)
                 stringPtr = sText_TwoWildPkmnAppeared;
             else if (gBattleTypeFlags & BATTLE_TYPE_WALLY_TUTORIAL)
                 stringPtr = sText_WildPkmnAppearedPause;
+            else if (gBattleTypeFlags & BATTLE_TYPE_RAID)
+                stringPtr = sText_RaidPkmnAppeared;
             else
                 stringPtr = sText_WildPkmnAppeared;
         }
@@ -2938,6 +2942,8 @@ static void GetBattlerNick(u32 battlerId, u8 *dst)
     {                                                                   \
         if (gBattleTypeFlags & BATTLE_TYPE_TRAINER)                     \
             toCpy = sText_FoePkmnPrefix;                                \
+        else if (gBattleTypeFlags & BATTLE_TYPE_RAID)                   \
+            toCpy = sText_EmptyString8;                                 \
         else                                                            \
             toCpy = sText_WildPkmnPrefix;                               \
         while (*toCpy != EOS)                                           \

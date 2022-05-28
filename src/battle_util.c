@@ -9041,7 +9041,7 @@ s32 CalculateMoveDamage(u16 move, u8 battlerAtk, u8 battlerDef, u8 moveType, s32
     }
 
     // Prevent passing health threshold in raid battles.
-    else if (ShouldCreateBarrier(battlerDef, dmg))
+    else if (ShouldCreateBarrier(dmg) && GetBattlerPosition(battlerDef) == B_POSITION_OPPONENT_LEFT)
     {
         dmg = gBattleMons[battlerDef].hp - GetNextHealthThreshold();
         gBattleStruct->raid.thresholdsRemaining--;
