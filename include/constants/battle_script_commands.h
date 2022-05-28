@@ -240,7 +240,7 @@
 #define VARIOUS_BATTLER_ITEM_TO_LAST_USED_ITEM      150
 #define VARIOUS_SET_RAID_BARRIERS                   151
 #define VARIOUS_BREAK_RAID_BARRIERS                 152
-#define VARIOUS_NULLIFY_MONS                        154
+#define VARIOUS_NULLIFY_MONS                        153
 
 // Cmd_manipulatedamage
 #define DMG_CHANGE_SIGN            0
