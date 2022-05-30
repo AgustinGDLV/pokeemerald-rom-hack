@@ -1030,7 +1030,7 @@ void UpdateOamPriorityInAllHealthboxes(u8 priority, bool32 hideHPBoxes)
         gSprites[healthbarSpriteId].oam.priority = priority;
         if (indicatorSpriteId != 0xFF)
             gSprites[indicatorSpriteId].oam.priority = priority;
-        for (j = 0; j < MAX_BARRIERS; j++)
+        for (j = 0; j < MAX_BARRIER_COUNT; j++)
         {
             if (gBattleStruct->raid.barrierSpriteIds[j] != MAX_SPRITES)
                 gSprites[gBattleStruct->raid.barrierSpriteIds[j]].oam.priority = priority;

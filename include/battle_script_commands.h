@@ -40,6 +40,7 @@ u16 GetNaturePowerMove(void);
 u16 GetSecretPowerMoveEffect(void);
 void StealTargetItem(u8 battlerStealer, u8 battlerItem);
 u8 GetCatchingBattler(void);
+void RecalcBattlerStats(u32 battler, struct Pokemon *mon);
 
 extern void (* const gBattleScriptingCommandsTable[])(void);
 extern const u8 gBattlePalaceNatureToMoveGroupLikelihood[NUM_NATURES][4];

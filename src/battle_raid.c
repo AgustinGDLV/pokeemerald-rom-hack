@@ -5,7 +5,9 @@
 #include "battle_util.h"
 #include "battle_controllers.h"
 #include "battle_interface.h"
+#include "battle_message.h"
 #include "battle_setup.h"
+#include "event_data.h"
 #include "party_menu.h"
 #include "pokemon.h"
 #include "international_string_util.h"
@@ -20,45 +22,42 @@
 #include "task.h"
 #include "trig.h"
 #include "window.h"
-#include "battle_message.h"
-#include "battle_ai_main.h"
-#include "battle_ai_util.h"
-#include "event_data.h"
-#include "link.h"
-#include "malloc.h"
-#include "berry.h"
-#include "pokedex.h"
-#include "mail.h"
-#include "field_weather.h"
-#include "constants/abilities.h"
-#include "constants/battle_anim.h"
-#include "constants/battle_config.h"
-#include "constants/battle_move_effects.h"
-#include "constants/battle_script_commands.h"
-#include "constants/battle_string_ids.h"
-#include "constants/hold_effects.h"
-#include "constants/items.h"
-#include "constants/moves.h"
-#include "constants/songs.h"
-#include "constants/species.h"
-#include "constants/trainers.h"
-#include "constants/weather.h"
+
+// Sourced from Bulbapedia and cut down to balance in a 2v1 setting.
+static const u16 sHPMultiplierTable[] =
+{
+    [1] = 1.2f,
+    [2] = 1.3f,
+    [3] = 1.5f,
+    [4] = 1.7f,
+    [5] = 2.0f,
+    [6] = 2.0f,
+};
 
 // Resets raid variables at the start of battle. Called in TryDoEventsBeforeFirstTurn.
 void InitRaidVariables(void)
 {
     u8 i;
-    gBattleStruct->raid.starRating = gSpecialVar_0x8000; // variable is set when battle is created.
+
+    gBattleStruct->raid.starRating = gSpecialVar_0x8000; // variable is set before battle starts.
     gBattleStruct->raid.barriers = 0;
-    gBattleStruct->raid.storedDmg = 0;
+    gBattleStruct->raid.storedDmg = 0; // used to "release" damage when barriers break.
     gBattleStruct->raid.thresholdsRemaining = GetRaidThresholdNumber();
-    for (i = 0; i < MAX_BARRIERS; i++)
+
+    for (i = 0; i < MAX_BARRIER_COUNT; i++)
     {
         gBattleStruct->raid.barrierSpriteIds[i] = MAX_SPRITES;
     }
+
+    RecalcBattlerStats(GetBattlerAtPosition(B_POSITION_OPPONENT_LEFT), &gEnemyParty[0]); // to apply HP multiplier
 }
 
-// Returns how many barriers to create at a threshold. Based on star rating and stats.
+u16 GetRaidHPMultiplier(void)
+{
+    return sHPMultiplierTable[gBattleStruct->raid.starRating];
+}
+
+// Returns how many barriers to create at a threshold. Based on star rating and defensive stats.
 u8 GetRaidBarrierNumber(void)
 {
     u16 species = GetMonData(&gEnemyParty[0], MON_DATA_SPECIES, NULL);
@@ -67,32 +66,33 @@ u8 GetRaidBarrierNumber(void)
     u8 spDef = gBaseStats[species].baseSpDefense;
     u8 retVal;
 
-    switch (hp + def + spDef) // Currently uses the sum of defenses to determine barrier count.
+    // Currently uses the sum of defenses to determine barrier count.
+    switch (hp + def + spDef)
     {
         case 0 ... 199:
-            retVal = 2;
-            break;
-        case 200 ... 300:
             retVal = 3;
             break;
-        default: // > 300
+        case 200 ... 300:
             retVal = 4;
+            break;
+        default: // > 300
+            retVal = MAX_BARRIER_COUNT;
             break;
     }
 
-    if (gBattleStruct->raid.starRating >= 5)
-        retVal += 1;
+    if (gBattleStruct->raid.starRating < 5)
+        retVal -= 1;
     
     return retVal;
 }
 
-// Returns how many health thresholds a raid will have. Based on star rating.
+// Returns how many HP thresholds a raid will have. Based on star rating.
 u8 GetRaidThresholdNumber(void)
 {
     u8 starRating = gBattleStruct->raid.starRating;
     switch (starRating)
     {
-        case 5:
+        case 5 ... MAX_STAR_RATING:
             return 2;
         case 3 ... 4:
             return 1;
@@ -130,7 +130,7 @@ bool8 ShouldCreateBarrier(s32 dmg)
         return FALSE;
 }
 
-// ================= SPRITE DATA ========================================================
+// Barrier sprite data.
 
 static const u8 sRaidBarrierGfx[] = INCBIN_U8("graphics/battle_interface/raid_barrier.4bpp");
 static const u16 sRaidBarrierPal[] = INCBIN_U16("graphics/battle_interface/raid_barrier.gbapal");
@@ -237,7 +237,7 @@ void DestroyAllRaidBarrierSprites(void)
 {
     u32 i;
 
-    for (i = 0; i < MAX_BARRIERS; i++)
+    for (i = 0; i < MAX_BARRIER_COUNT; i++)
     {
         if (gBattleStruct->raid.barrierSpriteIds[i] != MAX_SPRITES)
         {

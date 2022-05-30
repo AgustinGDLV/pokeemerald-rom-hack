@@ -483,14 +483,12 @@ struct StolenItem
     u16 stolen:1;
 };
 
-#define MAX_BARRIERS 8
-
 struct RaidBattleData
 {
     u8 starRating;
     u8 thresholdsRemaining;
     u8 barriers;
-    u32 barrierSpriteIds[MAX_BARRIERS];
+    u32 barrierSpriteIds[MAX_BARRIER_COUNT];
     u32 storedDmg;
     bool8 finishedIntro;
     bool8 barrierBitfield;

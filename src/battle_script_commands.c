@@ -7625,9 +7625,17 @@ u32 IsAbilityStatusProtected(u32 battler)
         || IsShieldsDownProtected(battler);
 }
 
-static void RecalcBattlerStats(u32 battler, struct Pokemon *mon)
+void RecalcBattlerStats(u32 battler, struct Pokemon *mon)
 {
     CalculateMonStats(mon);
+    if (gBattleTypeFlags & BATTLE_TYPE_RAID && GetBattlerPosition(battler) == B_POSITION_OPPONENT_LEFT)
+    {
+        u16 mult = GetRaidHPMultiplier();
+        u16 hp = GetMonData(mon, MON_DATA_HP, NULL) * mult;
+        u16 maxHP = GetMonData(mon, MON_DATA_MAX_HP, NULL) * mult;
+        SetMonData(mon, MON_DATA_HP, &hp);
+        SetMonData(mon, MON_DATA_MAX_HP, &maxHP);
+    }
     gBattleMons[battler].level = GetMonData(mon, MON_DATA_LEVEL);
     gBattleMons[battler].hp = GetMonData(mon, MON_DATA_HP);
     gBattleMons[battler].maxHP = GetMonData(mon, MON_DATA_MAX_HP);
@@ -7638,7 +7646,7 @@ static void RecalcBattlerStats(u32 battler, struct Pokemon *mon)
     gBattleMons[battler].spDefense = GetMonData(mon, MON_DATA_SPDEF);
     gBattleMons[battler].ability = GetMonAbility(mon);
     gBattleMons[battler].type1 = gBaseStats[gBattleMons[battler].species].type1;
-    gBattleMons[battler].type2 = gBaseStats[gBattleMons[battler].species].type2;
+    gBattleMons[battler].type2 = gBaseStats[gBattleMons[battler].species].type2; 
 }
 
 static u32 GetHighestStatId(u32 battlerId)

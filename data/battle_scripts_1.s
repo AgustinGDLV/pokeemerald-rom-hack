@@ -9455,10 +9455,6 @@ BattleScript_RaidBarrierDisappeared::
 	playanimation BS_TARGET, B_ANIM_RAID_BARRIER_DISAPPEARED
 	printstring STRINGID_BARRIERDISAPPEARED
 	waitanimation
-	breakraidbarriers
-	healthbarupdate BS_TARGET
-	datahpupdate BS_TARGET
-	tryfaintmon BS_TARGET
 	jumpifstat BS_TARGET, CMP_GREATER_THAN, STAT_DEF, MIN_STAT_STAGE, BattleScript_RaidDefenseDrop
 	jumpifstat BS_TARGET, CMP_EQUAL, STAT_SPDEF, MIN_STAT_STAGE, BattleScript_RaidBarrierDisappearedEnd
 BattleScript_RaidDefenseDrop:
@@ -9476,6 +9472,10 @@ BattleScript_RaidSpDefenseDrop:
 	printfromtable gStatDownStringIds
 	waitmessage B_WAIT_TIME_LONG
 BattleScript_RaidBarrierDisappearedEnd:
+	breakraidbarriers
+	healthbarupdate BS_TARGET
+	datahpupdate BS_TARGET
+	tryfaintmon BS_TARGET
 	end2
 
 BattleScript_RaidBarrierBroken::
