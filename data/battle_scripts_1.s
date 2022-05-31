@@ -9494,8 +9494,12 @@ BattleScript_RaidShockwave::
 	end2
 
 BattleScript_RaidEnd::
+	hidehealthboxesonside BS_OPPONENT1
 	playanimation BS_TARGET, B_ANIM_RAID_BOSS_EXPLOSION
 	waitanimation
+	setbyte sGIVEEXP_STATE, 0
+	getexp BS_TARGET
+	hidehealthboxesonside BS_PLAYER1
 	printstring STRINGID_CATCHRAIDMON
 	setbyte gBattleCommunication, 0
 	yesnobox
@@ -9503,12 +9507,9 @@ BattleScript_RaidEnd::
 	catchraidboss
 	end2
 
-BattleScript_FaintRaidBoss:
-	playfaintcry BS_TARGET
+BattleScript_FaintRaidBoss::
 	pause B_WAIT_TIME_LONG
 	dofaintanimation BS_TARGET
 	printstring STRINGID_TARGETFAINTED
-	setbyte sGIVEEXP_STATE, 0
-	getexp BS_TARGET
 	setbyte gBattleOutcome, B_OUTCOME_WON
 	finishturn

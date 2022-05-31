@@ -24846,6 +24846,7 @@ General_RaidBossExplosion::
 	loadspritegfx ANIM_TAG_EXPLOSION
 	createvisualtask AnimTask_ShakeMonInPlace, 2, ANIM_TARGET, 10, 0, 20, 1
 	call Explosion2
+	createvisualtask SoundTask_PlayCryHighPitch, 2, ANIM_ATTACKER, 3
 	call Explosion2
 	waitforvisualfinish
 	delay 6

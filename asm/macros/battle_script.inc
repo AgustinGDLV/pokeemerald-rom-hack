@@ -2133,10 +2133,10 @@
 	various 0, VARIOUS_NULLIFY_MONS
 	.endm
 
-	.macro openbag
-	various 0, VARIOUS_OPEN_BAG
-	.endm
-
 	.macro catchraidboss
 	various 0, VARIOUS_CATCH_RAID_BOSS
+	.endm
+
+	.macro hidehealthboxesonside battler:req
+	various \battler, VARIOUS_HIDE_HEALTHBOXES_ON_SIDE
 	.endm

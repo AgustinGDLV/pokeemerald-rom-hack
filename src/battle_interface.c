@@ -1003,6 +1003,8 @@ void TryToggleHealboxVisibility(u8 priority, u8 healthboxLeftSpriteId, u8 health
                 DestroyAllRaidBarrierSprites();
             break;
         case 1: //end of anim -> make visible
+            if (gBattleStruct->raid.endState)
+                return;
             gSprites[spriteIds[i]].invisible = FALSE;
             if (GetBattlerPosition(battlerId) == B_POSITION_OPPONENT_LEFT && gBattleStruct->raid.barriers > 0)
                 CreateAllRaidBarrierSprites();

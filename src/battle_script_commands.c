@@ -9599,9 +9599,23 @@ static void Cmd_various(void)
         }
         else
         {
-            gBattlescriptCurrInstr = BattleScript_FaintTarget;
+            gBattlescriptCurrInstr = BattleScript_FaintRaidBoss;
         }
         return;
+    case VARIOUS_HIDE_HEALTHBOXES_ON_SIDE:
+        {
+        u8 side = GetBattlerSide(gActiveBattler);
+        u8 i, healthboxLeftSpriteId, healthboxRightSpriteId, healthbarSpriteId, indicatorSpriteId;
+        for (i = 0; i < 2; i++)
+        {
+            healthboxLeftSpriteId = gHealthboxSpriteIds[i*2 + side];
+            healthboxRightSpriteId = gSprites[gHealthboxSpriteIds[i*2 + side]].oam.affineParam;
+            healthbarSpriteId = gSprites[gHealthboxSpriteIds[i*2 + side]].data[5];
+            indicatorSpriteId = GetMegaIndicatorSpriteId(healthboxLeftSpriteId);
+            TryToggleHealboxVisibility(0, healthboxLeftSpriteId, healthboxRightSpriteId, healthbarSpriteId, indicatorSpriteId);
+        }
+        }
+        break;
     } // End of switch (gBattlescriptCurrInstr[2])
 
     gBattlescriptCurrInstr += 3;

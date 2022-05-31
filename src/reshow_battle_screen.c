@@ -319,5 +319,11 @@ static void CreateHealthboxSprite(u8 battler)
             if (GetMonData(&gPlayerParty[gBattlerPartyIndexes[battler]], MON_DATA_HP) == 0)
                 SetHealthboxSpriteInvisible(healthboxSpriteId);
         }
+
+        // Hide healthboxes when catching a Raid boss.
+        if (gBattleStruct->raid.endState > 0)
+        {
+            SetHealthboxSpriteInvisible(healthboxSpriteId);
+        }
     }
 }
