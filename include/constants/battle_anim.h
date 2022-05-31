@@ -536,6 +536,7 @@
 #define B_ANIM_RAID_BARRIER_APPEARED    34
 #define B_ANIM_RAID_BARRIER_DISAPPEARED 35
 #define B_ANIM_RAID_BARRIER_BROKE       36
+#define B_ANIM_RAID_BOSS_EXPLOSION      37
 
 // special animations table (gBattleAnims_Special)
 #define B_ANIM_LVL_UP                   0

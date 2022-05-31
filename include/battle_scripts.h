@@ -422,5 +422,7 @@ extern const u8 BattleScript_RaidBarrierAppeared[];
 extern const u8 BattleScript_RaidBarrierDisappeared[];
 extern const u8 BattleScript_RaidBarrierBroken[];
 extern const u8 BattleScript_RaidShockwave[];
+extern const u8 BattleScript_RaidEnd[];
+extern const u8 BattleScript_FaintRaidBoss[];
 
 #endif // GUARD_BATTLE_SCRIPTS_H

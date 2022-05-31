@@ -1553,7 +1553,10 @@ static void OpenBagAndChooseItem(void)
         gBattlerControllerFuncs[gActiveBattler] = CompleteWhenChoseItem;
         ReshowBattleScreenDummy();
         FreeAllWindowBuffers();
-        CB2_BagMenuFromBattle();
+        if (gBattleTypeFlags & BATTLE_TYPE_RAID && gBattleStruct->raid.endState > 0)
+            CB2_ChooseBall();
+        else
+            CB2_BagMenuFromBattle();
     }
 }
 

@@ -12,6 +12,7 @@
 #include "pokemon.h"
 #include "international_string_util.h"
 #include "item.h"
+#include "item_menu.h"
 #include "util.h"
 #include "battle_scripts.h"
 #include "random.h"
@@ -39,10 +40,11 @@ void InitRaidVariables(void)
 {
     u8 i;
 
-    gBattleStruct->raid.starRating = gSpecialVar_0x8000; // variable is set before battle starts.
+    gBattleStruct->raid.starRating = gSpecialVar_0x8008; // variable is set before battle starts.
     gBattleStruct->raid.barriers = 0;
     gBattleStruct->raid.storedDmg = 0; // used to "release" damage when barriers break.
     gBattleStruct->raid.thresholdsRemaining = GetRaidThresholdNumber();
+    gBattleStruct->raid.endState = 0;
 
     for (i = 0; i < MAX_BARRIER_COUNT; i++)
     {
@@ -128,6 +130,12 @@ bool8 ShouldCreateBarrier(s32 dmg)
         return TRUE;
     else
         return FALSE;
+}
+
+// Used for opening the bag in the end sequence.
+void CB2_ChooseBall(void)
+{
+    GoToBagMenu(ITEMMENULOCATION_BERRY_TREE, BALLS_POCKET, CB2_SetUpReshowBattleScreenAfterMenu2);
 }
 
 // Barrier sprite data.

@@ -833,6 +833,7 @@ gBattleAnims_General::
 	.4byte General_RaidBarrierAppeared		@ B_ANIM_RAID_BARRIER_APPEARED
 	.4byte General_RaidBarrierDisappeared	@ B_ANIM_RAID_BARRIER_DISAPPEARED
 	.4byte General_RaidBarrierBroken		@ B_ANIM_RAID_BARRIER_BROKE
+	.4byte General_RaidBossExplosion		@ B_ANIM_RAID_BOSS_EXPLOSION
 
 	.align 2
 gBattleAnims_Special::
@@ -24821,6 +24822,7 @@ General_RaidBarrierAppeared::
 
 General_RaidBarrierDisappeared::
 	playsewithpan SE_M_BRICK_BREAK, SOUND_PAN_TARGET
+	delay 6
 	createsprite gSimplePaletteBlendSpriteTemplate, ANIM_ATTACKER, 0, 2, 7, 0, 9, RGB_RED
 	playsewithpan SE_M_DRAGON_RAGE, SOUND_PAN_ATTACKER
 	createvisualtask AnimTask_SlideMonForFocusBand, 5, 30, 128, 0, 1, 2, 0, 1
@@ -24838,6 +24840,33 @@ General_RaidBarrierBroken::
 	waitforvisualfinish
 	delay 6
 	end
+
+General_RaidBossExplosion::
+	createvisualtask AnimTask_SetAnimTargetToBattlerTarget, 2
+	loadspritegfx ANIM_TAG_EXPLOSION
+	createvisualtask AnimTask_ShakeMonInPlace, 2, ANIM_TARGET, 10, 0, 20, 1
+	call Explosion2
+	call Explosion2
+	waitforvisualfinish
+	delay 6
+	end
+Explosion2:
+	playsewithpan SE_M_SELF_DESTRUCT, SOUND_PAN_TARGET
+	createsprite gExplosionSpriteTemplate, ANIM_TARGET, 3, 0, 0, 0, 1
+	delay 6
+	playsewithpan SE_M_SELF_DESTRUCT, SOUND_PAN_TARGET
+	createsprite gExplosionSpriteTemplate, ANIM_TARGET, 3, 24, -24, 0, 1
+	delay 6
+	playsewithpan SE_M_SELF_DESTRUCT, SOUND_PAN_TARGET
+	createsprite gExplosionSpriteTemplate, ANIM_TARGET, 3, -16, 16, 0, 1
+	delay 6
+	playsewithpan SE_M_SELF_DESTRUCT, SOUND_PAN_TARGET
+	createsprite gExplosionSpriteTemplate, ANIM_TARGET, 3, -24, -12, 0, 1
+	delay 6
+	playsewithpan SE_M_SELF_DESTRUCT, SOUND_PAN_TARGET
+	createsprite gExplosionSpriteTemplate, ANIM_TARGET, 3, 16, 16, 0, 1
+	delay 6
+	return
 
 @ Healthbox blue flash effect on level up
 Special_LevelUp:

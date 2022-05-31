@@ -490,6 +490,7 @@ struct RaidBattleData
     u8 barriers;
     u32 barrierSpriteIds[MAX_BARRIER_COUNT];
     u32 storedDmg;
+    u8 endState;
     bool8 finishedIntro;
     bool8 barrierBitfield;
 };

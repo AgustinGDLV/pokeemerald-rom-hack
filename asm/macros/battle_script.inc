@@ -2132,3 +2132,11 @@
 	.macro nullifymons
 	various 0, VARIOUS_NULLIFY_MONS
 	.endm
+
+	.macro openbag
+	various 0, VARIOUS_OPEN_BAG
+	.endm
+
+	.macro catchraidboss
+	various 0, VARIOUS_CATCH_RAID_BOSS
+	.endm

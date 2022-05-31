@@ -9492,3 +9492,23 @@ BattleScript_RaidShockwave::
 	clearstatus BS_ATTACKER
 	updatestatusicon BS_ATTACKER
 	end2
+
+BattleScript_RaidEnd::
+	playanimation BS_TARGET, B_ANIM_RAID_BOSS_EXPLOSION
+	waitanimation
+	printstring STRINGID_CATCHRAIDMON
+	setbyte gBattleCommunication, 0
+	yesnobox
+	jumpifbyte CMP_NOT_EQUAL, gBattleCommunication + 1, 0, BattleScript_FaintRaidBoss
+	catchraidboss
+	end2
+
+BattleScript_FaintRaidBoss:
+	playfaintcry BS_TARGET
+	pause B_WAIT_TIME_LONG
+	dofaintanimation BS_TARGET
+	printstring STRINGID_TARGETFAINTED
+	setbyte sGIVEEXP_STATE, 0
+	getexp BS_TARGET
+	setbyte gBattleOutcome, B_OUTCOME_WON
+	finishturn

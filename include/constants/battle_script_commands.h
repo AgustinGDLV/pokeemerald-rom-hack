@@ -241,6 +241,8 @@
 #define VARIOUS_SET_RAID_BARRIERS                   151
 #define VARIOUS_BREAK_RAID_BARRIERS                 152
 #define VARIOUS_NULLIFY_MONS                        153
+#define VARIOUS_OPEN_BAG                            154
+#define VARIOUS_CATCH_RAID_BOSS                     155
 
 // Cmd_manipulatedamage
 #define DMG_CHANGE_SIGN            0

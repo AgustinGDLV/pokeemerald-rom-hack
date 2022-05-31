@@ -6,6 +6,7 @@
 #include "battle_ai_util.h"
 #include "battle_scripts.h"
 #include "item.h"
+#include "item_menu.h"
 #include "util.h"
 #include "pokemon.h"
 #include "random.h"
@@ -3610,6 +3611,14 @@ static void Cmd_tryfaintmon(void)
         if (!(gAbsentBattlerFlags & gBitTable[gActiveBattler])
          && gBattleMons[gActiveBattler].hp == 0)
         {
+            // Check to start Raid end sequence.
+            if (gBattleTypeFlags & BATTLE_TYPE_RAID
+                && GetBattlerPosition(gActiveBattler) == B_POSITION_OPPONENT_LEFT)
+            {
+                gBattlescriptCurrInstr = BattleScript_RaidEnd;
+                return;
+            }
+
             gHitMarker |= HITMARKER_FAINTED(gActiveBattler);
             BattleScriptPush(gBattlescriptCurrInstr + 7);
             gBattlescriptCurrInstr = BS_ptr;
@@ -7628,7 +7637,8 @@ u32 IsAbilityStatusProtected(u32 battler)
 void RecalcBattlerStats(u32 battler, struct Pokemon *mon)
 {
     CalculateMonStats(mon);
-    if (gBattleTypeFlags & BATTLE_TYPE_RAID && GetBattlerPosition(battler) == B_POSITION_OPPONENT_LEFT)
+    if (gBattleTypeFlags & BATTLE_TYPE_RAID && GetBattlerPosition(battler) == B_POSITION_OPPONENT_LEFT
+        && gBattleStruct->raid.endState == 0)
     {
         u16 mult = GetRaidHPMultiplier();
         u16 hp = GetMonData(mon, MON_DATA_HP, NULL) * mult;
@@ -9557,6 +9567,41 @@ static void Cmd_various(void)
             TryResetBattlerStatChanges(i);
         }
         break;
+    case VARIOUS_CATCH_RAID_BOSS:
+        if (gBattleStruct->raid.endState == 0)
+        {
+            gSpecialVar_ItemId = ITEM_NONE;
+            gActiveBattler = GetBattlerAtPosition(B_POSITION_PLAYER_LEFT);
+            RecalcBattlerStats(gActiveBattler, &gEnemyParty[0]);
+            BtlController_EmitChooseItem(BUFFER_A, gBattleStruct->battlerPartyOrders[gActiveBattler]);
+            MarkBattlerForControllerExec(gActiveBattler);
+            gBattleStruct->raid.endState++;
+        }
+        else if (gSpecialVar_ItemId != ITEM_NONE)
+        {
+            gBattleStruct->throwingPokeBall = TRUE;
+            gLastUsedItem = gSpecialVar_ItemId; // selected ball
+            gBattleSpritesDataPtr->animationData->isCriticalCapture = 0;
+            gBattleSpritesDataPtr->animationData->criticalCaptureSuccess = 0;
+            gActiveBattler = GetBattlerAtPosition(B_POSITION_PLAYER_LEFT);
+            gBattlerTarget = GetBattlerAtPosition(B_POSITION_OPPONENT_LEFT);
+
+            BtlController_EmitBallThrowAnim(BUFFER_A, BALL_3_SHAKES_SUCCESS);
+            MarkBattlerForControllerExec(gActiveBattler);
+            UndoFormChange(gBattlerPartyIndexes[gBattlerTarget], GET_BATTLER_SIDE(gBattlerTarget), FALSE);
+            gBattlescriptCurrInstr = BattleScript_SuccessBallThrow;
+            SetMonData(&gEnemyParty[gBattlerPartyIndexes[gBattlerTarget]], MON_DATA_POKEBALL, &gLastUsedItem);
+            
+            if (CalculatePlayerPartyCount() == PARTY_SIZE)
+                gBattleCommunication[MULTISTRING_CHOOSER] = 0;
+            else
+                gBattleCommunication[MULTISTRING_CHOOSER] = 1;
+        }
+        else
+        {
+            gBattlescriptCurrInstr = BattleScript_FaintTarget;
+        }
+        return;
     } // End of switch (gBattlescriptCurrInstr[2])
 
     gBattlescriptCurrInstr += 3;
@@ -13487,7 +13532,8 @@ static void Cmd_removelightscreenreflect(void) // brick break
 
 u8 GetCatchingBattler(void)
 {
-    if (IsBattlerAlive(GetBattlerAtPosition(B_POSITION_OPPONENT_LEFT)))
+    if (IsBattlerAlive(GetBattlerAtPosition(B_POSITION_OPPONENT_LEFT))
+        || gBattleStruct->raid.endState > 0)
         return GetBattlerAtPosition(B_POSITION_OPPONENT_LEFT);
     else
         return GetBattlerAtPosition(B_POSITION_OPPONENT_RIGHT);
