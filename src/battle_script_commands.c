@@ -10947,7 +10947,8 @@ static void Cmd_tryKO(void)
         else
         {
             u16 odds = gBattleMoves[gCurrentMove].accuracy + (gBattleMons[gBattlerAttacker].level - gBattleMons[gBattlerTarget].level);
-            if (Random() % 100 + 1 < odds && gBattleMons[gBattlerAttacker].level >= gBattleMons[gBattlerTarget].level)
+            if (Random() % 100 + 1 < odds && gBattleMons[gBattlerAttacker].level >= gBattleMons[gBattlerTarget].level
+                && !(gBattleTypeFlags & BATTLE_TYPE_RAID && GetBattlerPosition(gBattlerTarget) == B_POSITION_OPPONENT_LEFT))
                 lands = TRUE;
         }
 
@@ -10974,7 +10975,8 @@ static void Cmd_tryKO(void)
         else
         {
             gMoveResultFlags |= MOVE_RESULT_MISSED;
-            if (gBattleMons[gBattlerAttacker].level >= gBattleMons[gBattlerTarget].level)
+            if (gBattleMons[gBattlerAttacker].level >= gBattleMons[gBattlerTarget].level
+                && !(gBattleTypeFlags & BATTLE_TYPE_RAID && GetBattlerPosition(gBattlerTarget) == B_POSITION_OPPONENT_LEFT))
                 gBattleCommunication[MULTISTRING_CHOOSER] = B_MSG_KO_MISS;
             else
                 gBattleCommunication[MULTISTRING_CHOOSER] = B_MSG_KO_UNAFFECTED;
