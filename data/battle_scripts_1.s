@@ -9495,6 +9495,7 @@ BattleScript_RaidShockwave::
 
 BattleScript_RaidEnd::
 	hidehealthboxesonside BS_OPPONENT1
+	hidehealthboxesonside BS_PLAYER1
 	playanimation BS_TARGET, B_ANIM_RAID_BOSS_EXPLOSION
 	waitanimation
 	setbyte sGIVEEXP_STATE, 0

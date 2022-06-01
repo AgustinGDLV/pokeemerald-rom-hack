@@ -3615,6 +3615,8 @@ static void Cmd_tryfaintmon(void)
             if (gBattleTypeFlags & BATTLE_TYPE_RAID
                 && GetBattlerPosition(gActiveBattler) == B_POSITION_OPPONENT_LEFT)
             {
+                u8 hp = 1;
+                SetMonData(&gEnemyParty[gBattlerPartyIndexes[gActiveBattler]], MON_DATA_HP, &hp);
                 gBattlescriptCurrInstr = BattleScript_RaidEnd;
                 return;
             }
