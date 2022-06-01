@@ -9484,7 +9484,7 @@ BattleScript_RaidShieldBroken::
 	end2
 
 BattleScript_RaidShockwave::
-	playanimation BS_ATTACKER, B_ANIM_DYNAMAX_GROWTH
+	playanimation BS_ATTACKER, B_ANIM_RAID_SHOCKWAVE
 	waitanimation
 	printstring STRINGID_PKMNNULLIFIEDOTHERS
 	waitmessage B_WAIT_TIME_LONG

@@ -833,6 +833,7 @@ gBattleAnims_General::
 	.4byte General_RaidBarrierAppeared		@ B_ANIM_RAID_BARRIER_APPEARED
 	.4byte General_RaidBarrierDisappeared	@ B_ANIM_RAID_BARRIER_DISAPPEARED
 	.4byte General_RaidShieldBroken			@ B_ANIM_RAID_SHIELD_BROKE
+	.4byte General_RaidShockwave			@ B_ANIM_RAID_SHOCKWAVE
 	.4byte General_RaidBossExplosion		@ B_ANIM_RAID_BOSS_EXPLOSION
 
 	.align 2
@@ -24839,6 +24840,28 @@ General_RaidShieldBroken::
 	createsprite gSimplePaletteBlendSpriteTemplate, ANIM_ATTACKER, 0, 2, 4, 9, 0, RGB_RED
 	waitforvisualfinish
 	delay 6
+	end
+
+General_RaidShockwave::
+	loadspritegfx ANIM_TAG_ELECTRIC_ORBS
+	loadspritegfx ANIM_TAG_RED_ORB
+	createvisualtask AnimTask_BlendParticle, 5, ANIM_TAG_ELECTRIC_ORBS, 0, 0xC, 0xC, 0x301F
+	createvisualtask AnimTask_BlendParticle, 5, ANIM_TAG_RED_ORB, 0, 0xC, 0xC, 0x301F
+	launchtask AnimTask_ElectricChargingParticles 0x2 0x4 0x0 0x14 0x0 0x2
+	createvisualtask SoundTask_PlayDoubleCry, 2, ANIM_ATTACKER, 0xff
+	waitforvisualfinish
+	setarg 0x7 0xffff
+	playsewithpan SE_M_PSYBEAM, SOUND_PAN_ATTACKER
+	launchtask AnimTask_ScaleMonAndRestore 0x5 0x5 0xfff9 0xfff9 0xb 0x0 0x0
+	createsprite gHiddenPowerOrbScatterSpriteTemplate, ANIM_TARGET, 2, 0
+	createsprite gHiddenPowerOrbScatterSpriteTemplate, ANIM_TARGET, 2, 32
+	createsprite gHiddenPowerOrbScatterSpriteTemplate, ANIM_TARGET, 2, 64
+	createsprite gHiddenPowerOrbScatterSpriteTemplate, ANIM_TARGET, 2, 96
+	createsprite gHiddenPowerOrbScatterSpriteTemplate, ANIM_TARGET, 2, 128
+	createsprite gHiddenPowerOrbScatterSpriteTemplate, ANIM_TARGET, 2, 160
+	createsprite gHiddenPowerOrbScatterSpriteTemplate, ANIM_TARGET, 2, 192
+	createsprite gHiddenPowerOrbScatterSpriteTemplate, ANIM_TARGET, 2, 224
+	waitforvisualfinish
 	end
 
 General_RaidBossExplosion::
