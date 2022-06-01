@@ -140,7 +140,7 @@ bool8 ShouldCreateBarrier(s32 dmg)
     if (gBattleStruct->raid.thresholdsRemaining == 0)
         return FALSE;
     
-    if ((hp - dmg) <= GetNextHealthThreshold())
+    if (hp <= dmg + GetNextHealthThreshold())
         return TRUE;
     else
         return FALSE;
