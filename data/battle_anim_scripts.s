@@ -24796,9 +24796,9 @@ SnatchMoveSwapMonForSubstitute:
 	goto SnatchMoveTrySwapToSubstituteEnd
 
 General_RaidGrowth::
-	playsewithpan SE_M_TAKE_DOWN, SOUND_PAN_ATTACKER
-	createvisualtask AnimTask_ScaleMonAndRestore, 5, -3, -3, 30, ANIM_ATTACKER, 0
-	createvisualtask AnimTask_BlendColorCycle, 2, 2, 2, 2, 0, 12, RGB(30, 0, 0)
+	createvisualtask SoundTask_PlayCryWithEcho, 2, ANIM_ATTACKER, 2
+	delay 8
+	launchtask AnimTask_DynamaxGrowth 0x5 0x1 0x0
 	waitforvisualfinish
 	end
 
@@ -24846,7 +24846,6 @@ General_RaidBossExplosion::
 	loadspritegfx ANIM_TAG_EXPLOSION
 	createvisualtask AnimTask_ShakeMonInPlace, 2, ANIM_TARGET, 10, 0, 20, 1
 	call Explosion2
-	createvisualtask SoundTask_PlayCryHighPitch, 2, ANIM_ATTACKER, 3
 	call Explosion2
 	waitforvisualfinish
 	delay 6

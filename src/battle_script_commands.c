@@ -7637,7 +7637,8 @@ u32 IsAbilityStatusProtected(u32 battler)
 void RecalcBattlerStats(u32 battler, struct Pokemon *mon)
 {
     CalculateMonStats(mon);
-    if (gBattleTypeFlags & BATTLE_TYPE_RAID && GetBattlerPosition(battler) == B_POSITION_OPPONENT_LEFT)
+    if (gBattleTypeFlags & BATTLE_TYPE_RAID && GetBattlerPosition(battler) == B_POSITION_OPPONENT_LEFT
+        && gBattleStruct->raid.endState == 0)
         ApplyRaidHPMultiplier(mon);
     gBattleMons[battler].level = GetMonData(mon, MON_DATA_LEVEL);
     gBattleMons[battler].hp = GetMonData(mon, MON_DATA_HP);
@@ -9589,6 +9590,12 @@ static void Cmd_various(void)
                 gBattleCommunication[MULTISTRING_CHOOSER] = 0;
             else
                 gBattleCommunication[MULTISTRING_CHOOSER] = 1;
+
+            MonRestorePP(&gEnemyParty[gBattlerPartyIndexes[gBattlerTarget]]);
+            HealStatusConditions(&gEnemyParty[gBattlerPartyIndexes[gBattlerTarget]], gBattlerPartyIndexes[gBattlerTarget], STATUS1_ANY, gBattlerTarget);
+            RecalcBattlerStats(gBattlerTarget, &gEnemyParty[gBattlerPartyIndexes[gBattlerTarget]]);
+            gBattleMons[gBattlerTarget].hp = gBattleMons[gBattlerTarget].maxHP;
+            SetMonData(&gEnemyParty[gBattlerPartyIndexes[gBattlerTarget]], MON_DATA_HP, &gBattleMons[gBattlerTarget].hp);
         }
         else
         {
