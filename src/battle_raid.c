@@ -25,7 +25,7 @@
 #include "window.h"
 
 // Sourced from Bulbapedia and cut down to balance in a 2v1 setting.
-static const u16 sHPMultiplierTable[] =
+static const u16 sStarRatingHPMultiplierTable[] =
 {
     [1] = UQ_4_12(1.2),
     [2] = UQ_4_12(1.3),
@@ -40,15 +40,15 @@ void InitRaidVariables(void)
 {
     u8 i;
 
-    gBattleStruct->raid.starRating = gSpecialVar_0x8008; // variable is set before battle starts.
-    gBattleStruct->raid.barriers = 0;
+    gBattleStruct->raid.stars = gSpecialVar_0x8008; // variable is set before battle starts.
+    gBattleStruct->raid.shields = 0;
     gBattleStruct->raid.storedDmg = 0; // used to "release" damage when barriers break.
     gBattleStruct->raid.thresholdsRemaining = GetRaidThresholdNumber();
-    gBattleStruct->raid.endState = 0;
+    gBattleStruct->raid.state = INTRO_COMPLETED;
 
     for (i = 0; i < MAX_BARRIER_COUNT; i++)
     {
-        gBattleStruct->raid.barrierSpriteIds[i] = MAX_SPRITES;
+        gBattleStruct->raid.shieldSpriteIds[i] = MAX_SPRITES;
     }
 
     RecalcBattlerStats(GetBattlerAtPosition(B_POSITION_OPPONENT_LEFT), &gEnemyParty[0]); // to apply HP multiplier
@@ -56,7 +56,7 @@ void InitRaidVariables(void)
 
 u16 GetRaidHPMultiplier(void)
 {
-    return sHPMultiplierTable[gBattleStruct->raid.starRating];
+    return sStarRatingHPMultiplierTable[gBattleStruct->raid.stars];
 }
 
 void ApplyRaidHPMultiplier(struct Pokemon *mon)
@@ -64,7 +64,7 @@ void ApplyRaidHPMultiplier(struct Pokemon *mon)
     u16 hp, maxHP, multiplier;
     hp = GetMonData(mon, MON_DATA_HP, NULL);
     maxHP = GetMonData(mon, MON_DATA_MAX_HP, NULL);
-    multiplier = sHPMultiplierTable[gBattleStruct->raid.starRating];
+    multiplier = sStarRatingHPMultiplierTable[gBattleStruct->raid.stars];
 
     hp = UQ_4_12_TO_INT((hp * multiplier) + UQ_4_12_ROUND);
     maxHP = UQ_4_12_TO_INT((maxHP * multiplier) + UQ_4_12_ROUND);
@@ -74,7 +74,7 @@ void ApplyRaidHPMultiplier(struct Pokemon *mon)
 }
 
 // Returns how many barriers to create at a threshold. Based on star rating and defensive stats.
-u8 GetRaidBarrierNumber(void)
+u8 GetRaidShieldNumber(void)
 {
     u16 species = GetMonData(&gEnemyParty[0], MON_DATA_SPECIES, NULL);
     u8 hp = gBaseStats[species].baseHP;
@@ -96,7 +96,7 @@ u8 GetRaidBarrierNumber(void)
             break;
     }
 
-    if (gBattleStruct->raid.starRating < 5)
+    if (gBattleStruct->raid.stars < 5)
         retVal -= 1;
     
     return retVal;
@@ -105,7 +105,7 @@ u8 GetRaidBarrierNumber(void)
 // Returns how many HP thresholds a raid will have. Based on star rating.
 u8 GetRaidThresholdNumber(void)
 {
-    u8 starRating = gBattleStruct->raid.starRating;
+    u8 starRating = gBattleStruct->raid.stars;
     switch (starRating)
     {
         case 5 ... MAX_STAR_RATING:
@@ -152,21 +152,21 @@ void CB2_ChooseBall(void)
     GoToBagMenu(ITEMMENULOCATION_BERRY_TREE, BALLS_POCKET, CB2_SetUpReshowBattleScreenAfterMenu2);
 }
 
-// Barrier sprite data.
+// Shield sprite data:
 
-static const u8 sRaidBarrierGfx[] = INCBIN_U8("graphics/battle_interface/raid_barrier.4bpp");
-static const u16 sRaidBarrierPal[] = INCBIN_U16("graphics/battle_interface/raid_barrier.gbapal");
+static const u8 sRaidShieldGfx[] = INCBIN_U8("graphics/battle_interface/raid_barrier.4bpp");
+static const u16 sRaidShieldPal[] = INCBIN_U16("graphics/battle_interface/raid_barrier.gbapal");
 
-static const struct SpriteSheet sSpriteSheet_RaidBarrier =
+static const struct SpriteSheet sSpriteSheet_RaidShield =
 {
-    sRaidBarrierGfx, sizeof(sRaidBarrierGfx), TAG_RAID_BARRIER_TILE
+    sRaidShieldGfx, sizeof(sRaidShieldGfx), TAG_RAID_SHIELD_TILE
 };
-static const struct SpritePalette sSpritePalette_RaidBarrier =
+static const struct SpritePalette sSpritePalette_RaidShield =
 {
-    sRaidBarrierPal, TAG_RAID_BARRIER_PAL
+    sRaidShieldPal, TAG_RAID_SHIELD_PAL
 };
 
-static const struct OamData sOamData_RaidBarrier =
+static const struct OamData sOamData_RaidShield =
 {
     .y = 0,
     .affineMode = 0,
@@ -183,7 +183,7 @@ static const struct OamData sOamData_RaidBarrier =
     .affineParam = 0,
 };
 
-static const s8 sBarrierPosition[2] = {48, 9};
+static const s8 sShieldPosition[2] = {48, 9};
 
 // Sync up barrier sprites with healthbox.
 static void SpriteCb_RaidBarrier(struct Sprite *sprite)
@@ -192,11 +192,11 @@ static void SpriteCb_RaidBarrier(struct Sprite *sprite)
     sprite->y2 = gSprites[healthboxSpriteId].y2;
 }
 
-static const struct SpriteTemplate sSpriteTemplate_RaidBarrier =
+static const struct SpriteTemplate sSpriteTemplate_RaidShield =
 {
-    .tileTag = TAG_RAID_BARRIER_TILE,
-    .paletteTag = TAG_RAID_BARRIER_PAL,
-    .oam = &sOamData_RaidBarrier,
+    .tileTag = TAG_RAID_SHIELD_TILE,
+    .paletteTag = TAG_RAID_SHIELD_PAL,
+    .oam = &sOamData_RaidShield,
     .anims = gDummySpriteAnimTable,
     .images = NULL,
     .affineAnims = gDummySpriteAffineAnimTable,
@@ -205,71 +205,71 @@ static const struct SpriteTemplate sSpriteTemplate_RaidBarrier =
 
 #define tBattler    data[0]
 
-u32 CreateRaidBarrierSprite(u8 index)
+u32 CreateRaidShieldSprite(u8 index)
 {
     u32 spriteId, position;
     s16 x, y;
 
-    if (gBattleStruct->raid.barriers > 0)
+    if (gBattleStruct->raid.shields > 0)
     {
-        LoadSpritePalette(&sSpritePalette_RaidBarrier);
-        LoadSpriteSheet(&sSpriteSheet_RaidBarrier);
+        LoadSpritePalette(&sSpritePalette_RaidShield);
+        LoadSpriteSheet(&sSpriteSheet_RaidShield);
     }
 
     GetBattlerHealthboxCoords(GetBattlerAtPosition(B_POSITION_OPPONENT_LEFT), &x, &y);
 
-    x += sBarrierPosition[0] - (index * 10);
-    y += sBarrierPosition[1];
+    x += sShieldPosition[0] - (index * 10);
+    y += sShieldPosition[1];
 
-    if (gBattleStruct->raid.barriers > 0)
+    if (gBattleStruct->raid.shields > 0)
     {
-        spriteId = CreateSpriteAtEnd(&sSpriteTemplate_RaidBarrier, x, y, 0);
+        spriteId = CreateSpriteAtEnd(&sSpriteTemplate_RaidShield, x, y, 0);
     }
 
     gSprites[spriteId].tBattler = GetBattlerAtPosition(B_POSITION_OPPONENT_LEFT);
     return spriteId;
 }
 
-void CreateAllRaidBarrierSprites(void)
+void CreateAllRaidShieldSprites(void)
 {
     u8 i;
-    for (i = 0; i < gBattleStruct->raid.barriers; i++)
+    for (i = 0; i < gBattleStruct->raid.shields; i++)
     {
-        if (gBattleStruct->raid.barrierSpriteIds[i] == MAX_SPRITES)
-            gBattleStruct->raid.barrierSpriteIds[i] = CreateRaidBarrierSprite(i);
+        if (gBattleStruct->raid.shieldSpriteIds[i] == MAX_SPRITES)
+            gBattleStruct->raid.shieldSpriteIds[i] = CreateRaidShieldSprite(i);
     }
 }
 
-void DestroyRaidBarrierSprite(u8 index)
+void DestroyRaidShieldSprite(u8 index)
 {
-    if (gBattleStruct->raid.barrierSpriteIds[index] != MAX_SPRITES)
+    if (gBattleStruct->raid.shieldSpriteIds[index] != MAX_SPRITES)
     {
-        DestroySprite(&gSprites[gBattleStruct->raid.barrierSpriteIds[index]]);
-        gBattleStruct->raid.barrierSpriteIds[index] = MAX_SPRITES;
+        DestroySprite(&gSprites[gBattleStruct->raid.shieldSpriteIds[index]]);
+        gBattleStruct->raid.shieldSpriteIds[index] = MAX_SPRITES;
     }
 
     if (index == 0)
     {
-        FreeSpritePaletteByTag(TAG_RAID_BARRIER_PAL);
-        FreeSpriteTilesByTag(TAG_RAID_BARRIER_TILE);
+        FreeSpritePaletteByTag(TAG_RAID_SHIELD_PAL);
+        FreeSpriteTilesByTag(TAG_RAID_SHIELD_TILE);
     }
 }
 
-void DestroyAllRaidBarrierSprites(void)
+void DestroyAllRaidShieldSprites(void)
 {
     u32 i;
 
     for (i = 0; i < MAX_BARRIER_COUNT; i++)
     {
-        if (gBattleStruct->raid.barrierSpriteIds[i] != MAX_SPRITES)
+        if (gBattleStruct->raid.shieldSpriteIds[i] != MAX_SPRITES)
         {
-            DestroySprite(&gSprites[gBattleStruct->raid.barrierSpriteIds[i]]);
-            gBattleStruct->raid.barrierSpriteIds[i] = MAX_SPRITES;
+            DestroySprite(&gSprites[gBattleStruct->raid.shieldSpriteIds[i]]);
+            gBattleStruct->raid.shieldSpriteIds[i] = MAX_SPRITES;
         }
     }
     
-    FreeSpritePaletteByTag(TAG_RAID_BARRIER_PAL);
-    FreeSpriteTilesByTag(TAG_RAID_BARRIER_TILE);
+    FreeSpritePaletteByTag(TAG_RAID_SHIELD_PAL);
+    FreeSpriteTilesByTag(TAG_RAID_SHIELD_TILE);
 }
 
 #undef tBattler

@@ -54,8 +54,8 @@ enum
 #define TAG_ALPHA_INDICATOR_PAL         0xD779
 #define TAG_OMEGA_INDICATOR_PAL         0xD77A
 
-#define TAG_RAID_BARRIER_TILE           0xD77B
-#define TAG_RAID_BARRIER_PAL            0xD77B
+#define TAG_RAID_SHIELD_TILE           0xD77B
+#define TAG_RAID_SHIELD_PAL            0xD77B
 
 enum
 {

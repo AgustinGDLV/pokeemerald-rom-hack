@@ -420,7 +420,7 @@ extern const u8 BattleScript_RaidIntro[];
 extern const u8 BattleScript_RaidBallBlock[];
 extern const u8 BattleScript_RaidBarrierAppeared[];
 extern const u8 BattleScript_RaidBarrierDisappeared[];
-extern const u8 BattleScript_RaidBarrierBroken[];
+extern const u8 BattleScript_RaidShieldBroken[];
 extern const u8 BattleScript_RaidShockwave[];
 extern const u8 BattleScript_RaidEnd[];
 extern const u8 BattleScript_FaintRaidBoss[];

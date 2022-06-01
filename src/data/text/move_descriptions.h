@@ -445,7 +445,7 @@ static const u8 sDefenseCurlDescription[] = _(
     "Curls up to conceal weak\n"
     "spots and raise Defense.");
 
-static const u8 sBarrierDescription[] = _(
+static const u8 sShieldDescription[] = _(
     "Creates a barrier that\n"
     "sharply raises Defense.");
 
@@ -3059,7 +3059,7 @@ const u8 *const gMoveDescriptionPointers[MOVES_COUNT - 1] =
     [MOVE_CONFUSE_RAY - 1] = sConfuseRayDescription,
     [MOVE_WITHDRAW - 1] = sWithdrawDescription,
     [MOVE_DEFENSE_CURL - 1] = sDefenseCurlDescription,
-    [MOVE_BARRIER - 1] = sBarrierDescription,
+    [MOVE_BARRIER - 1] = sShieldDescription,
     [MOVE_LIGHT_SCREEN - 1] = sLightScreenDescription,
     [MOVE_HAZE - 1] = sHazeDescription,
     [MOVE_REFLECT - 1] = sReflectDescription,

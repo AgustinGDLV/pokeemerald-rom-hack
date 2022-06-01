@@ -485,14 +485,12 @@ struct StolenItem
 
 struct RaidBattleData
 {
-    u8 starRating;
+    u8 stars;
     u8 thresholdsRemaining;
-    u8 barriers;
-    u32 barrierSpriteIds[MAX_BARRIER_COUNT];
+    u8 shields;
+    u32 shieldSpriteIds[MAX_BARRIER_COUNT];
     u32 storedDmg;
-    u8 endState;
-    bool8 finishedIntro;
-    bool8 barrierBitfield;
+    u8 state;
 };
 
 struct BattleStruct

@@ -999,15 +999,15 @@ void TryToggleHealboxVisibility(u8 priority, u8 healthboxLeftSpriteId, u8 health
         {
         case 0: //start of anim -> make invisible
             gSprites[spriteIds[i]].invisible = TRUE;
-            if (GetBattlerPosition(battlerId) == B_POSITION_OPPONENT_LEFT && gBattleStruct->raid.barriers > 0)
-                DestroyAllRaidBarrierSprites();
+            if (GetBattlerPosition(battlerId) == B_POSITION_OPPONENT_LEFT && gBattleStruct->raid.shields > 0)
+                DestroyAllRaidShieldSprites();
             break;
         case 1: //end of anim -> make visible
-            if (gBattleStruct->raid.endState)
+            if (gBattleStruct->raid.state & CATCHING_RAID_BOSS) // catching pesky bug
                 return;
             gSprites[spriteIds[i]].invisible = FALSE;
-            if (GetBattlerPosition(battlerId) == B_POSITION_OPPONENT_LEFT && gBattleStruct->raid.barriers > 0)
-                CreateAllRaidBarrierSprites();
+            if (GetBattlerPosition(battlerId) == B_POSITION_OPPONENT_LEFT && gBattleStruct->raid.shields > 0)
+                CreateAllRaidShieldSprites();
             break;
         }
     }
@@ -1034,8 +1034,8 @@ void UpdateOamPriorityInAllHealthboxes(u8 priority, bool32 hideHPBoxes)
             gSprites[indicatorSpriteId].oam.priority = priority;
         for (j = 0; j < MAX_BARRIER_COUNT; j++)
         {
-            if (gBattleStruct->raid.barrierSpriteIds[j] != MAX_SPRITES)
-                gSprites[gBattleStruct->raid.barrierSpriteIds[j]].oam.priority = priority;
+            if (gBattleStruct->raid.shieldSpriteIds[j] != MAX_SPRITES)
+                gSprites[gBattleStruct->raid.shieldSpriteIds[j]].oam.priority = priority;
         }
 
         #if B_HIDE_HEALTHBOX_IN_ANIMS

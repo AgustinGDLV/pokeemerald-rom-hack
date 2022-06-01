@@ -1505,7 +1505,7 @@ static void Cmd_attackcanceler(void)
     if (gBattleTypeFlags & BATTLE_TYPE_RAID
         && GetBattlerPosition(gBattlerTarget) == B_POSITION_OPPONENT_LEFT
         && GetBattlerPosition(gBattlerAttacker) != B_POSITION_OPPONENT_LEFT
-        && gBattleStruct->raid.barriers > 0
+        && gBattleStruct->raid.shields > 0
         && gBattleMoves[gCurrentMove].split & SPLIT_STATUS)
     {
         gHitMarker |= HITMARKER_UNABLE_TO_USE_MOVE;
@@ -5587,27 +5587,27 @@ static void Cmd_moveend(void)
             if (gBattleTypeFlags & BATTLE_TYPE_RAID)
             {
                 // Create / break barriers.
-                if (gBattleStruct->raid.barrierBitfield & SHOULD_CREATE_BARRIERS)
+                if (gBattleStruct->raid.state & SHOULD_CREATE_SHIELDS)
                 {
-                    gBattleStruct->raid.barrierBitfield &= ~SHOULD_CREATE_BARRIERS;
+                    gBattleStruct->raid.state &= ~SHOULD_CREATE_SHIELDS;
                     gBattlerTarget = B_POSITION_OPPONENT_LEFT;
-                    gBattleStruct->raid.barriers = GetRaidBarrierNumber();
+                    gBattleStruct->raid.shields = GetRaidShieldNumber();
                     BattleScriptPushCursor();
                     gBattlescriptCurrInstr = BattleScript_RaidBarrierAppeared;
                     return;
                 }
-                else if (gBattleStruct->raid.barrierBitfield & SHOULD_BREAK_BARRIER)
+                else if (gBattleStruct->raid.state & SHOULD_BREAK_SHIELD)
                 {
-                    gBattleStruct->raid.barrierBitfield &= ~SHOULD_BREAK_BARRIER;
-                    if (gBattleStruct->raid.barriers != 0)
-                        gBattleStruct->raid.barriers--;
-                    DestroyRaidBarrierSprite(gBattleStruct->raid.barriers);
+                    gBattleStruct->raid.state &= ~SHOULD_BREAK_SHIELD;
+                    if (gBattleStruct->raid.shields != 0)
+                        gBattleStruct->raid.shields--;
+                    DestroyRaidShieldSprite(gBattleStruct->raid.shields);
 
                     BattleScriptPushCursor();
-                    if (gBattleStruct->raid.barriers == 0)
+                    if (gBattleStruct->raid.shields == 0)
                         gBattlescriptCurrInstr = BattleScript_RaidBarrierDisappeared;
                     else
-                        gBattlescriptCurrInstr = BattleScript_RaidBarrierBroken;
+                        gBattlescriptCurrInstr = BattleScript_RaidShieldBroken;
                     return;
                 }
                 // Do shockwave.
@@ -7638,7 +7638,7 @@ void RecalcBattlerStats(u32 battler, struct Pokemon *mon)
 {
     CalculateMonStats(mon);
     if (gBattleTypeFlags & BATTLE_TYPE_RAID && GetBattlerPosition(battler) == B_POSITION_OPPONENT_LEFT
-        && gBattleStruct->raid.endState == 0)
+        && !(gBattleStruct->raid.state & RAID_BOSS_DEFEATED))
         ApplyRaidHPMultiplier(mon);
     gBattleMons[battler].level = GetMonData(mon, MON_DATA_LEVEL);
     gBattleMons[battler].hp = GetMonData(mon, MON_DATA_HP);
@@ -9537,17 +9537,17 @@ static void Cmd_various(void)
     case VARIOUS_BATTLER_ITEM_TO_LAST_USED_ITEM:
         gBattleMons[gActiveBattler].item = gLastUsedItem;
         break;
-    case VARIOUS_SET_RAID_BARRIERS:
-        gBattleStruct->raid.barriers = GetRaidBarrierNumber();
-        CreateAllRaidBarrierSprites();
+    case VARIOUS_SET_RAID_BARRIER:
+        gBattleStruct->raid.shields = GetRaidShieldNumber();
+        CreateAllRaidShieldSprites();
         break;
-    case VARIOUS_BREAK_RAID_BARRIERS:
+    case VARIOUS_CLEAR_RAID_BARRIER:
         gBattleMoveDamage = gBattleStruct->raid.storedDmg / 10;
         if (gBattleMoveDamage == 0)
             gBattleMoveDamage = 1;
         gBattleStruct->raid.storedDmg = 0;
         break;
-    case VARIOUS_NULLIFY_MONS:
+    case VARIOUS_DO_RAID_SHOCKWAVE:
         for (i = 0; i < gBattlersCount; i++)
         {
             if (GetBattlerPosition(i) == B_POSITION_OPPONENT_LEFT)
@@ -9562,14 +9562,14 @@ static void Cmd_various(void)
         }
         break;
     case VARIOUS_CATCH_RAID_BOSS:
-        if (gBattleStruct->raid.endState == 0)
+        if (!(gBattleStruct->raid.state & CATCHING_RAID_BOSS))
         {
             gSpecialVar_ItemId = ITEM_NONE;
             gActiveBattler = GetBattlerAtPosition(B_POSITION_PLAYER_LEFT);
             RecalcBattlerStats(gActiveBattler, &gEnemyParty[0]);
             BtlController_EmitChooseItem(BUFFER_A, gBattleStruct->battlerPartyOrders[gActiveBattler]);
             MarkBattlerForControllerExec(gActiveBattler);
-            gBattleStruct->raid.endState++;
+            gBattleStruct->raid.state |= CATCHING_RAID_BOSS;
         }
         else if (gSpecialVar_ItemId != ITEM_NONE)
         {
@@ -9597,7 +9597,7 @@ static void Cmd_various(void)
             gBattleMons[gBattlerTarget].hp = gBattleMons[gBattlerTarget].maxHP;
             SetMonData(&gEnemyParty[gBattlerPartyIndexes[gBattlerTarget]], MON_DATA_HP, &gBattleMons[gBattlerTarget].hp);
         }
-        else
+        else // no item selected
         {
             gBattlescriptCurrInstr = BattleScript_FaintRaidBoss;
         }
@@ -13549,7 +13549,7 @@ static void Cmd_removelightscreenreflect(void) // brick break
 u8 GetCatchingBattler(void)
 {
     if (IsBattlerAlive(GetBattlerAtPosition(B_POSITION_OPPONENT_LEFT))
-        || gBattleStruct->raid.endState > 0)
+        || gBattleStruct->raid.state & CATCHING_RAID_BOSS)
         return GetBattlerAtPosition(B_POSITION_OPPONENT_LEFT);
     else
         return GetBattlerAtPosition(B_POSITION_OPPONENT_RIGHT);

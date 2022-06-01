@@ -9428,7 +9428,7 @@ BattleScript_MagicianActivates::
 	return
 
 BattleScript_RaidIntro::
-	playanimation BS_ATTACKER, B_ANIM_RAID_GROWTH
+	playanimation BS_ATTACKER, B_ANIM_DYNAMAX_GROWTH
 	printstring STRINGID_PKMNAPPEARSMASSIVE
 	waitmessage B_WAIT_TIME_LONG
 	jumpifbyte CMP_EQUAL, gBattleCommunication, 0x0, BattleScript_RaidIntroEnd
@@ -9445,7 +9445,7 @@ BattleScript_RaidIntroEnd:
 	end2
 
 BattleScript_RaidBarrierAppeared::
-	setraidbarriers
+	setraidbarrier
 	playanimation BS_TARGET, B_ANIM_RAID_BARRIER_APPEARED
 	printstring STRINGID_BARRIERAPPEARED
 	waitanimation
@@ -9472,23 +9472,23 @@ BattleScript_RaidSpDefenseDrop:
 	printfromtable gStatDownStringIds
 	waitmessage B_WAIT_TIME_LONG
 BattleScript_RaidBarrierDisappearedEnd:
-	breakraidbarriers
+	clearraidbarrier
 	healthbarupdate BS_TARGET
 	datahpupdate BS_TARGET
 	tryfaintmon BS_TARGET
 	end2
 
-BattleScript_RaidBarrierBroken::
-	playanimation BS_TARGET, B_ANIM_RAID_BARRIER_BROKE
+BattleScript_RaidShieldBroken::
+	playanimation BS_TARGET, B_ANIM_RAID_SHIELD_BROKE
 	waitanimation
 	end2
 
 BattleScript_RaidShockwave::
-	playanimation BS_ATTACKER, B_ANIM_RAID_GROWTH
+	playanimation BS_ATTACKER, B_ANIM_DYNAMAX_GROWTH
 	waitanimation
 	printstring STRINGID_PKMNNULLIFIEDOTHERS
 	waitmessage B_WAIT_TIME_LONG
-	nullifymons
+	doraidshockwave
 	clearstatus BS_ATTACKER
 	updatestatusicon BS_ATTACKER
 	end2

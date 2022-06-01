@@ -238,9 +238,9 @@
 #define VARIOUS_SAVE_BATTLER_ITEM                   148
 #define VARIOUS_RESTORE_BATTLER_ITEM                149
 #define VARIOUS_BATTLER_ITEM_TO_LAST_USED_ITEM      150
-#define VARIOUS_SET_RAID_BARRIERS                   151
-#define VARIOUS_BREAK_RAID_BARRIERS                 152
-#define VARIOUS_NULLIFY_MONS                        153
+#define VARIOUS_SET_RAID_BARRIER                   151
+#define VARIOUS_CLEAR_RAID_BARRIER                 152
+#define VARIOUS_DO_RAID_SHOCKWAVE                        153
 #define VARIOUS_CATCH_RAID_BOSS                     154
 #define VARIOUS_HIDE_HEALTHBOXES_ON_SIDE            155
 

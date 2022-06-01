@@ -219,7 +219,7 @@ static void CreateBattlerSprite(u8 battler)
         if (GetBattlerSide(battler) != B_SIDE_PLAYER)
         {
             if (GetMonData(&gEnemyParty[gBattlerPartyIndexes[battler]], MON_DATA_HP) == 0
-                && !(gBattleTypeFlags & BATTLE_TYPE_RAID && gBattleStruct->raid.endState > 0))
+                && !(gBattleStruct->raid.state & CATCHING_RAID_BOSS))
                 return;
             if (gBattleTypeFlags & BATTLE_TYPE_RAID && battler == B_POSITION_OPPONENT_RIGHT)
                 return;
@@ -321,7 +321,7 @@ static void CreateHealthboxSprite(u8 battler)
         }
 
         // Hide healthboxes when catching a Raid boss.
-        if (gBattleStruct->raid.endState > 0)
+        if (gBattleStruct->raid.state & CATCHING_RAID_BOSS)
         {
             SetHealthboxSpriteInvisible(healthboxSpriteId);
         }

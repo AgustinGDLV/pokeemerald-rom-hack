@@ -829,10 +829,10 @@ gBattleAnims_General::
 	.4byte General_StrongWinds              @ B_ANIM_STRONG_WINDS
 	.4byte General_PrimalReversion          @ B_ANIM_PRIMAL_REVERSION
 	.4byte General_AquaRingHeal             @ B_ANIM_AQUA_RING_HEAL
-	.4byte General_RaidGrowth				@ B_ANIM_RAID_GROWTH
+	.4byte General_DynamaxGrowth			@ B_ANIM_DYNAMAX_GROWTH
 	.4byte General_RaidBarrierAppeared		@ B_ANIM_RAID_BARRIER_APPEARED
 	.4byte General_RaidBarrierDisappeared	@ B_ANIM_RAID_BARRIER_DISAPPEARED
-	.4byte General_RaidBarrierBroken		@ B_ANIM_RAID_BARRIER_BROKE
+	.4byte General_RaidShieldBroken			@ B_ANIM_RAID_SHIELD_BROKE
 	.4byte General_RaidBossExplosion		@ B_ANIM_RAID_BOSS_EXPLOSION
 
 	.align 2
@@ -24795,7 +24795,7 @@ SnatchMoveSwapMonForSubstitute:
 	waitforvisualfinish
 	goto SnatchMoveTrySwapToSubstituteEnd
 
-General_RaidGrowth::
+General_DynamaxGrowth::
 	createvisualtask SoundTask_PlayCryWithEcho, 2, ANIM_ATTACKER, 2
 	delay 8
 	launchtask AnimTask_DynamaxGrowth 0x5 0x1 0x0
@@ -24833,7 +24833,7 @@ General_RaidBarrierDisappeared::
 	createsprite gSlideMonToOriginalPosSpriteTemplate, ANIM_ATTACKER, 0, 0, 0, 15
 	end
 
-General_RaidBarrierBroken::
+General_RaidShieldBroken::
 	playsewithpan SE_M_BRICK_BREAK, SOUND_PAN_TARGET
 	createvisualtask AnimTask_ShakeMon2, 2, ANIM_ATTACKER, 1, 0, 18, 2
 	createsprite gSimplePaletteBlendSpriteTemplate, ANIM_ATTACKER, 0, 2, 4, 9, 0, RGB_RED

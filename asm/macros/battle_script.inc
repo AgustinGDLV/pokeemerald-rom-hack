@@ -2121,16 +2121,17 @@
 	various 0, VARIOUS_SKY_DROP_YAWN
 	.endm
 
-	.macro setraidbarriers
-	various 0, VARIOUS_SET_RAID_BARRIERS
+	@ The next few macros are all used to execute Max Raids.
+	.macro setraidbarrier
+	various 0, VARIOUS_SET_RAID_BARRIER
 	.endm
 
-	.macro breakraidbarriers
-	various 0, VARIOUS_BREAK_RAID_BARRIERS
+	.macro clearraidbarrier
+	various 0, VARIOUS_CLEAR_RAID_BARRIER
 	.endm
 
-	.macro nullifymons
-	various 0, VARIOUS_NULLIFY_MONS
+	.macro doraidshockwave
+	various 0, VARIOUS_DO_RAID_SHOCKWAVE
 	.endm
 
 	.macro catchraidboss
