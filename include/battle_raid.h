@@ -5,6 +5,7 @@
 
 void InitRaidVariables(void);
 u16 GetRaidHPMultiplier(void);
+void ApplyRaidHPMultiplier(struct Pokemon *mon);
 u8 GetRaidBarrierNumber(void);
 u8 GetRaidThresholdNumber(void);
 u32 GetNextHealthThreshold(void);

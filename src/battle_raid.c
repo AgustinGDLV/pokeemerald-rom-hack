@@ -27,12 +27,12 @@
 // Sourced from Bulbapedia and cut down to balance in a 2v1 setting.
 static const u16 sHPMultiplierTable[] =
 {
-    [1] = 1.2f,
-    [2] = 1.3f,
-    [3] = 1.5f,
-    [4] = 1.7f,
-    [5] = 2.0f,
-    [6] = 2.0f,
+    [1] = UQ_4_12(1.2),
+    [2] = UQ_4_12(1.3),
+    [3] = UQ_4_12(1.5),
+    [4] = UQ_4_12(1.7),
+    [5] = UQ_4_12(2.0),
+    [6] = UQ_4_12(2.0),
 };
 
 // Resets raid variables at the start of battle. Called in TryDoEventsBeforeFirstTurn.
@@ -57,6 +57,20 @@ void InitRaidVariables(void)
 u16 GetRaidHPMultiplier(void)
 {
     return sHPMultiplierTable[gBattleStruct->raid.starRating];
+}
+
+void ApplyRaidHPMultiplier(struct Pokemon *mon)
+{
+    u16 hp, maxHP, multiplier;
+    hp = GetMonData(mon, MON_DATA_HP, NULL);
+    maxHP = GetMonData(mon, MON_DATA_MAX_HP, NULL);
+    multiplier = sHPMultiplierTable[gBattleStruct->raid.starRating];
+
+    hp = UQ_4_12_TO_INT((hp * multiplier) + UQ_4_12_ROUND);
+    maxHP = UQ_4_12_TO_INT((maxHP * multiplier) + UQ_4_12_ROUND);
+
+    SetMonData(mon, MON_DATA_HP, &hp);
+    SetMonData(mon, MON_DATA_MAX_HP, &maxHP);
 }
 
 // Returns how many barriers to create at a threshold. Based on star rating and defensive stats.

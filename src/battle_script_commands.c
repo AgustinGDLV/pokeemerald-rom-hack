@@ -7637,15 +7637,8 @@ u32 IsAbilityStatusProtected(u32 battler)
 void RecalcBattlerStats(u32 battler, struct Pokemon *mon)
 {
     CalculateMonStats(mon);
-    if (gBattleTypeFlags & BATTLE_TYPE_RAID && GetBattlerPosition(battler) == B_POSITION_OPPONENT_LEFT
-        && gBattleStruct->raid.endState == 0)
-    {
-        u16 mult = GetRaidHPMultiplier();
-        u16 hp = GetMonData(mon, MON_DATA_HP, NULL) * mult;
-        u16 maxHP = GetMonData(mon, MON_DATA_MAX_HP, NULL) * mult;
-        SetMonData(mon, MON_DATA_HP, &hp);
-        SetMonData(mon, MON_DATA_MAX_HP, &maxHP);
-    }
+    if (gBattleTypeFlags & BATTLE_TYPE_RAID && GetBattlerPosition(battler) == B_POSITION_OPPONENT_LEFT)
+        ApplyRaidHPMultiplier(mon);
     gBattleMons[battler].level = GetMonData(mon, MON_DATA_LEVEL);
     gBattleMons[battler].hp = GetMonData(mon, MON_DATA_HP);
     gBattleMons[battler].maxHP = GetMonData(mon, MON_DATA_MAX_HP);
