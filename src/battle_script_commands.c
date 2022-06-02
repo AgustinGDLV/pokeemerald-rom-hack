@@ -3617,7 +3617,7 @@ static void Cmd_tryfaintmon(void)
             {
                 u8 hp = 1;
                 SetMonData(&gEnemyParty[gBattlerPartyIndexes[gActiveBattler]], MON_DATA_HP, &hp);
-                gBattlescriptCurrInstr = BattleScript_RaidVictory;
+                gBattlescriptCurrInstr = BattleScript_RaidEnd;
                 return;
             }
 
