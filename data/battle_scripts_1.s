@@ -9511,6 +9511,6 @@ BattleScript_RaidEnd::
 BattleScript_FaintRaidBoss::
 	pause B_WAIT_TIME_LONG
 	dofaintanimation BS_TARGET
-	printstring STRINGID_TARGETFAINTED
+	printstring STRINGID_RAIDPKMNDISAPPEARED
 	setbyte gBattleOutcome, B_OUTCOME_WON
 	finishturn

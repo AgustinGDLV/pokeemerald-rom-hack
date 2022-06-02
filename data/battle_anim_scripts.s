@@ -24867,7 +24867,7 @@ General_RaidShockwave::
 General_RaidBossExplosion::
 	createvisualtask AnimTask_SetAnimTargetToBattlerTarget, 2
 	loadspritegfx ANIM_TAG_EXPLOSION
-	createvisualtask AnimTask_ShakeMonInPlace, 2, ANIM_TARGET, 10, 0, 20, 1
+	launchtask AnimTask_ShakeMon 0x2 0x5 ANIM_TARGET 0x0 0x5 0x30 0x1
 	call Explosion2
 	call Explosion2
 	waitforvisualfinish

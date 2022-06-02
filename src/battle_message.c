@@ -740,10 +740,12 @@ static const u8 sText_CatchRaidMon[] = _("{B_OPPONENT_MON1_NAME} is weak!\nThrow
 static const u8 sText_PkmnIsTooStrong[] = _("{B_OPPONENT_MON1_NAME} is\ntoo strong!");
 static const u8 sText_PkmnNullifiedOthers[] = _("{B_OPPONENT_MON1_NAME} nullified the stat changes\nand abilities of other Pokémon!");
 static const u8 sText_RaidPkmnAppeared[] = _("{B_OPPONENT_MON1_NAME} appeared!");
+static const u8 sText_RaidPkmnDisappeared = _("{B_OPPONENT_MON1_NAME} disappeared\nsomewhere into the den...");
 static const u8 sText_BlownOutOfDen[] = _("{B_PLAYER_NAME} was blown out\nof the den!");
 
 const u8 *const gBattleStringsTable[BATTLESTRINGS_COUNT] =
 {
+    [STRINGID_RAIDPKMNDISAPPEARED - BATTLESTRINGS_TABLE_START] = sText_RaidPkmnDisappeared,
     [STRINGID_PKMNNULLIFIEDOTHERS - BATTLESTRINGS_TABLE_START] = sText_PkmnNullifiedOthers,
     [STRINGID_PKMNISTOOSTRONG - BATTLESTRINGS_TABLE_START] = sText_PkmnIsTooStrong,
     [STRINGID_CATCHRAIDMON - BATTLESTRINGS_TABLE_START] = sText_CatchRaidMon,
