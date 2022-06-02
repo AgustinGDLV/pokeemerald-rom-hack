@@ -491,6 +491,7 @@ struct RaidBattleData
     u32 shieldSpriteIds[MAX_BARRIER_COUNT];
     u32 storedDmg;
     u8 state;
+    u8 stormTurns;
 };
 
 struct BattleStruct

@@ -5097,6 +5097,22 @@ void AnimTask_TerrainPulse(u8 taskId)
 }
 
 // The following code is ported from CFRU.
+void AnimTask_GetRaidBattleStormLevel(u8 taskId)
+{
+    switch (gBattleStruct->raid.stormTurns)
+    {
+        case 0 ... 3:
+            gBattleAnimArgs[0] = 1;
+        case 4 ... 6:
+            gBattleAnimArgs[0] = 2;
+        case 7 ... 9:
+            gBattleAnimArgs[0] = 3;
+        case 10:
+            gBattleAnimArgs[0] = 4;
+    }
+	DestroyAnimVisualTask(taskId);
+}
+
 static const union AffineAnimCmd sDynamaxGrowthAffineAnimCmds[] =
 {
 	AFFINEANIMCMD_FRAME(-2, -2, 0, 64), //Double in size over 1 second

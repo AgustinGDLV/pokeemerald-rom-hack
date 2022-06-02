@@ -830,6 +830,7 @@ gBattleAnims_General::
 	.4byte General_PrimalReversion          @ B_ANIM_PRIMAL_REVERSION
 	.4byte General_AquaRingHeal             @ B_ANIM_AQUA_RING_HEAL
 	.4byte General_DynamaxGrowth			@ B_ANIM_DYNAMAX_GROWTH
+	.4byte General_RaidStormBrews			@ B_ANIM_RAID_STORM_BREWS
 	.4byte General_RaidBarrierAppeared		@ B_ANIM_RAID_BARRIER_APPEARED
 	.4byte General_RaidBarrierDisappeared	@ B_ANIM_RAID_BARRIER_DISAPPEARED
 	.4byte General_RaidShieldBroken			@ B_ANIM_RAID_SHIELD_BROKE
@@ -24796,14 +24797,73 @@ SnatchMoveSwapMonForSubstitute:
 	waitforvisualfinish
 	goto SnatchMoveTrySwapToSubstituteEnd
 
-General_DynamaxGrowth::
+@ The next set of animations are all for Max Raids.
+General_DynamaxGrowth:: @ PORTED FROM CFRU
 	createvisualtask SoundTask_PlayCryWithEcho, 2, ANIM_ATTACKER, 2
 	delay 8
 	launchtask AnimTask_DynamaxGrowth 0x5 0x1 0x0
 	waitforvisualfinish
 	end
 
-@ Uses Reflect animation.
+General_RaidStormBrews:: @ PORTED FROM CFRU
+	createvisualtask AnimTask_GetRaidBattleStormLevel, 2
+	jumpreteq 1, RaidStormLevel1
+	jumpreteq 2, RaidStormLevel2
+	jumpreteq 3, RaidStormLevel3
+	jumpreteq 4, RaidStormLevel4
+RaidStormInitial:
+	launchtask AnimTask_BlendBattleAnimPal 0xa 0x5 ANIM_PAL_ALL_BATTLERS 0x2 0x0 0x8 0x301F
+	launchtask AnimTask_BlendBattleAnimPal 0xa 0x5 ANIM_PAL_BG 0x2 0x0 0xB 0x301F
+	call RaidStormBlows
+	launchtask AnimTask_BlendBattleAnimPal 0xa 0x5 ANIM_PAL_ALL_BATTLERS 0x2 0x8 0x0 0x301F
+	launchtask AnimTask_BlendBattleAnimPal 0xa 0x5 ANIM_PAL_BG 0x2 0xB 0x0 0x301F
+	end
+
+RaidStormBlows:
+	createvisualtask AnimTask_LoadSandstormBackground, 5, TRUE
+	@createvisualtask AnimTask_BlendBackground, 6, 6, 0x2, 0x6, 0x301F
+	playsewithpan SE_M_GUST, 0
+	delay 0x44
+	playsewithpan SE_M_GUST, 0
+	delay 0x38
+	return
+
+RaidStormLevel1:
+	launchtask AnimTask_BlendBattleAnimPal 0xa 0x5 ANIM_PAL_ALL_BATTLERS 0x2 0x0 0x9 0x301F
+	launchtask AnimTask_BlendBattleAnimPal 0xa 0x5 ANIM_PAL_BG 0x2 0x0 0xC 0x301F
+	call RaidStormBlows
+	launchtask AnimTask_BlendBattleAnimPal 0xa 0x5 ANIM_PAL_ALL_BATTLERS 0x2 0x9 0x0 0x301F
+	launchtask AnimTask_BlendBattleAnimPal 0xa 0x5 ANIM_PAL_BG 0x2 0xC 0x0 0x301F
+	waitforvisualfinish
+	end
+
+RaidStormLevel2:
+	launchtask AnimTask_BlendBattleAnimPal 0xa 0x5 ANIM_PAL_ALL_BATTLERS 0x2 0x0 0xA 0x301F
+	launchtask AnimTask_BlendBattleAnimPal 0xa 0x5 ANIM_PAL_BG 0x2 0x0 0xD 0x301F
+	call RaidStormBlows
+	launchtask AnimTask_BlendBattleAnimPal 0xa 0x5 ANIM_PAL_ALL_BATTLERS 0x2 0xA 0x0 0x301F
+	launchtask AnimTask_BlendBattleAnimPal 0xa 0x5 ANIM_PAL_BG 0x2 0xD 0x0 0x301F
+	waitforvisualfinish
+	end
+
+RaidStormLevel3:
+	launchtask AnimTask_BlendBattleAnimPal 0xa 0x5 ANIM_PAL_ALL_BATTLERS 0x2 0x0 0xB 0x301F
+	launchtask AnimTask_BlendBattleAnimPal 0xa 0x5 ANIM_PAL_BG 0x2 0x0 0xE 0x301F
+	call RaidStormBlows
+	launchtask AnimTask_BlendBattleAnimPal 0xa 0x5 ANIM_PAL_ALL_BATTLERS 0x2 0xB 0x0 0x301F
+	launchtask AnimTask_BlendBattleAnimPal 0xa 0x5 ANIM_PAL_BG 0x2 0xE 0x0 0x301F
+	waitforvisualfinish
+	end
+
+RaidStormLevel4:
+	launchtask AnimTask_BlendBattleAnimPal 0xa 0x5 ANIM_PAL_ALL_BATTLERS 0x2 0x0 0xC 0x301F
+	launchtask AnimTask_BlendBattleAnimPal 0xa 0x5 ANIM_PAL_BG 0x2 0x0 0xF 0x301F
+	call RaidStormBlows
+	launchtask AnimTask_BlendBattleAnimPal 0xa 0x5 ANIM_PAL_ALL_BATTLERS 0x2 0xC 0x0 0x301F
+	launchtask AnimTask_BlendBattleAnimPal 0xa 0x5 ANIM_PAL_BG 0x2 0xF 0x0 0x301F
+	waitforvisualfinish
+	end
+
 General_RaidBarrierAppeared::
 	loadspritegfx ANIM_TAG_SPARKLE_4
 	loadspritegfx ANIM_TAG_BLUE_LIGHT_WALL

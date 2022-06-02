@@ -44,6 +44,7 @@ void InitRaidVariables(void)
     gBattleStruct->raid.shields = 0;
     gBattleStruct->raid.storedDmg = 0; // used to "release" damage when barriers break.
     gBattleStruct->raid.thresholdsRemaining = GetRaidThresholdNumber();
+    gBattleStruct->raid.stormTurns = 0;
     gBattleStruct->raid.state = INTRO_COMPLETED;
 
     for (i = 0; i < MAX_BARRIER_COUNT; i++)

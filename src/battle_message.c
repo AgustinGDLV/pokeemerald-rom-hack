@@ -734,24 +734,34 @@ static const u8 sText_CantEscapeBecauseOfCurrentMove[] = _("{B_DEF_NAME_WITH_PRE
 static const u8 sText_NeutralizingGasEnters[] = _("Neutralizing Gas filled the area!");
 static const u8 sText_NeutralizingGasOver[] = _("The effects of Neutralizing\nGas wore off!");
 static const u8 sText_PkmnAppearsMassive[] = _("{B_OPPONENT_MON1_NAME} appears\nto be massive!");
-static const u8 sText_BarrierAppeared[] = _("A mysterious barrier appeared,\nprotecting {B_OPPONENT_MON1_NAME} from attacks.");
-static const u8 sText_BarrierDisappeared[] = _("The mysterious barrier protecting\n{B_OPPONENT_MON1_NAME} disappeared!");
+static const u8 sText_RaidBarrierAppeared[] = _("A mysterious barrier appeared,\nprotecting {B_OPPONENT_MON1_NAME} from attacks.");
+static const u8 sText_RaidBarrierDisappeared[] = _("The mysterious barrier protecting\n{B_OPPONENT_MON1_NAME} disappeared!");
 static const u8 sText_CatchRaidMon[] = _("{B_OPPONENT_MON1_NAME} is weak!\nThrow a Ball?");
 static const u8 sText_PkmnIsTooStrong[] = _("{B_OPPONENT_MON1_NAME} is\ntoo strong!");
 static const u8 sText_PkmnNullifiedOthers[] = _("{B_OPPONENT_MON1_NAME} nullified the stat changes\nand abilities of other Pokémon!");
 static const u8 sText_RaidPkmnAppeared[] = _("{B_OPPONENT_MON1_NAME} appeared!");
-static const u8 sText_RaidPkmnDisappeared = _("{B_OPPONENT_MON1_NAME} disappeared\nsomewhere into the den...");
+static const u8 sText_RaidPkmnDisappeared[] = _("{B_OPPONENT_MON1_NAME} disappeared\nsomewhere into the den...");
+static const u8 sText_RaidPkmnGettingDesperate[] = _("{B_OPPONENT_MON1_NAME} is getting desperate!\nIts attacks are growing more aggressive!");
+static const u8 sText_StormStartedBrewing[] = _("A storm started brewing above you.");
+static const u8 sText_StormIsGettingStronger[] = _("The storm above you is getting stronger!");
+static const u8 sText_StormIsGettingEvenStronger[] = _("The storm is growing even stronger!");
+static const u8 sText_StormIsGettingTooStrong[] = _("The storm is getting too\nstrong to withstand!");
 static const u8 sText_BlownOutOfDen[] = _("{B_PLAYER_NAME} was blown out\nof the den!");
 
 const u8 *const gBattleStringsTable[BATTLESTRINGS_COUNT] =
 {
+    [STRINGID_STORMSTARTEDBREWING - BATTLESTRINGS_TABLE_START] = sText_StormStartedBrewing,
+    [STRINGID_STORMGETTINGSTRONGER - BATTLESTRINGS_TABLE_START] = sText_StormIsGettingStronger,
+    [STRINGID_STORMGETTINGEVENSTRONGER - BATTLESTRINGS_TABLE_START] = sText_StormIsGettingEvenStronger,
+    [STRINGID_STORMGETTINGTOOSTRONG - BATTLESTRINGS_TABLE_START] = sText_StormIsGettingTooStrong,
+    [STRINGID_BLOWNOUTOFDEN - BATTLESTRINGS_TABLE_START] = sText_BlownOutOfDen,
     [STRINGID_RAIDPKMNDISAPPEARED - BATTLESTRINGS_TABLE_START] = sText_RaidPkmnDisappeared,
     [STRINGID_PKMNNULLIFIEDOTHERS - BATTLESTRINGS_TABLE_START] = sText_PkmnNullifiedOthers,
     [STRINGID_PKMNISTOOSTRONG - BATTLESTRINGS_TABLE_START] = sText_PkmnIsTooStrong,
     [STRINGID_CATCHRAIDMON - BATTLESTRINGS_TABLE_START] = sText_CatchRaidMon,
     [STRINGID_PKMNAPPEARSMASSIVE - BATTLESTRINGS_TABLE_START] = sText_PkmnAppearsMassive,
-    [STRINGID_BARRIERAPPEARED - BATTLESTRINGS_TABLE_START] = sText_BarrierAppeared,
-    [STRINGID_BARRIERDISAPPEARED - BATTLESTRINGS_TABLE_START] = sText_BarrierDisappeared,
+    [STRINGID_RAIDBARRIERAPPEARED - BATTLESTRINGS_TABLE_START] = sText_RaidBarrierAppeared,
+    [STRINGID_RAIDBARRIERDISAPPEARED - BATTLESTRINGS_TABLE_START] = sText_RaidBarrierDisappeared,
     [STRINGID_NEUTRALIZINGGASOVER - BATTLESTRINGS_TABLE_START] = sText_NeutralizingGasOver,
     [STRINGID_NEUTRALIZINGGASENTERS - BATTLESTRINGS_TABLE_START] = sText_NeutralizingGasEnters,
     [STRINGID_BATTLERTYPECHANGEDTO - BATTLESTRINGS_TABLE_START] = sText_BattlerTypeChangedTo,
@@ -1799,6 +1809,15 @@ const u16 gRoomsStringIds[] =
 const u16 gStatusConditionsStringIds[] =
 {
     STRINGID_PKMNWASPOISONED, STRINGID_PKMNBADLYPOISONED, STRINGID_PKMNWASBURNED, STRINGID_PKMNWASPARALYZED, STRINGID_PKMNFELLASLEEP
+};
+
+const u16 gRaidStormStringIds[] =
+{
+    [B_MSG_RAID_STORM_STARTED] = STRINGID_STORMSTARTEDBREWING,
+    [B_MSG_GETTING_STRONGER] = STRINGID_STORMGETTINGSTRONGER, 
+    [B_MSG_GETTING_EVEN_STRONGER] = STRINGID_STORMGETTINGEVENSTRONGER, 
+    [B_MSG_GETTING_TOO_STRONG] = STRINGID_STORMGETTINGTOOSTRONG,
+    [B_MSG_BLOWN_OUT_OF_DEN] = STRINGID_BLOWNOUTOFDEN
 };
 
 const u8 gText_PkmnIsEvolving[] = _("What?\n{STR_VAR_1} is evolving!");

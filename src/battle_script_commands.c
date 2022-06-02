@@ -3617,8 +3617,7 @@ static void Cmd_tryfaintmon(void)
             {
                 u8 hp = 1;
                 SetMonData(&gEnemyParty[gBattlerPartyIndexes[gActiveBattler]], MON_DATA_HP, &hp);
-                gBattleStruct->raid.state |= RAID_BOSS_DEFEATED;
-                gBattlescriptCurrInstr = BattleScript_RaidEnd;
+                gBattlescriptCurrInstr = BattleScript_RaidVictory;
                 return;
             }
 
@@ -7641,7 +7640,7 @@ void RecalcBattlerStats(u32 battler, struct Pokemon *mon)
 {
     CalculateMonStats(mon);
     if (gBattleTypeFlags & BATTLE_TYPE_RAID && GetBattlerPosition(battler) == B_POSITION_OPPONENT_LEFT
-        && !(gBattleStruct->raid.state & RAID_BOSS_DEFEATED))
+        && !(gBattleStruct->raid.state & CATCHING_RAID_BOSS))
         ApplyRaidHPMultiplier(mon);
     gBattleMons[battler].level = GetMonData(mon, MON_DATA_LEVEL);
     gBattleMons[battler].hp = GetMonData(mon, MON_DATA_HP);
@@ -9567,12 +9566,12 @@ static void Cmd_various(void)
     case VARIOUS_CATCH_RAID_BOSS:
         if (!(gBattleStruct->raid.state & CATCHING_RAID_BOSS))
         {
+            gBattleStruct->raid.state |= CATCHING_RAID_BOSS;
             gSpecialVar_ItemId = ITEM_NONE;
             gActiveBattler = GetBattlerAtPosition(B_POSITION_PLAYER_LEFT);
             RecalcBattlerStats(gActiveBattler, &gEnemyParty[0]);
             BtlController_EmitChooseItem(BUFFER_A, gBattleStruct->battlerPartyOrders[gActiveBattler]);
             MarkBattlerForControllerExec(gActiveBattler);
-            gBattleStruct->raid.state |= CATCHING_RAID_BOSS;
         }
         else if (gSpecialVar_ItemId != ITEM_NONE)
         {

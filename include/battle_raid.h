@@ -22,8 +22,7 @@ void DestroyAllRaidShieldSprites(void);
 #define INTRO_COMPLETED             (1 << 0)
 #define SHOULD_CREATE_SHIELDS       (1 << 1)
 #define SHOULD_BREAK_SHIELD         (1 << 2)
-#define RAID_BOSS_DEFEATED          (1 << 3)
-#define CATCHING_RAID_BOSS          (1 << 4)
+#define CATCHING_RAID_BOSS          (1 << 3)
 
 #define MAX_RAID_DROPS      12
 #define MAX_STAR_RATING     6

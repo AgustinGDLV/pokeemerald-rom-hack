@@ -9442,18 +9442,25 @@ BattleScript_RaidIntro::
 	waitmessage B_WAIT_TIME_LONG
 	switchinabilities BS_ATTACKER
 BattleScript_RaidIntroEnd:
+	goto BattleScript_RaidStormBrews
+
+BattleScript_RaidStormBrews::
+	playanimation BS_BATTLER_0, B_ANIM_RAID_STORM_BREWS
+	waitanimation
+	printfromtable gRaidStormStringIds
+	waitmessage B_WAIT_TIME_LONG
 	end2
 
 BattleScript_RaidBarrierAppeared::
 	setraidbarrier
 	playanimation BS_TARGET, B_ANIM_RAID_BARRIER_APPEARED
-	printstring STRINGID_BARRIERAPPEARED
+	printstring STRINGID_RAIDBARRIERAPPEARED
 	waitanimation
 	end2
 
 BattleScript_RaidBarrierDisappeared::
 	playanimation BS_TARGET, B_ANIM_RAID_BARRIER_DISAPPEARED
-	printstring STRINGID_BARRIERDISAPPEARED
+	printstring STRINGID_RAIDBARRIERDISAPPEARED
 	waitanimation
 	jumpifstat BS_TARGET, CMP_GREATER_THAN, STAT_DEF, MIN_STAT_STAGE, BattleScript_RaidDefenseDrop
 	jumpifstat BS_TARGET, CMP_EQUAL, STAT_SPDEF, MIN_STAT_STAGE, BattleScript_RaidBarrierDisappearedEnd
@@ -9493,7 +9500,7 @@ BattleScript_RaidShockwave::
 	updatestatusicon BS_ATTACKER
 	end2
 
-BattleScript_RaidEnd::
+BattleScript_RaidVictory::
 	hidehealthboxesonside BS_OPPONENT1
 	hidehealthboxesonside BS_PLAYER1
 	playanimation BS_TARGET, B_ANIM_RAID_BOSS_EXPLOSION
@@ -9513,4 +9520,12 @@ BattleScript_FaintRaidBoss::
 	dofaintanimation BS_TARGET
 	printstring STRINGID_RAIDPKMNDISAPPEARED
 	setbyte gBattleOutcome, B_OUTCOME_WON
+	finishturn
+
+BattleScript_RaidDefeat::
+	playanimation BS_BATTLER_0, B_ANIM_RAID_STORM_BREWS
+	waitanimation
+	printfromtable gRaidStormStringIds
+	waitmessage B_WAIT_TIME_LONG
+	setbyte gBattleOutcome, B_OUTCOME_RAN
 	finishturn

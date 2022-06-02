@@ -417,13 +417,14 @@ extern const u8 BattleScript_OctolockEndTurn[];
 extern const u8 BattleScript_NeutralizingGasExits[];
 extern const u8 BattleScript_MagicianActivates[];
 extern const u8 BattleScript_RaidIntro[];
+extern const u8 BattleScript_RaidStormBrews[];
 extern const u8 BattleScript_RaidBallBlock[];
 extern const u8 BattleScript_RaidBarrierAppeared[];
 extern const u8 BattleScript_RaidBarrierDisappeared[];
 extern const u8 BattleScript_RaidShieldBroken[];
 extern const u8 BattleScript_RaidShockwave[];
-extern const u8 BattleScript_RaidEnd[];
+extern const u8 BattleScript_RaidVictory[];
 extern const u8 BattleScript_FaintRaidBoss[];
-
+extern const u8 BattleScript_RaidDefeat[];
 
 #endif // GUARD_BATTLE_SCRIPTS_H

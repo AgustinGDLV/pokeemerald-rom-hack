@@ -3792,6 +3792,31 @@ void BattleTurnPassed(void)
     gBattleMainFunc = HandleTurnActionSelectionState;
     gRandomTurnNumber = Random();
 
+    if (gBattleTypeFlags & BATTLE_TYPE_RAID)
+    {
+        if (gBattleStruct->raid.stormTurns < 10)
+            gBattleStruct->raid.stormTurns++;
+        switch(gBattleStruct->raid.stormTurns)
+        {
+            case 3:
+                gBattleCommunication[MULTISTRING_CHOOSER] = B_MSG_GETTING_STRONGER;
+                BattleScriptExecute(BattleScript_RaidStormBrews);
+                break;
+            case 6:
+                gBattleCommunication[MULTISTRING_CHOOSER] = B_MSG_GETTING_EVEN_STRONGER;
+                BattleScriptExecute(BattleScript_RaidStormBrews);
+                break;
+            case 9:
+                gBattleCommunication[MULTISTRING_CHOOSER] = B_MSG_GETTING_TOO_STRONG;
+                BattleScriptExecute(BattleScript_RaidStormBrews);
+                break;
+            case 10:
+                gBattleCommunication[MULTISTRING_CHOOSER] = B_MSG_BLOWN_OUT_OF_DEN;
+                BattleScriptExecute(BattleScript_RaidDefeat);
+                break;
+        }
+    }
+
     if (gBattleTypeFlags & BATTLE_TYPE_PALACE)
         BattleScriptExecute(BattleScript_PalacePrintFlavorText);
     else if (gBattleTypeFlags & BATTLE_TYPE_ARENA && gBattleStruct->arenaTurnCounter == 0)
