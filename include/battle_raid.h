@@ -4,13 +4,18 @@
 #include "constants/songs.h"
 
 void InitRaidVariables(void);
+void IncrementRaidStorm(void);
+
 u16 GetRaidHPMultiplier(void);
 void ApplyRaidHPMultiplier(struct Pokemon *mon);
 u8 GetRaidShieldNumber(void);
 u8 GetRaidThresholdNumber(void);
 u32 GetNextHealthThreshold(void);
 bool8 ShouldCreateBarrier(s32 dmg);
-void IncrementRaidStorm(void);
+
+bool8 DoesRaidPreventMove(u16 move);
+u8 GetRaidRepeatedAttackChance(void);
+u8 GetRaidNullificationChance(void);
 
 void CB2_ChooseBall(void);
 

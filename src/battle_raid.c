@@ -7,7 +7,6 @@
 #include "battle_interface.h"
 #include "battle_message.h"
 #include "battle_setup.h"
-#include "constants/battle_string_ids.h"
 #include "event_data.h"
 #include "party_menu.h"
 #include "pokemon.h"
@@ -24,6 +23,8 @@
 #include "task.h"
 #include "trig.h"
 #include "window.h"
+#include "constants/moves.h"
+#include "constants/battle_string_ids.h"
 
 // Sourced from Bulbapedia and cut down to balance in a 2v1 setting.
 static const u16 sStarRatingHPMultiplierTable[] =
@@ -54,6 +55,32 @@ void InitRaidVariables(void)
     }
 
     RecalcBattlerStats(GetBattlerAtPosition(B_POSITION_OPPONENT_LEFT), &gEnemyParty[0]); // to apply HP multiplier
+}
+
+// Handles Raid Storm end turn events. Called in BattleTurnPassed.
+void IncrementRaidStorm(void)
+{
+    if (gBattleStruct->raid.stormTurns < RAID_STORM_MAX)
+        gBattleStruct->raid.stormTurns++;
+    switch(gBattleStruct->raid.stormTurns)
+    {
+        case RAID_STORM_LEVEL_1:
+            gBattleCommunication[MULTISTRING_CHOOSER] = B_MSG_GETTING_STRONGER;
+            BattleScriptExecute(BattleScript_RaidStormBrews);
+            break;
+        case RAID_STORM_LEVEL_2:
+            gBattleCommunication[MULTISTRING_CHOOSER] = B_MSG_GETTING_STRONGER;
+            BattleScriptExecute(BattleScript_RaidStormBrews);
+            break;
+        case RAID_STORM_LEVEL_3:
+            gBattleCommunication[MULTISTRING_CHOOSER] = B_MSG_GETTING_EVEN_STRONGER;
+            BattleScriptExecute(BattleScript_RaidStormBrews);
+            break;
+        case RAID_STORM_MAX:
+            gBattleCommunication[MULTISTRING_CHOOSER] = B_MSG_GETTING_TOO_STRONG;
+            BattleScriptExecute(BattleScript_RaidDefeat);
+            break;
+    }
 }
 
 u16 GetRaidHPMultiplier(void)
@@ -148,30 +175,59 @@ bool8 ShouldCreateBarrier(s32 dmg)
         return FALSE;
 }
 
-// Handles Raid Storm end turn events. Called in BattleTurnPassed.
-void IncrementRaidStorm(void)
+bool8 DoesRaidPreventMove(u16 move)
 {
-    if (gBattleStruct->raid.stormTurns < RAID_STORM_MAX)
-        gBattleStruct->raid.stormTurns++;
-    switch(gBattleStruct->raid.stormTurns)
+    switch(move) // data from Bulbapedia
     {
-        case RAID_STORM_LEVEL_1:
-            gBattleCommunication[MULTISTRING_CHOOSER] = B_MSG_GETTING_STRONGER;
-            BattleScriptExecute(BattleScript_RaidStormBrews);
-            break;
-        case RAID_STORM_LEVEL_2:
-            gBattleCommunication[MULTISTRING_CHOOSER] = B_MSG_GETTING_STRONGER;
-            BattleScriptExecute(BattleScript_RaidStormBrews);
-            break;
-        case RAID_STORM_LEVEL_3:
-            gBattleCommunication[MULTISTRING_CHOOSER] = B_MSG_GETTING_EVEN_STRONGER;
-            BattleScriptExecute(BattleScript_RaidStormBrews);
-            break;
-        case RAID_STORM_MAX:
-            gBattleCommunication[MULTISTRING_CHOOSER] = B_MSG_GETTING_TOO_STRONG;
-            BattleScriptExecute(BattleScript_RaidDefeat);
-            break;
+        case MOVE_BUG_BITE:
+        case MOVE_COVET:
+        case MOVE_INCINERATE:
+        case MOVE_KNOCK_OFF:
+        case MOVE_PERISH_SONG:
+        case MOVE_PLUCK:
+        case MOVE_SELF_DESTRUCT:
+        case MOVE_SUPER_FANG:
+        case MOVE_THIEF:
+        case MOVE_TRICK:
+            return TRUE;
     }
+    return FALSE;
+}
+
+u8 GetRaidRepeatedAttackChance(void)
+{
+	u8 starRating = gBattleStruct->raid.stars;
+    switch (starRating)
+    {
+		case 0 ... 2:
+			return 0; //Never
+		case 3:
+			return 30; //30 % of the time after KO or Status Move
+		case 4:
+			return 50; //50 % of the time after KO or Status Move
+		default:
+			return 70; //70 % of the time after KO or Status Move
+	}
+}
+
+u8 GetRaidNullificationChance(void)
+{
+    u8 starRating = gBattleStruct->raid.stars;
+
+	if (gDisableStructs[GetBattlerAtPosition(B_POSITION_OPPONENT_LEFT)].isFirstTurn)
+		return 0; //Don't use first attack with this
+
+    switch (starRating)
+    {
+		case 0 ... 2:
+			return 0; //Never
+		case 3:
+			return 20; //20 % chance before each attack
+		case 4:
+			return 35; //35 % chance before each attack
+		default:
+			return 50; //50 % chance before each attack
+	}
 }
 
 // Used for opening the bag in the end sequence.
@@ -181,7 +237,6 @@ void CB2_ChooseBall(void)
 }
 
 // Shield sprite data:
-
 static const u8 sRaidShieldGfx[] = INCBIN_U8("graphics/battle_interface/raid_barrier.4bpp");
 static const u16 sRaidShieldPal[] = INCBIN_U16("graphics/battle_interface/raid_barrier.gbapal");
 

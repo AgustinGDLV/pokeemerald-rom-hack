@@ -5101,13 +5101,13 @@ void AnimTask_GetRaidBattleStormLevel(u8 taskId)
 {
     switch (gBattleStruct->raid.stormTurns)
     {
-        case 0 ... 3:
+        case 0 ... RAID_STORM_LEVEL_1:
             gBattleAnimArgs[0] = 1;
-        case 4 ... 6:
+        case (RAID_STORM_LEVEL_1 + 1) ... RAID_STORM_LEVEL_2:
             gBattleAnimArgs[0] = 2;
-        case 7 ... 9:
+        case (RAID_STORM_LEVEL_2 + 1) ... RAID_STORM_LEVEL_3:
             gBattleAnimArgs[0] = 3;
-        case 10:
+        case RAID_STORM_MAX:
             gBattleAnimArgs[0] = 4;
     }
 	DestroyAnimVisualTask(taskId);

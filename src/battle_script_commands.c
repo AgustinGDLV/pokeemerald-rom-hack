@@ -1358,6 +1358,18 @@ static void Cmd_attackcanceler(void)
 
     GET_MOVE_TYPE(gCurrentMove, moveType);
 
+    // Raid bosses try to do a shockwave before moving.
+    if (gBattleTypeFlags & BATTLE_TYPE_RAID
+        && GetBattlerPosition(gBattlerAttacker) == B_POSITION_OPPONENT_LEFT
+        && !gBattleStruct->raid.movedTwice // shockwave counts as a second move
+        && Random() % 100 <= GetRaidNullificationChance())
+    {
+        gBattleStruct->raid.movedTwice = TRUE;
+        BattleScriptPushCursor();
+        gBattlescriptCurrInstr = BattleScript_RaidShockwave;
+        return;
+    }
+
     if (moveType == TYPE_FIRE
      && (gBattleWeather & B_WEATHER_RAIN_PRIMAL)
      && WEATHER_HAS_EFFECT
@@ -1501,7 +1513,7 @@ static void Cmd_attackcanceler(void)
         }
     }
 
-    // Status moves cannot hit through barriers.
+    // Raid shields prevent status moves.
     if (gBattleTypeFlags & BATTLE_TYPE_RAID
         && GetBattlerPosition(gBattlerTarget) == B_POSITION_OPPONENT_LEFT
         && GetBattlerPosition(gBattlerAttacker) != B_POSITION_OPPONENT_LEFT
@@ -1511,6 +1523,13 @@ static void Cmd_attackcanceler(void)
         gHitMarker |= HITMARKER_UNABLE_TO_USE_MOVE;
         gBattlescriptCurrInstr = BattleScript_ButItFailedAtkStringPpReduce;
         return;
+    }
+
+    // Certain moves are prevented in Raid Battles.
+    if (gBattleTypeFlags & BATTLE_TYPE_RAID && DoesRaidPreventMove(gCurrentMove))
+    {
+        gHitMarker |= HITMARKER_UNABLE_TO_USE_MOVE;
+        gBattlescriptCurrInstr = BattleScript_MovePreventedByDynamax;
     }
 
     if (gSpecialStatuses[gBattlerTarget].lightningRodRedirected)
@@ -2675,6 +2694,12 @@ void SetMoveEffect(bool32 primary, u32 certain)
         INCREMENT_RESET_RETURN
 
     if (DoesSubstituteBlockMove(gBattlerAttacker, gEffectBattler, gCurrentMove) && affectsUser != MOVE_EFFECT_AFFECTS_USER)
+        INCREMENT_RESET_RETURN
+    
+    // Raid shields prevent secondary move effects.
+    if (gBattleTypeFlags & BATTLE_TYPE_RAID
+        && GetBattlerPosition(gBattlerTarget) == B_POSITION_OPPONENT_LEFT
+        && gBattleStruct->raid.shields > 0)
         INCREMENT_RESET_RETURN
 
     if (gBattleScripting.moveEffect <= PRIMARY_STATUS_MOVE_EFFECT) // status change
@@ -5585,6 +5610,29 @@ static void Cmd_moveend(void)
             }
             gBattleScripting.moveendState++;
             break;
+        case MOVEEND_CLEAR_BITS: // Clear/Set bits for things like using a move for all targets and all hits.
+            if (gSpecialStatuses[gBattlerAttacker].instructedChosenTarget)
+                *(gBattleStruct->moveTarget + gBattlerAttacker) = gSpecialStatuses[gBattlerAttacker].instructedChosenTarget & 0x3;
+            if (gSpecialStatuses[gBattlerAttacker].dancerOriginalTarget)
+                *(gBattleStruct->moveTarget + gBattlerAttacker) = gSpecialStatuses[gBattlerAttacker].dancerOriginalTarget & 0x3;
+
+            #if B_RAMPAGE_CANCELLING >= GEN_5
+            if (gBattleMoves[gCurrentMove].effect == EFFECT_RAMPAGE // If we're rampaging
+              && (gMoveResultFlags & MOVE_RESULT_NO_EFFECT)         // And it is unusable
+              && (gBattleMons[gBattlerAttacker].status2 & STATUS2_LOCK_CONFUSE) != STATUS2_LOCK_CONFUSE_TURN(1))  // And won't end this turn
+                CancelMultiTurnMoves(gBattlerAttacker); // Cancel it
+            #endif
+
+            gProtectStructs[gBattlerAttacker].usesBouncedMove = FALSE;
+            gProtectStructs[gBattlerAttacker].targetAffected = FALSE;
+            gBattleStruct->ateBoost[gBattlerAttacker] = 0;
+            gStatuses3[gBattlerAttacker] &= ~STATUS3_ME_FIRST;
+            gSpecialStatuses[gBattlerAttacker].gemBoost = FALSE;
+            gSpecialStatuses[gBattlerAttacker].damagedMons = 0;
+            gSpecialStatuses[gBattlerTarget].berryReduced = FALSE;
+            gBattleScripting.moveEffect = 0;
+            gBattleScripting.moveendState++;
+            break;
         case MOVEEND_RAID:
             if (gBattleTypeFlags & BATTLE_TYPE_RAID)
             {
@@ -5612,39 +5660,8 @@ static void Cmd_moveend(void)
                         gBattlescriptCurrInstr = BattleScript_RaidShieldBroken;
                     return;
                 }
-                // Do shockwave.
-                if (GetBattlerPosition(gBattlerAttacker) == B_POSITION_OPPONENT_LEFT
-                    && (Random() % 3) == 0)
-                {
-                    BattleScriptPushCursor();
-                    gBattlerTarget = gBattlerAttacker;
-                    gBattlescriptCurrInstr = BattleScript_RaidShockwave;
-                    return;
-                }
+
             }
-            gBattleScripting.moveendState++;
-            break;
-        case MOVEEND_CLEAR_BITS: // Clear/Set bits for things like using a move for all targets and all hits.
-            if (gSpecialStatuses[gBattlerAttacker].instructedChosenTarget)
-                *(gBattleStruct->moveTarget + gBattlerAttacker) = gSpecialStatuses[gBattlerAttacker].instructedChosenTarget & 0x3;
-            if (gSpecialStatuses[gBattlerAttacker].dancerOriginalTarget)
-                *(gBattleStruct->moveTarget + gBattlerAttacker) = gSpecialStatuses[gBattlerAttacker].dancerOriginalTarget & 0x3;
-
-            #if B_RAMPAGE_CANCELLING >= GEN_5
-            if (gBattleMoves[gCurrentMove].effect == EFFECT_RAMPAGE // If we're rampaging
-              && (gMoveResultFlags & MOVE_RESULT_NO_EFFECT)         // And it is unusable
-              && (gBattleMons[gBattlerAttacker].status2 & STATUS2_LOCK_CONFUSE) != STATUS2_LOCK_CONFUSE_TURN(1))  // And won't end this turn
-                CancelMultiTurnMoves(gBattlerAttacker); // Cancel it
-            #endif
-
-            gProtectStructs[gBattlerAttacker].usesBouncedMove = FALSE;
-            gProtectStructs[gBattlerAttacker].targetAffected = FALSE;
-            gBattleStruct->ateBoost[gBattlerAttacker] = 0;
-            gStatuses3[gBattlerAttacker] &= ~STATUS3_ME_FIRST;
-            gSpecialStatuses[gBattlerAttacker].gemBoost = FALSE;
-            gSpecialStatuses[gBattlerAttacker].damagedMons = 0;
-            gSpecialStatuses[gBattlerTarget].berryReduced = FALSE;
-            gBattleScripting.moveEffect = 0;
             gBattleScripting.moveendState++;
             break;
         case MOVEEND_COUNT:
@@ -13556,8 +13573,7 @@ static void Cmd_removelightscreenreflect(void) // brick break
 
 u8 GetCatchingBattler(void)
 {
-    if (IsBattlerAlive(GetBattlerAtPosition(B_POSITION_OPPONENT_LEFT))
-        || gBattleStruct->raid.state & CATCHING_RAID_BOSS)
+    if (IsBattlerAlive(GetBattlerAtPosition(B_POSITION_OPPONENT_LEFT)))
         return GetBattlerAtPosition(B_POSITION_OPPONENT_LEFT);
     else
         return GetBattlerAtPosition(B_POSITION_OPPONENT_RIGHT);

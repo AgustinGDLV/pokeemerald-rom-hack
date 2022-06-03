@@ -492,6 +492,7 @@ struct RaidBattleData
     u32 storedDmg;
     u8 state;
     u8 stormTurns;
+    bool8 movedTwice;
 };
 
 struct BattleStruct

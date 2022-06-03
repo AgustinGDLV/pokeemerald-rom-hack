@@ -4764,6 +4764,9 @@ static void TurnValuesCleanUp(bool8 var0)
     gSideStatuses[1] &= ~(SIDE_STATUS_QUICK_GUARD | SIDE_STATUS_WIDE_GUARD | SIDE_STATUS_CRAFTY_SHIELD | SIDE_STATUS_MAT_BLOCK);
     gSideTimers[0].followmeTimer = 0;
     gSideTimers[1].followmeTimer = 0;
+
+    if (gBattleTypeFlags & BATTLE_TYPE_RAID)
+        gBattleStruct->raid.movedTwice = FALSE;
 }
 
 void SpecialStatusesClear(void)

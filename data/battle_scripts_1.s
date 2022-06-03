@@ -9498,7 +9498,7 @@ BattleScript_RaidShockwave::
 	doraidshockwave
 	clearstatus BS_ATTACKER
 	updatestatusicon BS_ATTACKER
-	end2
+	return
 
 BattleScript_RaidVictory::
 	hidehealthboxesonside BS_OPPONENT1
@@ -9532,3 +9532,12 @@ BattleScript_RaidDefeat::
 	playse SE_FLEE
 	pause 8
 	end2
+
+BattleScript_MovePreventedByDynamax::
+	attackstring
+	ppreduce
+	pause B_WAIT_TIME_SHORT
+	orhalfword gMoveResultFlags, MOVE_RESULT_FAILED
+	printstring STRINGID_MOVEPREVENTEDBYDYNAMAX
+	waitmessage B_WAIT_TIME_LONG
+	goto BattleScript_MoveEnd

@@ -893,7 +893,7 @@ void HandleAction_ActionFinished(void)
     gMoveResultFlags = 0;
     gBattleScripting.animTurn = 0;
     gBattleScripting.animTargetsHit = 0;
-    gLastLandedMoves[gBattlerAttacker] = 0;
+    //gLastLandedMoves[gBattlerAttacker] = 0; -- moved below the raid check
     gLastHitByType[gBattlerAttacker] = 0;
     gBattleStruct->dynamicMoveType = 0;
     gBattleScripting.moveendState = 0;
@@ -902,6 +902,37 @@ void HandleAction_ActionFinished(void)
     gBattleCommunication[4] = 0;
     gBattleScripting.multihitMoveEffect = 0;
     gBattleResources->battleScriptsStack->size = 0;
+
+    // Raid bosses can act twice if their last move was a status move or they KO'd their target (latter not implemented yet).
+    if (gBattleTypeFlags & BATTLE_TYPE_RAID
+        && GetBattlerPosition(gBattlerAttacker) == B_POSITION_OPPONENT_LEFT
+        && (gBattleMoves[gLastLandedMoves[gBattlerAttacker]].split == SPLIT_STATUS)
+        && !gBattleStruct->raid.movedTwice
+        && Random() % 100 <= GetRaidRepeatedAttackChance())
+    {
+        u16 chosenMoveId;
+        u8 chosenMoveTarget;
+
+        if (IsWildMonSmart())
+            chosenMoveId = BattleAI_ChooseMoveOrAction();
+        else
+            chosenMoveId = Random() % 4;
+
+        chosenMoveTarget = GetMoveTarget(gBattleMons[gBattlerAttacker].moves[chosenMoveId], NO_TARGET_OVERRIDE);
+        if (gBattleMoves[gBattleMons[gBattlerAttacker].moves[chosenMoveId]].target == MOVE_TARGET_BOTH) // override to fix bug
+            chosenMoveTarget = GetBattlerAtPosition(B_POSITION_PLAYER_LEFT);
+
+        *(gBattleStruct->chosenMovePositions + gBattlerAttacker) = chosenMoveId;
+        gChosenMoveByBattler[gBattlerAttacker] = gBattleMons[gBattlerAttacker].moves[*(gBattleStruct->chosenMovePositions + gBattlerAttacker)];
+        *(gBattleStruct->moveTarget + gBattlerAttacker) = chosenMoveTarget;
+        gHitMarker &= ~HITMARKER_NO_ATTACKSTRING; // bug fix, could have issues
+        gCurrentActionFuncId = B_ACTION_USE_MOVE;
+        gBattleStruct->raid.movedTwice = TRUE;
+        gCurrentTurnActionNumber--;
+        return;
+    }
+
+    gLastLandedMoves[gBattlerAttacker] = 0;
     
     #if B_RECALC_TURN_AFTER_ACTIONS >= GEN_8
     // i starts at `gCurrentTurnActionNumber` because we don't want to recalculate turn order for mon that have already

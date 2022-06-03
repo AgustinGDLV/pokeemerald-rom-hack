@@ -426,5 +426,7 @@ extern const u8 BattleScript_RaidShockwave[];
 extern const u8 BattleScript_RaidVictory[];
 extern const u8 BattleScript_FaintRaidBoss[];
 extern const u8 BattleScript_RaidDefeat[];
+extern const u8 BattleScript_MovePreventedByDynamax[];
+
 
 #endif // GUARD_BATTLE_SCRIPTS_H
