@@ -622,7 +622,7 @@
 #define STRINGID_STORMGETTINGTOOSTRONG                620
 #define STRINGID_BLOWNOUTOFDEN                        621
 
-#define BATTLESTRINGS_COUNT                           621
+#define BATTLESTRINGS_COUNT                           622
 
 // This is the string id that gBattleStringsTable starts with.
 // String ids before this (e.g. STRINGID_INTROMSG) are not in the table,

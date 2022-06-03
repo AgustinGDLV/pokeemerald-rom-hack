@@ -9523,9 +9523,11 @@ BattleScript_FaintRaidBoss::
 	finishturn
 
 BattleScript_RaidDefeat::
+	printfromtable gRaidStormStringIds
 	playanimation BS_BATTLER_0, B_ANIM_RAID_STORM_BREWS
 	waitanimation
-	printfromtable gRaidStormStringIds
+	printstring STRINGID_BLOWNOUTOFDEN
 	waitmessage B_WAIT_TIME_LONG
-	setbyte gBattleOutcome, B_OUTCOME_RAN
-	finishturn
+	playse SE_FLEE
+	pause 8
+	end2
