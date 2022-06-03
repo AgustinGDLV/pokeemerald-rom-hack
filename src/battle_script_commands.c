@@ -3617,7 +3617,7 @@ static void Cmd_tryfaintmon(void)
             {
                 u8 hp = 1;
                 SetMonData(&gEnemyParty[gBattlerPartyIndexes[gActiveBattler]], MON_DATA_HP, &hp);
-                gBattlescriptCurrInstr = BattleScript_RaidEnd;
+                gBattlescriptCurrInstr = BattleScript_RaidVictory;
                 return;
             }
 
@@ -9564,7 +9564,7 @@ static void Cmd_various(void)
         }
         break;
     case VARIOUS_CATCH_RAID_BOSS:
-        if (!(gBattleStruct->raid.state & CATCHING_RAID_BOSS))
+        if (!(gBattleStruct->raid.state & CATCHING_RAID_BOSS)) // open bag if end sequence just began
         {
             gBattleStruct->raid.state |= CATCHING_RAID_BOSS;
             gSpecialVar_ItemId = ITEM_NONE;
@@ -9587,7 +9587,7 @@ static void Cmd_various(void)
             UndoFormChange(gBattlerPartyIndexes[gBattlerTarget], GET_BATTLER_SIDE(gBattlerTarget), FALSE);
             gBattlescriptCurrInstr = BattleScript_SuccessBallThrow;
             SetMonData(&gEnemyParty[gBattlerPartyIndexes[gBattlerTarget]], MON_DATA_POKEBALL, &gLastUsedItem);
-            
+
             if (CalculatePlayerPartyCount() == PARTY_SIZE)
                 gBattleCommunication[MULTISTRING_CHOOSER] = 0;
             else

@@ -743,8 +743,8 @@ static const u8 sText_RaidPkmnAppeared[] = _("{B_OPPONENT_MON1_NAME} appeared!")
 static const u8 sText_RaidPkmnDisappeared[] = _("{B_OPPONENT_MON1_NAME} disappeared\nsomewhere into the den...");
 static const u8 sText_RaidPkmnGettingDesperate[] = _("{B_OPPONENT_MON1_NAME} is getting desperate!\nIts attacks are growing more aggressive!");
 static const u8 sText_StormStartedBrewing[] = _("A storm started brewing above you.");
-static const u8 sText_StormIsGettingStronger[] = _("The storm above you is getting stronger!");
-static const u8 sText_StormIsGettingEvenStronger[] = _("The storm is growing even stronger!");
+static const u8 sText_StormIsGettingStronger[] = _("The storm above you is\n getting stronger!");
+static const u8 sText_StormIsGettingEvenStronger[] = _("The storm is growing\n even stronger!");
 static const u8 sText_StormIsGettingTooStrong[] = _("The storm is getting too\nstrong to withstand!");
 static const u8 sText_BlownOutOfDen[] = _("{B_PLAYER_NAME} was blown out\nof the den!");
 

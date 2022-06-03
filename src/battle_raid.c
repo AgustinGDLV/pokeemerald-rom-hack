@@ -7,6 +7,7 @@
 #include "battle_interface.h"
 #include "battle_message.h"
 #include "battle_setup.h"
+#include "constants/battle_string_ids.h"
 #include "event_data.h"
 #include "party_menu.h"
 #include "pokemon.h"
@@ -145,6 +146,32 @@ bool8 ShouldCreateBarrier(s32 dmg)
         return TRUE;
     else
         return FALSE;
+}
+
+// Handles Raid Storm end turn events. Called in BattleTurnPassed.
+void IncrementRaidStorm(void)
+{
+    if (gBattleStruct->raid.stormTurns < RAID_STORM_MAX)
+        gBattleStruct->raid.stormTurns++;
+    switch(gBattleStruct->raid.stormTurns)
+    {
+        case RAID_STORM_LEVEL_1:
+            gBattleCommunication[MULTISTRING_CHOOSER] = B_MSG_GETTING_STRONGER;
+            BattleScriptExecute(BattleScript_RaidStormBrews);
+            break;
+        case RAID_STORM_LEVEL_2:
+            gBattleCommunication[MULTISTRING_CHOOSER] = B_MSG_GETTING_STRONGER;
+            BattleScriptExecute(BattleScript_RaidStormBrews);
+            break;
+        case RAID_STORM_LEVEL_3:
+            gBattleCommunication[MULTISTRING_CHOOSER] = B_MSG_GETTING_EVEN_STRONGER;
+            BattleScriptExecute(BattleScript_RaidStormBrews);
+            break;
+        case RAID_STORM_MAX:
+            gBattleCommunication[MULTISTRING_CHOOSER] = B_MSG_GETTING_TOO_STRONG;
+            BattleScriptExecute(BattleScript_RaidDefeat);
+            break;
+    }
 }
 
 // Used for opening the bag in the end sequence.
