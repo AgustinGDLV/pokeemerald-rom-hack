@@ -241,8 +241,9 @@
 #define VARIOUS_SET_RAID_BARRIER                    151
 #define VARIOUS_CLEAR_RAID_BARRIER                  152
 #define VARIOUS_DO_RAID_SHOCKWAVE                   153
-#define VARIOUS_CATCH_RAID_BOSS                     154
-#define VARIOUS_HIDE_HEALTHBOXES_ON_SIDE            155
+#define VARIOUS_JUMP_IF_NO_BALLS                    154
+#define VARIOUS_CATCH_RAID_BOSS                     155
+#define VARIOUS_HIDE_HEALTHBOXES_ON_SIDE            156
 
 // Cmd_manipulatedamage
 #define DMG_CHANGE_SIGN            0

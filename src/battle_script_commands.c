@@ -9563,6 +9563,12 @@ static void Cmd_various(void)
             TryResetBattlerStatChanges(i);
         }
         break;
+    case VARIOUS_JUMP_IF_NO_BALLS:
+        if (IsBagPocketNonEmpty(POCKET_POKE_BALLS))
+            gBattlescriptCurrInstr += 7;
+        else
+            gBattlescriptCurrInstr = T1_READ_PTR(gBattlescriptCurrInstr + 3);
+        return;
     case VARIOUS_CATCH_RAID_BOSS:
         if (!(gBattleStruct->raid.state & CATCHING_RAID_BOSS)) // open bag if end sequence just began
         {

@@ -9508,6 +9508,7 @@ BattleScript_RaidVictory::
 	setbyte sGIVEEXP_STATE, 0
 	getexp BS_TARGET
 	hidehealthboxesonside BS_PLAYER1
+	jumpifnoballs BattleScript_FaintRaidBoss
 	printstring STRINGID_CATCHRAIDMON
 	setbyte gBattleCommunication, 0
 	yesnobox
