@@ -9,6 +9,7 @@
 #include "field_screen_effect.h"
 #include "field_weather.h"
 #include "gpu_regs.h"
+#include "international_string_util.h"
 #include "item_menu.h"
 #include "sound.h"
 #include "malloc.h"
@@ -82,9 +83,9 @@ static const u32 sRaidIntroBgGfx[]      = INCBIN_U32("graphics/misc/raid_battle_
 static const u32 sRaidIntroBgPal[]      = INCBIN_U32("graphics/misc/raid_battle_intro_bg.gbapal.lz");
 static const u32 sRaidIntroBgMap[]      = INCBIN_U32("graphics/misc/raid_battle_intro_bg.bin.lz");
 
-static const u8 sText_RecommendedLevel[] = _("Recommended Level: ");
-static const u8 sText_RaidIntroSelection[] = _("{DPAD_UPDOWN}Pick {A_BUTTON}Choose {START_BUTTON}Random {B_BUTTON}Cancel");
-static const u8 sText_RaidBattleRules[] = _("Battle ends if:");//4 Pokemon faint\n10 turns pass");
+static const u8 sText_RecommendedLevel[]        = _("Recommended Level: ");
+static const u8 sText_RaidIntroSelection[]      = _("{DPAD_UPDOWN}Pick {A_BUTTON}Choose {START_BUTTON}Random {B_BUTTON}Cancel");
+static const u8 sText_RaidBattleRules[]         = _("Battle ends if:\n 4 Pokemon faint\n 10 turns pass");
 static const u8 sText_RaidBattleChoosePartner[] = _("Available Partners");
 
 static const struct WindowTemplate sRaidBattleIntroWinTemplates[WINDOW_COUNT + 1] =
@@ -122,7 +123,7 @@ static const struct WindowTemplate sRaidBattleIntroWinTemplates[WINDOW_COUNT + 1
 	[WIN_TYPE_1] =
 	{
 		.bg = 1,
-		.tilemapLeft = 7,
+		.tilemapLeft = 8,
 		.tilemapTop = 0,
 		.width = 4,
 		.height = 2,
@@ -132,7 +133,7 @@ static const struct WindowTemplate sRaidBattleIntroWinTemplates[WINDOW_COUNT + 1
 	[WIN_TYPE_2] =
 	{
 		.bg = 1,
-		.tilemapLeft = 11,
+		.tilemapLeft = 12,
 		.tilemapTop = 0,
 		.width = 4,
 		.height = 2,
@@ -311,25 +312,6 @@ void CB2_RaidBattleIntro(void)
             taskId = CreateTask(Task_RaidBattleIntroFadeIn, 0);
             data = AllocZeroed(sizeof(struct RaidBattleIntro));
             SetStructPtr(taskId, data);
-
-            data->species = SPECIES_SALAMENCE;
-            data->rank = 6;
-            data->personality = 0xFFFFFFFF;
-
-            data->partners[0].graphicsId = OBJ_EVENT_GFX_STEVEN;
-            data->partners[0].team[0] = SPECIES_TYRANITAR;
-            data->partners[0].team[1] = SPECIES_MAMOSWINE;
-            data->partners[0].team[2] = SPECIES_GRANBULL;
-
-            data->partners[1].graphicsId = OBJ_EVENT_GFX_MAY_NORMAL;
-            data->partners[1].team[0] = SPECIES_GOLURK;
-            data->partners[1].team[1] = SPECIES_MAGNEZONE;
-            data->partners[1].team[2] = SPECIES_SALAMENCE;
-
-            data->partners[2].graphicsId = OBJ_EVENT_GFX_RED;
-            data->partners[2].team[0] = SPECIES_PIKACHU_ORIGINAL_CAP;
-            data->partners[2].team[1] = SPECIES_SNORLAX;
-            data->partners[2].team[2] = SPECIES_MEWTWO;
             gMain.state++;
             break;
         case 3:
@@ -369,184 +351,6 @@ void CB2_RaidBattleIntro(void)
             break;
 	}
 }
-
-static bool8 GetRaidBattleData(struct RaidBattleIntro *data)
-{
-	u32 i, j, k;
-	bool8 checkedPartners[3]; //numRaidPartners
-
-	/*DetermineRaidStars();
-	DetermineRaidSpecies();
-	DetermineRaidLevel();
-	sRaidBattleIntroPtr->rank = gRaidBattleStars;
-	sRaidBattleIntroPtr->species = gRaidBattleSpecies;
-
-	if (gRaidBattleSpecies == SPECIES_NONE)
-		return FALSE;
-
-	for (i = 0; i < gNumRaidPartners; ++i)
-		checkedPartners[i] = FALSE;
-
-	DetermineRaidPartners(checkedPartners, MAX_NUM_PARTNERS);
-
-	k = 0;
-	for (i = 0; i < gNumRaidPartners; ++i)
-	{
-		if (checkedPartners[i] == TRUE) //0xFF means not viable
-		{
-			struct Partner* partner = &sRaidBattleIntroPtr->partners[k++];
-
-			partner->id = i;
-			partner->graphicsId = gRaidPartners[i].owNum;
-
-			for (j = 0; j < MAX_TEAM_SIZE; ++j)
-			{
-				const struct BattleTowerSpread* spread = GetRaidMultiSpread(i, j, sRaidBattleIntroPtr->rank);
-				if (spread != NULL)
-					partner->team[j] = spread->species;
-				else
-					break;
-			}
-		}
-
-		if (k >= MAX_NUM_PARTNERS)
-			break;
-	}
-
-	if (k == 0) //No partners found
-		return FALSE;
-
-	return TRUE;*/
-
-/*Test Data*/
-	//gRaidBattleStars = 6;
-	data->species = SPECIES_SALAMENCE;
-	data->rank = 6;
-    data->personality = 0xFFFFFFFF;
-
-	data->partners[0].graphicsId = OBJ_EVENT_GFX_STEVEN;
-	data->partners[0].team[0] = SPECIES_TYRANITAR;
-	data->partners[0].team[1] = SPECIES_MAMOSWINE;
-	data->partners[0].team[2] = SPECIES_GRANBULL;
-
-	data->partners[1].graphicsId = OBJ_EVENT_GFX_MAY_NORMAL;
-	data->partners[1].team[0] = SPECIES_GOLURK;
-	data->partners[1].team[1] = SPECIES_MAGNEZONE;
-	data->partners[1].team[2] = SPECIES_SALAMENCE;
-
-	data->partners[2].graphicsId = OBJ_EVENT_GFX_RED;
-	data->partners[2].team[0] = SPECIES_PIKACHU_ORIGINAL_CAP;
-	data->partners[2].team[1] = SPECIES_SNORLAX;
-	data->partners[2].team[2] = SPECIES_MEWTWO;
-
-	return TRUE;
-//*/
-}
-/*
-static void OutlineMonSprite(u8 spriteId)
-{
-	u32 i = 0;
-	u8 buffer[(64 * 64) / 2] = {0};
-	u8* offset = (void*)(OBJ_VRAM0) + (gSprites[spriteId].oam.tileNum * 32);
-	u8* originalOffset = offset;
-    u8 nextByteColumn, nextByteRow, previousByteRow;
-    u8 pixel1, pixel2, pixel3, pixel4, pixel5, pixel6, pixel7;
-    bool8 isTopBorder, isBottomBorder, isLeftBorder, isRightBorder;
-
-	for (i = 0; i < (64 * 64) / 2; ++i)
-	{
-		/*Pixel Map - Bits
-		6	7
-
-		1	2	3
-
-		4	5
-		*/
-
-		/*Pixel map - Bytes
-		67
-		12 3
-		45
-		/
-
-		nextByteColumn = 1;
-		if (i % 4 == 3)
-			nextByteColumn = 0x1D;
-
-		nextByteRow = 4;
-		if (i % 0x20 >= 0x1C)
-			nextByteRow = 0xE4;
-
-		previousByteRow = 4;
-		if (i % 0x20 < 4)
-			previousByteRow = 0xE4;
-
-		//Next column
-		pixel1 = offset[i] & 0xF;
-		pixel2 = (offset[i] >> 4) & 0xF;
-
-		pixel3 = offset[i + nextByteColumn] & 0xF;
-
-		//Next row
-		pixel4 = offset[i + nextByteRow] & 0xF;
-		pixel5 = (offset[i + nextByteRow] >> 4) & 0xF;
-
-		//Row Above
-		pixel6 = offset[i - previousByteRow] & 0xF;
-		pixel7 = (offset[i - previousByteRow] >> 4) & 0xF;
-
-		isTopBorder = (i < 0xE4) && ((i % 0x20) < 4);
-		isBottomBorder = (i >= 0x71C) && ((i % 0x20) >= 0x1C);
-		isLeftBorder = ((i % 0x100) < 0x20) && ((i % 4) == 0);
-		isRightBorder = ((i % 0x100) >= 0xE0) && ((i % 4) == 3);
-
-		if (pixel1 != 0)
-		{
-			if (isTopBorder || isBottomBorder || isLeftBorder)
-				buffer[i + 0] |= 0xF; //Set lower bit to white
-			else
-				buffer[i + 0] |= 0x1; //Set lower bit to black
-
-			if (pixel2 == 0)
-				buffer[i + 0] |= 0xF0; //Set upper bit
-
-			if (pixel4 == 0)
-				buffer[i + nextByteRow] |= 0xF; //Set lower bit
-
-			if (i >= previousByteRow && pixel6 == 0)
-				buffer[i - previousByteRow] |= 0xF; //Set lower bit/
-		}
-
-		if (pixel2 != 0)
-		{
-			if (isTopBorder || isBottomBorder || isRightBorder) //Right border
-				buffer[i + 0] |= 0xF0; //Set upper bit to white
-			else
-				buffer[i + 0] |= 0x10; //Set upper bit to black
-
-			if (pixel1 == 0)
-				buffer[i + 0] |= 0xF; //Set lower bit
-
-			if (pixel3 == 0 && (i % 0x100 < 0xE0 || i % 4 != 3))
-				buffer[i + nextByteColumn] |= 0xF; //Set lower bit
-
-			if (pixel5 == 0)
-				buffer[i + nextByteRow] |= 0xF0; //Set upper bit
-
-			if (i >= previousByteRow && pixel7 == 0)
-				buffer[i - previousByteRow] |= 0xF0; //Set upper bit
-		}
-
-		if (pixel3 != 0 && !isRightBorder)
-		{
-			if (pixel2 == 0)
-				buffer[i + 0] |= 0xF0; //Set upper bit
-		}
-	}
-
-	CpuCopy32(buffer, originalOffset, (64 * 64) / 2);
-	sRaidBattleIntroPtr->outlinedSprite++;
-}*/
 
 static void Task_RaidBattleIntroFadeOut(u8 taskId)
 {
@@ -620,10 +424,10 @@ static void Task_RaidBattleIntroWaitForKeyPress(u8 taskId)
 		{
 			for (i = 0; i < MAX_TEAM_SIZE; ++i)
 			{
-				if (data->partners[i].graphicsId != 0 || TRUE)
+				//if (data->partners[i].graphicsId != 0)
 					data->selectedTeam++;
-				else
-					break;
+				//else
+				//	break;
 			}
 
 			data->selectedTeam -= 1; //Prevent overflow
@@ -636,8 +440,8 @@ static void Task_RaidBattleIntroWaitForKeyPress(u8 taskId)
 		PlaySE(SE_SELECT);
 		data->selectedTeam++;
 
-		if (data->selectedTeam >= MAX_TEAM_SIZE
-		    || data->partners[data->selectedTeam].graphicsId == 0)
+		if (data->selectedTeam >= MAX_TEAM_SIZE)
+		    //|| data->partners[data->selectedTeam].graphicsId == 0)
 			data->selectedTeam = 0;
 	}
 
@@ -705,7 +509,7 @@ static void PrintInstructions(void)
 	StringCopy(gStringVar1, sText_RecommendedLevel);
 	ConvertIntToDecimalStringN(gStringVar2, GetRaidRecommendedLevel(), 0, 3);
 	StringAppend(gStringVar1, gStringVar2);
-	AddTextPrinterParameterized3(WIN_RECOMMENDED_LEVEL, 0, 2, 0, colour, 0, gStringVar1);
+	AddTextPrinterParameterized3(WIN_RECOMMENDED_LEVEL, 0, 4, 0, colour, 0, gStringVar1);
 
 	AddTextPrinterParameterized3(WIN_INSTRUCTIONS, 0, 2, 4, colour, 0, sText_RaidIntroSelection);
 
@@ -719,7 +523,7 @@ static void ShowStars(struct RaidBattleIntro *data)
     LoadSpriteSheet(&sRaidBattleStarSpriteSheet);
 
 	for (i = 0; i < 6; i++)
-		CreateSprite(&sRaidBattleStarSpriteTemplate, 9 + (9 * i), 8, 0);
+		CreateSprite(&sRaidBattleStarSpriteTemplate, 10 + (9 * i), 8, 0);
 }
 
 static void ShowRaidPokemonSprite(struct RaidBattleIntro *data)
@@ -732,8 +536,8 @@ static void ShowRaidPokemonSprite(struct RaidBattleIntro *data)
 	const struct CompressedSpritePalette *pal = GetMonSpritePalStructFromOtIdPersonality(species, otId, personality);
 
 	//Create black silhouette
-	CreateMonPicSprite(species, otId, personality, TRUE, 45, 57, 0, pal->tag);
-    gSprites[data->monSpriteId].oam.priority = 0;
+	spriteId = CreateMonPicSprite(species, otId, personality, TRUE, 45, 57, 0, pal->tag);
+    gSprites[spriteId].oam.priority = 0;
 
 	paletteOffset = IndexOfSpritePaletteTag(pal->tag) * 16 + 256;
     BlendPalette(paletteOffset, 16, 16, RGB(4, 4, 4));
@@ -886,3 +690,181 @@ void sp116_StartRaidBattleIntro(void)
 		SetMainCallback2(CB2_RaidBattleIntro);
 	}
 }*/
+
+/*
+static void OutlineMonSprite(u8 spriteId)
+{
+	u32 i = 0;
+	u8 buffer[(64 * 64) / 2] = {0};
+	u8* offset = (void*)(OBJ_VRAM0) + (gSprites[spriteId].oam.tileNum * 32);
+	u8* originalOffset = offset;
+    u8 nextByteColumn, nextByteRow, previousByteRow;
+    u8 pixel1, pixel2, pixel3, pixel4, pixel5, pixel6, pixel7;
+    bool8 isTopBorder, isBottomBorder, isLeftBorder, isRightBorder;
+
+	for (i = 0; i < (64 * 64) / 2; ++i)
+	{
+		/*Pixel Map - Bits
+		6	7
+
+		1	2	3
+
+		4	5
+		*/
+
+		/*Pixel map - Bytes
+		67
+		12 3
+		45
+		/
+
+		nextByteColumn = 1;
+		if (i % 4 == 3)
+			nextByteColumn = 0x1D;
+
+		nextByteRow = 4;
+		if (i % 0x20 >= 0x1C)
+			nextByteRow = 0xE4;
+
+		previousByteRow = 4;
+		if (i % 0x20 < 4)
+			previousByteRow = 0xE4;
+
+		//Next column
+		pixel1 = offset[i] & 0xF;
+		pixel2 = (offset[i] >> 4) & 0xF;
+
+		pixel3 = offset[i + nextByteColumn] & 0xF;
+
+		//Next row
+		pixel4 = offset[i + nextByteRow] & 0xF;
+		pixel5 = (offset[i + nextByteRow] >> 4) & 0xF;
+
+		//Row Above
+		pixel6 = offset[i - previousByteRow] & 0xF;
+		pixel7 = (offset[i - previousByteRow] >> 4) & 0xF;
+
+		isTopBorder = (i < 0xE4) && ((i % 0x20) < 4);
+		isBottomBorder = (i >= 0x71C) && ((i % 0x20) >= 0x1C);
+		isLeftBorder = ((i % 0x100) < 0x20) && ((i % 4) == 0);
+		isRightBorder = ((i % 0x100) >= 0xE0) && ((i % 4) == 3);
+
+		if (pixel1 != 0)
+		{
+			if (isTopBorder || isBottomBorder || isLeftBorder)
+				buffer[i + 0] |= 0xF; //Set lower bit to white
+			else
+				buffer[i + 0] |= 0x1; //Set lower bit to black
+
+			if (pixel2 == 0)
+				buffer[i + 0] |= 0xF0; //Set upper bit
+
+			if (pixel4 == 0)
+				buffer[i + nextByteRow] |= 0xF; //Set lower bit
+
+			if (i >= previousByteRow && pixel6 == 0)
+				buffer[i - previousByteRow] |= 0xF; //Set lower bit/
+		}
+
+		if (pixel2 != 0)
+		{
+			if (isTopBorder || isBottomBorder || isRightBorder) //Right border
+				buffer[i + 0] |= 0xF0; //Set upper bit to white
+			else
+				buffer[i + 0] |= 0x10; //Set upper bit to black
+
+			if (pixel1 == 0)
+				buffer[i + 0] |= 0xF; //Set lower bit
+
+			if (pixel3 == 0 && (i % 0x100 < 0xE0 || i % 4 != 3))
+				buffer[i + nextByteColumn] |= 0xF; //Set lower bit
+
+			if (pixel5 == 0)
+				buffer[i + nextByteRow] |= 0xF0; //Set upper bit
+
+			if (i >= previousByteRow && pixel7 == 0)
+				buffer[i - previousByteRow] |= 0xF0; //Set upper bit
+		}
+
+		if (pixel3 != 0 && !isRightBorder)
+		{
+			if (pixel2 == 0)
+				buffer[i + 0] |= 0xF0; //Set upper bit
+		}
+	}
+
+	CpuCopy32(buffer, originalOffset, (64 * 64) / 2);
+	sRaidBattleIntroPtr->outlinedSprite++;
+}*/
+
+static bool8 GetRaidBattleData(struct RaidBattleIntro *data)
+{
+	u32 i, j, k;
+	bool8 checkedPartners[3]; //numRaidPartners
+
+	/*DetermineRaidStars();
+	DetermineRaidSpecies();
+	DetermineRaidLevel();
+	sRaidBattleIntroPtr->rank = gRaidBattleStars;
+	sRaidBattleIntroPtr->species = gRaidBattleSpecies;
+
+	if (gRaidBattleSpecies == SPECIES_NONE)
+		return FALSE;
+
+	for (i = 0; i < gNumRaidPartners; ++i)
+		checkedPartners[i] = FALSE;
+
+	DetermineRaidPartners(checkedPartners, MAX_NUM_PARTNERS);
+
+	k = 0;
+	for (i = 0; i < gNumRaidPartners; ++i)
+	{
+		if (checkedPartners[i] == TRUE) //0xFF means not viable
+		{
+			struct Partner* partner = &sRaidBattleIntroPtr->partners[k++];
+
+			partner->id = i;
+			partner->graphicsId = gRaidPartners[i].owNum;
+
+			for (j = 0; j < MAX_TEAM_SIZE; ++j)
+			{
+				const struct BattleTowerSpread* spread = GetRaidMultiSpread(i, j, sRaidBattleIntroPtr->rank);
+				if (spread != NULL)
+					partner->team[j] = spread->species;
+				else
+					break;
+			}
+		}
+
+		if (k >= MAX_NUM_PARTNERS)
+			break;
+	}
+
+	if (k == 0) //No partners found
+		return FALSE;
+
+	return TRUE;*/
+
+/*Test Data*/
+	//gRaidBattleStars = 6;
+	data->species = SPECIES_SALAMENCE;
+	data->rank = 6;
+    data->personality = 0xFFFFFFFF;
+
+	data->partners[0].graphicsId = OBJ_EVENT_GFX_STEVEN;
+	data->partners[0].team[0] = SPECIES_TYRANITAR;
+	data->partners[0].team[1] = SPECIES_MAMOSWINE;
+	data->partners[0].team[2] = SPECIES_GRANBULL;
+
+	data->partners[1].graphicsId = OBJ_EVENT_GFX_MAY_NORMAL;
+	data->partners[1].team[0] = SPECIES_GOLURK;
+	data->partners[1].team[1] = SPECIES_MAGNEZONE;
+	data->partners[1].team[2] = SPECIES_SALAMENCE;
+
+	data->partners[2].graphicsId = OBJ_EVENT_GFX_RED;
+	data->partners[2].team[0] = SPECIES_PIKACHU_ORIGINAL_CAP;
+	data->partners[2].team[1] = SPECIES_SNORLAX;
+	data->partners[2].team[2] = SPECIES_MEWTWO;
+
+	return TRUE;
+}
