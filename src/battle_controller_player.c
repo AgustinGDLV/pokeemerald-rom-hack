@@ -3339,11 +3339,11 @@ static void WaitForDebug(void)
         PlayerBufferExecCompleted();
     }
 }
-
+#include "raid_intro.h"
 static void PlayerHandleBattleDebug(void)
 {
     BeginNormalPaletteFade(-1, 0, 0, 0x10, 0);
-    SetMainCallback2(CB2_BattleDebugMenu);
+    SetMainCallback2(CB2_RaidBattleIntro);
     gBattlerControllerFuncs[gActiveBattler] = WaitForDebug;
 }
 
