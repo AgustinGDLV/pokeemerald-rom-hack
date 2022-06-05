@@ -57,7 +57,7 @@ struct Partner
 
 struct RaidBattleCursor
 {
-    u8 spriteId;
+    u16 spriteId;
 };
 
 struct RaidBattleIntro
@@ -69,7 +69,7 @@ struct RaidBattleIntro
 	u16 species;
 	u8 rank;
 	u8 selectedTeam;
-	u8 monSpriteId;
+	u16 monSpriteId;
 	bool8 outlinedSprite;
 };
 
@@ -84,7 +84,7 @@ static const u32 sRaidIntroBgMap[]      = INCBIN_U32("graphics/misc/raid_battle_
 
 static const u8 sText_RecommendedLevel[] = _("Recommended Level: ");
 static const u8 sText_RaidIntroSelection[] = _("{DPAD_UPDOWN}Pick {A_BUTTON}Choose {START_BUTTON}Random {B_BUTTON}Cancel");
-static const u8 sText_RaidBattleRules[] = _("Battle ends if:\n4 Pokemon faint\n10 turns pass");
+static const u8 sText_RaidBattleRules[] = _("Battle ends if:");//4 Pokemon faint\n10 turns pass");
 static const u8 sText_RaidBattleChoosePartner[] = _("Available Partners");
 
 static const struct WindowTemplate sRaidBattleIntroWinTemplates[WINDOW_COUNT + 1] =
@@ -92,7 +92,7 @@ static const struct WindowTemplate sRaidBattleIntroWinTemplates[WINDOW_COUNT + 1
 	[WIN_RECOMMENDED_LEVEL] =
 	{
 		.bg = 1,
-		.tilemapLeft = 17,
+		.tilemapLeft = 16,
 		.tilemapTop = 0,
 		.width = 14,
 		.height = 3,
@@ -106,7 +106,7 @@ static const struct WindowTemplate sRaidBattleIntroWinTemplates[WINDOW_COUNT + 1
 		.tilemapTop = 3,
 		.width = 14,
 		.height = 2,
-		.paletteNum = 14,
+		.paletteNum = 15,
 		.baseBlock = 43,
 	},
 	[WIN_RULES] =
@@ -122,7 +122,7 @@ static const struct WindowTemplate sRaidBattleIntroWinTemplates[WINDOW_COUNT + 1
 	[WIN_TYPE_1] =
 	{
 		.bg = 1,
-		.tilemapLeft = 8,
+		.tilemapLeft = 7,
 		.tilemapTop = 0,
 		.width = 4,
 		.height = 2,
@@ -132,7 +132,7 @@ static const struct WindowTemplate sRaidBattleIntroWinTemplates[WINDOW_COUNT + 1
 	[WIN_TYPE_2] =
 	{
 		.bg = 1,
-		.tilemapLeft = 12,
+		.tilemapLeft = 11,
 		.tilemapTop = 0,
 		.width = 4,
 		.height = 2,
@@ -310,9 +310,26 @@ void CB2_RaidBattleIntro(void)
         case 2:
             taskId = CreateTask(Task_RaidBattleIntroFadeIn, 0);
             data = AllocZeroed(sizeof(struct RaidBattleIntro));
-            GetRaidBattleData(data);
             SetStructPtr(taskId, data);
-            InitRaidBattleIntro(data);
+
+            data->species = SPECIES_SALAMENCE;
+            data->rank = 6;
+            data->personality = 0xFFFFFFFF;
+
+            data->partners[0].graphicsId = OBJ_EVENT_GFX_STEVEN;
+            data->partners[0].team[0] = SPECIES_TYRANITAR;
+            data->partners[0].team[1] = SPECIES_MAMOSWINE;
+            data->partners[0].team[2] = SPECIES_GRANBULL;
+
+            data->partners[1].graphicsId = OBJ_EVENT_GFX_MAY_NORMAL;
+            data->partners[1].team[0] = SPECIES_GOLURK;
+            data->partners[1].team[1] = SPECIES_MAGNEZONE;
+            data->partners[1].team[2] = SPECIES_SALAMENCE;
+
+            data->partners[2].graphicsId = OBJ_EVENT_GFX_RED;
+            data->partners[2].team[0] = SPECIES_PIKACHU_ORIGINAL_CAP;
+            data->partners[2].team[1] = SPECIES_SNORLAX;
+            data->partners[2].team[2] = SPECIES_MEWTWO;
             gMain.state++;
             break;
         case 3:
@@ -320,11 +337,6 @@ void CB2_RaidBattleIntro(void)
             ResetBgsAndClearDma3BusyFlags(0);
             InitBgsFromTemplates(0, sRaidBattleIntroBgTemplates, 3);
             SetBgTilemapBuffer(2, data->tilemapPtr);
-            InitWindows(sRaidBattleIntroWinTemplates);
-            CleanWindows();
-            CommitWindows();
-            PrintInstructions();
-            CommitWindows();
             gMain.state++;
             break;
         case 4:
@@ -342,12 +354,16 @@ void CB2_RaidBattleIntro(void)
             }
             break;
         case 6:
-            //InitWindows(sRaidBattleIntroWinTemplates);
+            InitWindows(sRaidBattleIntroWinTemplates);
             DeactivateAllTextPrinters();
             gMain.state++;
             break;
         case 7:
             BeginNormalPaletteFade(0xFFFFFFFF, 0, 16, 0, RGB_BLACK);
+            gMain.state++;
+            break;
+        case 8:
+            InitRaidBattleIntro(data);
             SetVBlankCallback(VBlankCB_RaidBattleIntro);
             SetMainCallback2(MainCB2_RaidBattleIntro);
             break;
@@ -620,18 +636,17 @@ static void Task_RaidBattleIntroWaitForKeyPress(u8 taskId)
 		PlaySE(SE_SELECT);
 		data->selectedTeam++;
 
-		if (data->selectedTeam >= MAX_TEAM_SIZE)
-		//||  sRaidBattleIntroPtr->partners[sRaidBattleIntroPtr->selectedTeam].graphicsId == 0)
+		if (data->selectedTeam >= MAX_TEAM_SIZE
+		    || data->partners[data->selectedTeam].graphicsId == 0)
 			data->selectedTeam = 0;
 	}
 
     gSprites[data->cursor.spriteId].y2 = data->selectedTeam * 33;
 }
 
+// Makes the sprite move back and forth horizontally.
 static void SpriteCB_RaidCursor(struct Sprite* sprite)
 {
-	//sprite->y2 = sRaidBattleIntroPtr->selectedTeam * 33;
-
 	if (sprite->data[1])
 	{
 		sprite->data[0] -= 1;
@@ -650,10 +665,10 @@ static void SpriteCB_RaidCursor(struct Sprite* sprite)
 
 static void Task_RaidBattleIntroFadeIn(u8 taskId)
 {
-	//if (sRaidBattleIntroPtr->outlinedSprite < 2)
+	//if (data->outlinedSprite < 2)
 	//	OutlineMonSprite(sRaidBattleIntroPtr->monSpriteId);
 
-	if (!gPaletteFade.active)
+	if (!gPaletteFade.active) // wait for callback to finish
 	{
 		gTasks[taskId].func = Task_RaidBattleIntroWaitForKeyPress;
 	}
@@ -687,12 +702,12 @@ static void PrintInstructions(void)
 
 	AddTextPrinterParameterized3(WIN_RULES, 0, 0, 2, colour, 0, sText_RaidBattleRules);
 
-	//StringCopy(gStringVar1, sText_RecommendedLevel);
-	//ConvertIntToDecimalStringN(gStringVar2, GetRaidRecommendedLevel(), 0, 3);
-	//StringAppend(gStringVar1, gStringVar2);
-	//AddTextPrinterParameterized3(WIN_RECOMMENDED_LEVEL, 0, 0, 0, colour, 0, gStringVar1);
+	StringCopy(gStringVar1, sText_RecommendedLevel);
+	ConvertIntToDecimalStringN(gStringVar2, GetRaidRecommendedLevel(), 0, 3);
+	StringAppend(gStringVar1, gStringVar2);
+	AddTextPrinterParameterized3(WIN_RECOMMENDED_LEVEL, 0, 2, 0, colour, 0, gStringVar1);
 
-	//AddTextPrinterParameterized3(WIN_INSTRUCTIONS, 0, 2, 4, colour, 0, sText_RaidIntroSelection);
+	AddTextPrinterParameterized3(WIN_INSTRUCTIONS, 0, 2, 4, colour, 0, sText_RaidIntroSelection);
 
 	AddTextPrinterParameterized3(WIN_CHOOSE_PARTNER, 3, 1, 4, partnerColour, 0, sText_RaidBattleChoosePartner);
 }
@@ -703,40 +718,40 @@ static void ShowStars(struct RaidBattleIntro *data)
 	LoadSpritePalette(&sRaidBattleStarSpritePalette);
     LoadSpriteSheet(&sRaidBattleStarSpriteSheet);
 
-	for (i = 0; i < data->rank; i++)
+	for (i = 0; i < 6; i++)
 		CreateSprite(&sRaidBattleStarSpriteTemplate, 9 + (9 * i), 8, 0);
 }
 
 static void ShowRaidPokemonSprite(struct RaidBattleIntro *data)
 {
-    u8 i;
-    u16 *palette;
-	u16 species = data->species;
-	u32 personality = data->personality;
-	u32 otid = T1_READ_32(gSaveBlock2Ptr->playerTrainerId);
-    u32 paletteOffset;
-	const struct CompressedSpritePalette *pal = GetMonSpritePalStructFromOtIdPersonality(species, otid, personality);
+    u16 species = SPECIES_SALAMENCE;
+	u32 personality = 0xFFFFFFFF;
+	u32 otId = T1_READ_32(gSaveBlock2Ptr->playerTrainerId);
+    u16 paletteOffset;
+    u16 spriteId;
+	const struct CompressedSpritePalette *pal = GetMonSpritePalStructFromOtIdPersonality(species, otId, personality);
 
 	//Create black silhouette
-	data->monSpriteId = CreateMonPicSprite(species, otid, personality, 1, 45, 57, 0, pal->tag);
+	CreateMonPicSprite(species, otId, personality, TRUE, 45, 57, 0, pal->tag);
+    gSprites[data->monSpriteId].oam.priority = 0;
 
 	paletteOffset = IndexOfSpritePaletteTag(pal->tag) * 16 + 256;
     BlendPalette(paletteOffset, 16, 16, RGB(4, 4, 4));
     CpuCopy32(gPlttBufferFaded + paletteOffset, gPlttBufferUnfaded + paletteOffset, 32);
 
 	//Create white outline
-	//*(palette - 1) = RGB(31, 31, 31);
+	//(palette - 1) = RGB(31, 31, 31);
     //BlendPalette(paletteOffset, 1, 16, RGB_WHITE);
     //CpuCopy32(gPlttBufferFaded + paletteOffset, gPlttBufferUnfaded + paletteOffset, 32);
 }
 
 static void ShowRaidPokemonTypes(struct RaidBattleIntro *data)
 {
-	u16 species = data->species;
+	u16 species = SPECIES_SALAMENCE; //data->species;
 	u8 type1 = gBaseStats[species].type1;
 	u8 type2 = gBaseStats[species].type2;
 
-	BlitMenuInfoIcon(WIN_TYPE_1, type1 + 1, 0, 2); // originally blit_move_icon_info; BAD!!!
+	BlitMenuInfoIcon(WIN_TYPE_1, type1 + 1, 0, 2);
 	if (type1 != type2)
 		BlitMenuInfoIcon(WIN_TYPE_2, type2 + 1, 0, 2);
 }
@@ -747,23 +762,23 @@ static void ShowPartnerTeams(struct RaidBattleIntro *data)
 
 	for (i = 0; i < MAX_NUM_PARTNERS; ++i)
 	{
-		if (data->partners[i].graphicsId != 0)
-		{
+		//if (data->partners[i].graphicsId != 0)
+		//{
             u32 spriteId;
             
-			spriteId = CreateObjectGraphicsSprite(data->partners[i].graphicsId, SpriteCallbackDummy, 126, 59 + (i * 33), 0);
+			spriteId = CreateObjectGraphicsSprite(OBJ_EVENT_GFX_DRAKE, SpriteCallbackDummy, 126, 59 + (i * 33), 0);
             gSprites[spriteId].oam.priority = 0;
 
 			for (j = 0; j < MAX_TEAM_SIZE; ++j)
 			{
-				u16 species = data->partners[i].team[j]; //sRaidBattleIntroPtr->partners[i].team[j];
+				u16 species = SPECIES_SALAMENCE; //data->partners[i].team[j];
 				if (species != SPECIES_NONE)
 				{
 					LoadMonIconPalette(species);
 					CreateMonIcon(species, SpriteCB_MonIcon, 158 + (32 * j), 59 + (i * 33), 0, 0xFFFFFFFF);
 				}
 			}
-		}
+		//}
 	}
 }
 
@@ -794,17 +809,18 @@ static void CommitWindows(void)
 
 static void InitRaidBattleIntro(struct RaidBattleIntro *data)
 {
-	//CleanWindows();
-	//CommitWindows();
+	CleanWindows();
+	CommitWindows();
 
-	ShowStars(data);
 	ShowRaidPokemonSprite(data);
-	//ShowRaidPokemonTypes(data);
-	ShowPartnerTeams(data);
 	ShowSelectionArrow(data);
-
+	ShowStars(data);
+    PrintInstructions();
+	ShowRaidPokemonTypes(data);
+	ShowPartnerTeams(data);
+    
 	//Display newly commited windows
-	//CommitWindows();
+	CommitWindows();
 }
 
 static void LoadRaidBattleIntroGfx(struct RaidBattleIntro *data)
