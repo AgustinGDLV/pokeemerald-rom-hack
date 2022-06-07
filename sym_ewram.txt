@@ -26,6 +26,7 @@
 	.include "src/battle_controllers.o"
 	.include "src/digit_obj_util.o"
 	.include "src/battle_main.o"
+	.include "src/raid_intro.o"
 	.include "src/pokemon.o"
 	.include "src/random.o"
 	.include "src/daycare.o"

@@ -56,22 +56,16 @@ struct Partner
 	u16 team[MAX_TEAM_SIZE];
 };
 
-struct RaidBattleCursor
-{
-    u16 spriteId;
-};
-
 struct RaidBattleIntro
 {
 	u32* tilemapPtr;
 	struct Partner partners[MAX_NUM_PARTNERS];
-    struct RaidBattleCursor cursor;
 	u32 personality;
 	u16 species;
 	u8 rank;
 	u8 selectedTeam;
 	u16 monSpriteId;
-	bool8 outlinedSprite;
+	u8 outlinedSprite;
 };
 
 // const rom data
@@ -243,40 +237,25 @@ static void WindowPrint(u8 windowId, u8 x, u8 y, u8 lineSpacing, const u8 *color
 static void PrintInstructions(void);
 static void CleanWindows(void);
 static void CommitWindows(void);
-static void LoadRaidBattleIntroGfx(struct RaidBattleIntro *data);
+static void LoadRaidBattleIntroGfx(void);
 static void ClearTasksAndGraphicalStructs(void);
 static void ClearVramOamPlttRegs(void);
 static void Task_RaidBattleIntroFadeOut(u8 taskId);
 static void Task_RaidBattleIntroWaitForKeyPress(u8 taskId);
 static void Task_RaidBattleIntroFadeIn(u8 taskId);
-static void InitRaidBattleIntro(struct RaidBattleIntro *data);
-static void ShowStars(struct RaidBattleIntro *data);
-static void ShowRaidPokemonSprite(struct RaidBattleIntro *data);
-static void ShowRaidPokemonTypes(struct RaidBattleIntro *data);
-static void ShowPartnerTeams(struct RaidBattleIntro *data);
-static void ShowSelectionArrow(struct RaidBattleIntro *data);
-static bool8 GetRaidBattleData(struct RaidBattleIntro *data);
+static void InitRaidBattleIntro(void);
+static void ShowStars(void);
+static void ShowRaidPokemonSprite(void);
+static void ShowRaidPokemonTypes(void);
+static void ShowPartnerTeams(void);
+static void ShowRaidCursor(void);
+static void OutlineMonSprite(u8 spriteId);
+static bool8 GetRaidBattleData(void);
 static u8 GetRaidRecommendedLevel(void);
 
+EWRAM_DATA static struct RaidBattleIntro *sRaidBattleIntro = NULL;
+
 // code
-static struct RaidBattleIntro *GetStructPtr(u8 taskId)
-{
-    u8 *taskDataPtr = (u8*)(&gTasks[taskId].data[0]);
-
-    return (struct RaidBattleIntro*)(T1_READ_PTR(taskDataPtr));
-}
-
-static void SetStructPtr(u8 taskId, void *ptr)
-{
-    u32 structPtr = (u32)(ptr);
-    u8 *taskDataPtr = (u8*)(&gTasks[taskId].data[0]);
-
-    taskDataPtr[0] = structPtr >> 0;
-    taskDataPtr[1] = structPtr >> 8;
-    taskDataPtr[2] = structPtr >> 16;
-    taskDataPtr[3] = structPtr >> 24;
-}
-
 static void MainCB2_RaidBattleIntro(void)
 {
 	RunTasks();
@@ -294,9 +273,6 @@ static void VBlankCB_RaidBattleIntro(void)
 
 void CB2_RaidBattleIntro(void)
 {
-    u8 taskId;
-    struct RaidBattleIntro *data;
-    
     switch (gMain.state) {
         default:
         case 0:
@@ -309,23 +285,17 @@ void CB2_RaidBattleIntro(void)
             gMain.state++;
             break;
         case 2:
-            taskId = CreateTask(Task_RaidBattleIntroFadeIn, 0);
-            data = AllocZeroed(sizeof(struct RaidBattleIntro));
-            SetStructPtr(taskId, data);
+            sRaidBattleIntro->tilemapPtr = AllocZeroed(BG_SCREEN_SIZE);
+            ResetBgsAndClearDma3BusyFlags(0);
+            InitBgsFromTemplates(0, sRaidBattleIntroBgTemplates, 3);
+            SetBgTilemapBuffer(2, sRaidBattleIntro->tilemapPtr);
             gMain.state++;
             break;
         case 3:
-            data->tilemapPtr = AllocZeroed(0x1000);
-            ResetBgsAndClearDma3BusyFlags(0);
-            InitBgsFromTemplates(0, sRaidBattleIntroBgTemplates, 3);
-            SetBgTilemapBuffer(2, data->tilemapPtr);
+            LoadRaidBattleIntroGfx();
             gMain.state++;
             break;
         case 4:
-            LoadRaidBattleIntroGfx(data);
-            gMain.state++;
-            break;
-        case 5:
             if (IsDma3ManagerBusyWithBgCopy() != TRUE)
             {
                 ShowBg(0);
@@ -335,18 +305,19 @@ void CB2_RaidBattleIntro(void)
                 gMain.state++;
             }
             break;
-        case 6:
+        case 5:
             InitWindows(sRaidBattleIntroWinTemplates);
             DeactivateAllTextPrinters();
             gMain.state++;
             break;
-        case 7:
+        case 6:
             BeginNormalPaletteFade(0xFFFFFFFF, 0, 16, 0, RGB_BLACK);
             gMain.state++;
             break;
-        case 8:
-            InitRaidBattleIntro(data);
+        case 7:
             SetVBlankCallback(VBlankCB_RaidBattleIntro);
+            InitRaidBattleIntro();
+            CreateTask(Task_RaidBattleIntroFadeIn, 0);
             SetMainCallback2(MainCB2_RaidBattleIntro);
             break;
 	}
@@ -354,12 +325,11 @@ void CB2_RaidBattleIntro(void)
 
 static void Task_RaidBattleIntroFadeOut(u8 taskId)
 {
-    struct RaidBattleIntro *data = GetStructPtr(taskId);
 	if (!gPaletteFade.active)
 	{
 		SetMainCallback2(CB2_ReturnToFieldContinueScript);
-		Free(data->tilemapPtr);
-		Free(data);
+		Free(sRaidBattleIntro->tilemapPtr);
+		Free(sRaidBattleIntro);
 		FreeAllWindowBuffers();
 		DestroyTask(taskId);
 	}
@@ -370,12 +340,11 @@ static void Task_RaidBattleIntroWaitForKeyPress(u8 taskId)
 	u8 i;
 	u16 id;
 	const u8* name;
-    struct RaidBattleIntro *data = GetStructPtr(taskId);
 
 	if (gMain.newKeys & A_BUTTON)
 	{
 		PRESSED_A:
-		/*id = sRaidBattleIntroPtr->partners[sRaidBattleIntroPtr->selectedTeam].id;
+		/*id = sRaidBattleIntro->partners[sRaidBattleIntro->selectedTeam].id;
 
 		gSpecialVar_Result = 1;
 		//FlagSet(FLAG_TAG_BATTLE);
@@ -410,47 +379,47 @@ static void Task_RaidBattleIntroWaitForKeyPress(u8 taskId)
 		PlaySE(SE_SELECT);
 		for (i = 0; i < MAX_TEAM_SIZE; ++i)
 		{
-			if (sRaidBattleIntroPtr->partners[i].graphicsId != 0)
+			if (sRaidBattleIntro->partners[i].graphicsId != 0)
 				++numTeams;
 		}
 
-		sRaidBattleIntroPtr->selectedTeam = Random() % numTeams;
+		sRaidBattleIntro->selectedTeam = Random() % numTeams;
 		goto PRESSED_A;*/
 	}
 	else if (gMain.newAndRepeatedKeys & DPAD_UP)
 	{
 		PlaySE(SE_SELECT);
-		if (data->selectedTeam == 0)
+		if (sRaidBattleIntro->selectedTeam == 0)
 		{
 			for (i = 0; i < MAX_TEAM_SIZE; ++i)
 			{
-				//if (data->partners[i].graphicsId != 0)
-					data->selectedTeam++;
+				//if (sRaidBattleIntro->partners[i].graphicsId != 0)
+					sRaidBattleIntro->selectedTeam++;
 				//else
 				//	break;
 			}
 
-			data->selectedTeam -= 1; //Prevent overflow
+			sRaidBattleIntro->selectedTeam -= 1; //Prevent overflow
 		}
 		else
-			data->selectedTeam--;
+			sRaidBattleIntro->selectedTeam--;
 	}
 	else if (gMain.newAndRepeatedKeys & DPAD_DOWN)
 	{
 		PlaySE(SE_SELECT);
-		data->selectedTeam++;
+		sRaidBattleIntro->selectedTeam++;
 
-		if (data->selectedTeam >= MAX_TEAM_SIZE)
-		    //|| data->partners[data->selectedTeam].graphicsId == 0)
-			data->selectedTeam = 0;
+		if (sRaidBattleIntro->selectedTeam >= MAX_TEAM_SIZE)
+		    || sRaidBattleIntro->partners[sRaidBattleIntro->selectedTeam].graphicsId == 0)
+			sRaidBattleIntro->selectedTeam = 0;
 	}
-
-    gSprites[data->cursor.spriteId].y2 = data->selectedTeam * 33;
 }
 
 // Makes the sprite move back and forth horizontally.
 static void SpriteCB_RaidCursor(struct Sprite* sprite)
 {
+    sprite->y2 = sRaidBattleIntro->selectedTeam * 33;
+
 	if (sprite->data[1])
 	{
 		sprite->data[0] -= 1;
@@ -469,11 +438,12 @@ static void SpriteCB_RaidCursor(struct Sprite* sprite)
 
 static void Task_RaidBattleIntroFadeIn(u8 taskId)
 {
-	//if (data->outlinedSprite < 2)
-	//	OutlineMonSprite(sRaidBattleIntroPtr->monSpriteId);
+	//if (sRaidBattleIntro->outlinedSprite < 2)
+	//	OutlineMonSprite(sRaidBattleIntro->monSpriteId);
 
-	if (!gPaletteFade.active) // wait for callback to finish
+	if (!gPaletteFade.active)
 	{
+        PlaySE(SE_RG_CARD_OPEN);
 		gTasks[taskId].func = Task_RaidBattleIntroWaitForKeyPress;
 	}
 }
@@ -516,7 +486,7 @@ static void PrintInstructions(void)
 	AddTextPrinterParameterized3(WIN_CHOOSE_PARTNER, 3, 1, 4, partnerColour, 0, sText_RaidBattleChoosePartner);
 }
 
-static void ShowStars(struct RaidBattleIntro *data)
+static void ShowStars(void)
 {
     u8 i;
 	LoadSpritePalette(&sRaidBattleStarSpritePalette);
@@ -526,32 +496,41 @@ static void ShowStars(struct RaidBattleIntro *data)
 		CreateSprite(&sRaidBattleStarSpriteTemplate, 10 + (9 * i), 8, 0);
 }
 
-static void ShowRaidPokemonSprite(struct RaidBattleIntro *data)
+static void ShowRaidPokemonSprite(void)
 {
-    u16 species = SPECIES_SALAMENCE;
-	u32 personality = 0xFFFFFFFF;
+    u8 i, j;
+    u16 species = sRaidBattleIntro->species;
+	u32 personality = sRaidBattleIntro->personality;
 	u32 otId = T1_READ_32(gSaveBlock2Ptr->playerTrainerId);
     u16 paletteOffset;
     u16 spriteId;
 	const struct CompressedSpritePalette *pal = GetMonSpritePalStructFromOtIdPersonality(species, otId, personality);
 
 	//Create black silhouette
-	spriteId = CreateMonPicSprite(species, otId, personality, TRUE, 45, 57, 0, pal->tag);
-    gSprites[spriteId].oam.priority = 0;
+	sRaidBattleIntro->monSpriteId = CreateMonPicSprite(species, otId, personality, TRUE, 45, 57, 0, pal->tag);
+    gSprites[sRaidBattleIntro->monSpriteId].oam.priority = 0;
 
-	paletteOffset = IndexOfSpritePaletteTag(pal->tag) * 16 + 256;
+	paletteOffset = IndexOfSpritePaletteTag(pal->tag) * 16 + 0x100;
     BlendPalette(paletteOffset, 16, 16, RGB(4, 4, 4));
     CpuCopy32(gPlttBufferFaded + paletteOffset, gPlttBufferUnfaded + paletteOffset, 32);
 
 	//Create white outline
-	//(palette - 1) = RGB(31, 31, 31);
-    //BlendPalette(paletteOffset, 1, 16, RGB_WHITE);
-    //CpuCopy32(gPlttBufferFaded + paletteOffset, gPlttBufferUnfaded + paletteOffset, 32);
+    for (i = 0; i < 2; i++)
+    {
+        for (j = 0; j < 2; j++)
+        {
+            spriteId = CreateMonPicSprite(species, otId, personality, TRUE, 44 + i*2, 56 + j*2, gSprites[sRaidBattleIntro->monSpriteId].oam.paletteNum + 1, TAG_NONE);
+            gSprites[spriteId].oam.priority = 1;
+        }
+    }
+    paletteOffset += 16;
+    FillPalette(RGB_WHITE, paletteOffset, 32);
+    CpuCopy32(gPlttBufferFaded + paletteOffset, gPlttBufferUnfaded + paletteOffset, 32);
 }
 
-static void ShowRaidPokemonTypes(struct RaidBattleIntro *data)
+static void ShowRaidPokemonTypes(void)
 {
-	u16 species = SPECIES_SALAMENCE; //data->species;
+	u16 species = sRaidBattleIntro->species;
 	u8 type1 = gBaseStats[species].type1;
 	u8 type2 = gBaseStats[species].type2;
 
@@ -560,37 +539,37 @@ static void ShowRaidPokemonTypes(struct RaidBattleIntro *data)
 		BlitMenuInfoIcon(WIN_TYPE_2, type2 + 1, 0, 2);
 }
 
-static void ShowPartnerTeams(struct RaidBattleIntro *data)
+static void ShowPartnerTeams(void)
 {
 	u8 i, j;
 
 	for (i = 0; i < MAX_NUM_PARTNERS; ++i)
 	{
-		//if (data->partners[i].graphicsId != 0)
-		//{
+		if (sRaidBattleIntro->partners[i].graphicsId != 0)
+		{
             u32 spriteId;
             
-			spriteId = CreateObjectGraphicsSprite(OBJ_EVENT_GFX_DRAKE, SpriteCallbackDummy, 126, 59 + (i * 33), 0);
+			spriteId = CreateObjectGraphicsSprite(sRaidBattleIntro->partners[i].graphicsId, SpriteCallbackDummy, 126, 59 + (i * 33), 0);
             gSprites[spriteId].oam.priority = 0;
 
 			for (j = 0; j < MAX_TEAM_SIZE; ++j)
 			{
-				u16 species = SPECIES_SALAMENCE; //data->partners[i].team[j];
+				u16 species = sRaidBattleIntro->partners[i].team[j];
 				if (species != SPECIES_NONE)
 				{
 					LoadMonIconPalette(species);
 					CreateMonIcon(species, SpriteCB_MonIcon, 158 + (32 * j), 59 + (i * 33), 0, 0xFFFFFFFF);
 				}
 			}
-		//}
+		}
 	}
 }
 
-static void ShowSelectionArrow(struct RaidBattleIntro *data)
+static void ShowRaidCursor(void)
 {
 	LoadSpriteSheet(&sRaidBattleCursorSpriteSheet);
 	LoadSpritePalette(&sRaidBattleCursorSpritePalette);
-	data->cursor.spriteId = CreateSprite(&sRaidBattleCursorSpriteTemplate, 95, 59, 0);
+	CreateSprite(&sRaidBattleCursorSpriteTemplate, 95, 59, 0);
 }
 
 //Cleans the windows
@@ -611,26 +590,26 @@ static void CommitWindows(void)
 	}
 }
 
-static void InitRaidBattleIntro(struct RaidBattleIntro *data)
+static void InitRaidBattleIntro(void)
 {
 	CleanWindows();
 	CommitWindows();
 
-	ShowRaidPokemonSprite(data);
-	ShowSelectionArrow(data);
-	ShowStars(data);
+    ShowRaidCursor();
+	ShowStars();
     PrintInstructions();
-	ShowRaidPokemonTypes(data);
-	ShowPartnerTeams(data);
+	ShowRaidPokemonTypes();
+	ShowPartnerTeams();
+	ShowRaidPokemonSprite();
     
 	//Display newly commited windows
 	CommitWindows();
 }
 
-static void LoadRaidBattleIntroGfx(struct RaidBattleIntro *data)
+static void LoadRaidBattleIntroGfx(void)
 {	
     DecompressAndCopyTileDataToVram(2, &sRaidIntroBgGfx, 0, 0, 0);
-	LZDecompressWram(sRaidIntroBgMap, data->tilemapPtr);
+	LZDecompressWram(sRaidIntroBgMap, sRaidBattleIntro->tilemapPtr);
 	LoadCompressedPalette(sRaidIntroBgPal, 0, 0x20);
 	ListMenuLoadStdPalAt(0xC0, 1);
 	Menu_LoadStdPalAt(0xF0);
@@ -670,8 +649,8 @@ static bool8 HasRaidBattleAlreadyBeenDone(void)
 {
     return FALSE;
 }
-/*
-void sp115_RaidBattleAvailable(void)
+
+void IsRaidBattleAvailable(void)
 {
 	if (!HasRaidBattleAlreadyBeenDone() && GetRaidBattleData())
 		gSpecialVar_Result = TRUE;
@@ -679,19 +658,19 @@ void sp115_RaidBattleAvailable(void)
 		gSpecialVar_Result = FALSE;
 }
 
-void sp116_StartRaidBattleIntro(void)
+void InitRaidIntro(void)
 {
-	sRaidBattleIntroPtr = calloc(0, sizeof(struct RaidBattleIntro));
-	gSpecialVar_Result = FALSE;
-
+    gSpecialVar_Result = FALSE;
+    if (sRaidBattleIntro == NULL)
+	    sRaidBattleIntro = AllocZeroed(sizeof(struct RaidBattleIntro));
+    
 	if (GetRaidBattleData())
 	{
 		PlayRainStoppingSoundEffect();
 		SetMainCallback2(CB2_RaidBattleIntro);
 	}
-}*/
+}
 
-/*
 static void OutlineMonSprite(u8 spriteId)
 {
 	u32 i = 0;
@@ -702,7 +681,7 @@ static void OutlineMonSprite(u8 spriteId)
     u8 pixel1, pixel2, pixel3, pixel4, pixel5, pixel6, pixel7;
     bool8 isTopBorder, isBottomBorder, isLeftBorder, isRightBorder;
 
-	for (i = 0; i < (64 * 64) / 2; ++i)
+	for (i = 0; i < (64 * 64) / 2; i++)
 	{
 		/*Pixel Map - Bits
 		6	7
@@ -716,7 +695,7 @@ static void OutlineMonSprite(u8 spriteId)
 		67
 		12 3
 		45
-		/
+		*/
 
 		nextByteColumn = 1;
 		if (i % 4 == 3)
@@ -749,7 +728,7 @@ static void OutlineMonSprite(u8 spriteId)
 		isLeftBorder = ((i % 0x100) < 0x20) && ((i % 4) == 0);
 		isRightBorder = ((i % 0x100) >= 0xE0) && ((i % 4) == 3);
 
-		if (pixel1 != 0)
+		/*if (pixel1 != 0)
 		{
 			if (isTopBorder || isBottomBorder || isLeftBorder)
 				buffer[i + 0] |= 0xF; //Set lower bit to white
@@ -790,14 +769,14 @@ static void OutlineMonSprite(u8 spriteId)
 		{
 			if (pixel2 == 0)
 				buffer[i + 0] |= 0xF0; //Set upper bit
-		}
+		}*/
 	}
 
-	CpuCopy32(buffer, originalOffset, (64 * 64) / 2);
-	sRaidBattleIntroPtr->outlinedSprite++;
-}*/
+	//CpuCopy32(buffer, originalOffset, (64 * 64) / 2);
+	sRaidBattleIntro->outlinedSprite++;
+}
 
-static bool8 GetRaidBattleData(struct RaidBattleIntro *data)
+static bool8 GetRaidBattleData(void)
 {
 	u32 i, j, k;
 	bool8 checkedPartners[3]; //numRaidPartners
@@ -805,8 +784,8 @@ static bool8 GetRaidBattleData(struct RaidBattleIntro *data)
 	/*DetermineRaidStars();
 	DetermineRaidSpecies();
 	DetermineRaidLevel();
-	sRaidBattleIntroPtr->rank = gRaidBattleStars;
-	sRaidBattleIntroPtr->species = gRaidBattleSpecies;
+	sRaidBattleIntro->rank = gRaidBattleStars;
+	sRaidBattleIntro->species = gRaidBattleSpecies;
 
 	if (gRaidBattleSpecies == SPECIES_NONE)
 		return FALSE;
@@ -821,14 +800,14 @@ static bool8 GetRaidBattleData(struct RaidBattleIntro *data)
 	{
 		if (checkedPartners[i] == TRUE) //0xFF means not viable
 		{
-			struct Partner* partner = &sRaidBattleIntroPtr->partners[k++];
+			struct Partner* partner = &sRaidBattleIntro->partners[k++];
 
 			partner->id = i;
 			partner->graphicsId = gRaidPartners[i].owNum;
 
 			for (j = 0; j < MAX_TEAM_SIZE; ++j)
 			{
-				const struct BattleTowerSpread* spread = GetRaidMultiSpread(i, j, sRaidBattleIntroPtr->rank);
+				const struct BattleTowerSpread* spread = GetRaidMultiSpread(i, j, sRaidBattleIntro->rank);
 				if (spread != NULL)
 					partner->team[j] = spread->species;
 				else
@@ -847,24 +826,24 @@ static bool8 GetRaidBattleData(struct RaidBattleIntro *data)
 
 /*Test Data*/
 	//gRaidBattleStars = 6;
-	data->species = SPECIES_SALAMENCE;
-	data->rank = 6;
-    data->personality = 0xFFFFFFFF;
+	sRaidBattleIntro->species = SPECIES_SALAMENCE;
+	sRaidBattleIntro->rank = 6;
+    sRaidBattleIntro->personality = 0xFFFFFFFF;
 
-	data->partners[0].graphicsId = OBJ_EVENT_GFX_STEVEN;
-	data->partners[0].team[0] = SPECIES_TYRANITAR;
-	data->partners[0].team[1] = SPECIES_MAMOSWINE;
-	data->partners[0].team[2] = SPECIES_GRANBULL;
+	sRaidBattleIntro->partners[0].graphicsId = OBJ_EVENT_GFX_STEVEN;
+	sRaidBattleIntro->partners[0].team[0] = SPECIES_TYRANITAR;
+	sRaidBattleIntro->partners[0].team[1] = SPECIES_MAMOSWINE;
+	sRaidBattleIntro->partners[0].team[2] = SPECIES_GRANBULL;
 
-	data->partners[1].graphicsId = OBJ_EVENT_GFX_MAY_NORMAL;
-	data->partners[1].team[0] = SPECIES_GOLURK;
-	data->partners[1].team[1] = SPECIES_MAGNEZONE;
-	data->partners[1].team[2] = SPECIES_SALAMENCE;
+	sRaidBattleIntro->partners[1].graphicsId = OBJ_EVENT_GFX_MAY_NORMAL;
+	sRaidBattleIntro->partners[1].team[0] = SPECIES_GOLURK;
+	sRaidBattleIntro->partners[1].team[1] = SPECIES_MAGNEZONE;
+	sRaidBattleIntro->partners[1].team[2] = SPECIES_SALAMENCE;
 
-	data->partners[2].graphicsId = OBJ_EVENT_GFX_RED;
-	data->partners[2].team[0] = SPECIES_PIKACHU_ORIGINAL_CAP;
-	data->partners[2].team[1] = SPECIES_SNORLAX;
-	data->partners[2].team[2] = SPECIES_MEWTWO;
+	sRaidBattleIntro->partners[2].graphicsId = OBJ_EVENT_GFX_RED;
+	sRaidBattleIntro->partners[2].team[0] = SPECIES_PIKACHU_ORIGINAL_CAP;
+	sRaidBattleIntro->partners[2].team[1] = SPECIES_SNORLAX;
+	sRaidBattleIntro->partners[2].team[2] = SPECIES_MEWTWO;
 
 	return TRUE;
 }
