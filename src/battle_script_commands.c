@@ -7657,8 +7657,7 @@ u32 IsAbilityStatusProtected(u32 battler)
 void RecalcBattlerStats(u32 battler, struct Pokemon *mon)
 {
     CalculateMonStats(mon);
-    if (gBattleTypeFlags & BATTLE_TYPE_RAID && GetBattlerPosition(battler) == B_POSITION_OPPONENT_LEFT
-        && !(gBattleStruct->raid.state & CATCHING_RAID_BOSS))
+    if (IsRaidBoss(battler) && !(gBattleStruct->raid.state & CATCHING_RAID_BOSS))
         ApplyRaidHPMultiplier(mon);
     gBattleMons[battler].level = GetMonData(mon, MON_DATA_LEVEL);
     gBattleMons[battler].hp = GetMonData(mon, MON_DATA_HP);
@@ -10974,7 +10973,7 @@ static void Cmd_tryKO(void)
         {
             u16 odds = gBattleMoves[gCurrentMove].accuracy + (gBattleMons[gBattlerAttacker].level - gBattleMons[gBattlerTarget].level);
             if (Random() % 100 + 1 < odds && gBattleMons[gBattlerAttacker].level >= gBattleMons[gBattlerTarget].level
-                && !(gBattleTypeFlags & BATTLE_TYPE_RAID && GetBattlerPosition(gBattlerTarget) == B_POSITION_OPPONENT_LEFT))
+                && !IsRaidBoss(gBattlerTarget))
                 lands = TRUE;
         }
 
@@ -11002,7 +11001,7 @@ static void Cmd_tryKO(void)
         {
             gMoveResultFlags |= MOVE_RESULT_MISSED;
             if (gBattleMons[gBattlerAttacker].level >= gBattleMons[gBattlerTarget].level
-                && !(gBattleTypeFlags & BATTLE_TYPE_RAID && GetBattlerPosition(gBattlerTarget) == B_POSITION_OPPONENT_LEFT))
+                && !IsRaidBoss(gBattlerTarget))
                 gBattleCommunication[MULTISTRING_CHOOSER] = B_MSG_KO_MISS;
             else
                 gBattleCommunication[MULTISTRING_CHOOSER] = B_MSG_KO_UNAFFECTED;

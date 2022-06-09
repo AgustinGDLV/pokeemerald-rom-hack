@@ -233,7 +233,6 @@ static const struct SpritePalette sRaidBattleCursorSpritePalette = {
 };
 
 // functions
-static void WindowPrint(u8 windowId, u8 x, u8 y, u8 lineSpacing, const u8 *color, u8 speed, const u8 *string);
 static void PrintInstructions(void);
 static void CleanWindows(void);
 static void CommitWindows(void);
@@ -251,7 +250,6 @@ static void ShowPartnerTeams(void);
 static void ShowRaidCursor(void);
 static void OutlineMonSprite(u8 spriteId);
 static bool8 GetRaidBattleData(void);
-static u8 GetRaidRecommendedLevel(void);
 
 EWRAM_DATA static struct RaidBattleIntro *sRaidBattleIntro = NULL;
 
@@ -327,7 +325,7 @@ static void Task_RaidBattleIntroFadeOut(u8 taskId)
 {
 	if (!gPaletteFade.active)
 	{
-		SetMainCallback2(CB2_ReturnToFieldContinueScript);
+        SetMainCallback2(CB2_ReturnToFieldContinueScript);
 		Free(sRaidBattleIntro->tilemapPtr);
 		Free(sRaidBattleIntro);
 		FreeAllWindowBuffers();
@@ -367,11 +365,11 @@ static void Task_RaidBattleIntroWaitForKeyPress(u8 taskId)
 	}
 	else if (gMain.newKeys & B_BUTTON)
 	{
-		//gSpecialVar_Result = 0;
+		gSpecialVar_Result = FALSE;
 
 		PlaySE(SE_FAILURE);
-		//BeginNormalPaletteFade(0xFFFFFFFF, 0, 0, 16, RGB_BLACK);
-		//gTasks[taskId].func = Task_RaidBattleIntroFadeOut;
+		BeginNormalPaletteFade(0xFFFFFFFF, 0, 0, 16, RGB_BLACK);
+		gTasks[taskId].func = Task_RaidBattleIntroFadeOut;
 	}
 	else if (gMain.newAndRepeatedKeys & START_BUTTON)
 	{
@@ -393,10 +391,10 @@ static void Task_RaidBattleIntroWaitForKeyPress(u8 taskId)
 		{
 			for (i = 0; i < MAX_TEAM_SIZE; ++i)
 			{
-				//if (sRaidBattleIntro->partners[i].graphicsId != 0)
+				if (sRaidBattleIntro->partners[i].graphicsId != 0)
 					sRaidBattleIntro->selectedTeam++;
-				//else
-				//	break;
+				else
+					break;
 			}
 
 			sRaidBattleIntro->selectedTeam -= 1; //Prevent overflow
@@ -409,7 +407,7 @@ static void Task_RaidBattleIntroWaitForKeyPress(u8 taskId)
 		PlaySE(SE_SELECT);
 		sRaidBattleIntro->selectedTeam++;
 
-		if (sRaidBattleIntro->selectedTeam >= MAX_TEAM_SIZE)
+		if (sRaidBattleIntro->selectedTeam >= MAX_TEAM_SIZE
 		    || sRaidBattleIntro->partners[sRaidBattleIntro->selectedTeam].graphicsId == 0)
 			sRaidBattleIntro->selectedTeam = 0;
 	}
@@ -448,16 +446,6 @@ static void Task_RaidBattleIntroFadeIn(u8 taskId)
 	}
 }
 
-static u8 GetRaidRecommendedLevel(void)
-{
-    return 50;
-}
-
-static void WindowPrint(u8 windowId, u8 x, u8 y, u8 lineSpacing, const u8 *color, u8 speed, const u8 *string)
-{
-    AddTextPrinterParameterized4(windowId, FONT_NORMAL, x, y, 0, lineSpacing, color, 0, string);
-}
-
 static void PrintInstructions(void)
 {
 	const u8 partnerColour[] = {TEXT_COLOR_TRANSPARENT, TEXT_COLOR_DARK_GRAY, TEXT_COLOR_LIGHT_GRAY};
@@ -492,7 +480,7 @@ static void ShowStars(void)
 	LoadSpritePalette(&sRaidBattleStarSpritePalette);
     LoadSpriteSheet(&sRaidBattleStarSpriteSheet);
 
-	for (i = 0; i < 6; i++)
+	for (i = 0; i < sRaidBattleIntro->rank; i++)
 		CreateSprite(&sRaidBattleStarSpriteTemplate, 10 + (9 * i), 8, 0);
 }
 
@@ -779,9 +767,9 @@ static void OutlineMonSprite(u8 spriteId)
 static bool8 GetRaidBattleData(void)
 {
 	u32 i, j, k;
-	bool8 checkedPartners[3]; //numRaidPartners
+	bool8 checkedPartners[gNumRaidPartners]; //numRaidPartners
 
-	/*DetermineRaidStars();
+	DetermineRaidStars();
 	DetermineRaidSpecies();
 	DetermineRaidLevel();
 	sRaidBattleIntro->rank = gRaidBattleStars;
@@ -790,13 +778,13 @@ static bool8 GetRaidBattleData(void)
 	if (gRaidBattleSpecies == SPECIES_NONE)
 		return FALSE;
 
-	for (i = 0; i < gNumRaidPartners; ++i)
+	for (i = 0; i < gNumRaidPartners; i++)
 		checkedPartners[i] = FALSE;
 
 	DetermineRaidPartners(checkedPartners, MAX_NUM_PARTNERS);
 
 	k = 0;
-	for (i = 0; i < gNumRaidPartners; ++i)
+	for (i = 0; i < gNumRaidPartners; i++)
 	{
 		if (checkedPartners[i] == TRUE) //0xFF means not viable
 		{
@@ -807,7 +795,7 @@ static bool8 GetRaidBattleData(void)
 
 			for (j = 0; j < MAX_TEAM_SIZE; ++j)
 			{
-				const struct BattleTowerSpread* spread = GetRaidMultiSpread(i, j, sRaidBattleIntro->rank);
+				const struct FixedMonSet *spread = GetRaidMultiSpread(i, j, sRaidBattleIntro->rank);
 				if (spread != NULL)
 					partner->team[j] = spread->species;
 				else
@@ -822,12 +810,12 @@ static bool8 GetRaidBattleData(void)
 	if (k == 0) //No partners found
 		return FALSE;
 
-	return TRUE;*/
+	return TRUE;
 
-/*Test Data*/
-	//gRaidBattleStars = 6;
-	sRaidBattleIntro->species = SPECIES_SALAMENCE;
-	sRaidBattleIntro->rank = 6;
+    /*Test Data:
+    //gRaidBattleStars = 6;
+	//sRaidBattleIntro->species = SPECIES_SALAMENCE;
+	//sRaidBattleIntro->rank = 6;
     sRaidBattleIntro->personality = 0xFFFFFFFF;
 
 	sRaidBattleIntro->partners[0].graphicsId = OBJ_EVENT_GFX_STEVEN;
@@ -845,5 +833,5 @@ static bool8 GetRaidBattleData(void)
 	sRaidBattleIntro->partners[2].team[1] = SPECIES_SNORLAX;
 	sRaidBattleIntro->partners[2].team[2] = SPECIES_MEWTWO;
 
-	return TRUE;
+	return TRUE;*/
 }

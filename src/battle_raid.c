@@ -6,173 +6,421 @@
 #include "battle_controllers.h"
 #include "battle_interface.h"
 #include "battle_message.h"
+#include "battle_scripts.h"
 #include "battle_setup.h"
+#include "data.h"
 #include "event_data.h"
 #include "party_menu.h"
 #include "pokemon.h"
 #include "international_string_util.h"
 #include "item.h"
 #include "item_menu.h"
-#include "util.h"
-#include "battle_scripts.h"
+#include "overworld.h"
 #include "random.h"
+#include "rtc.h"
 #include "text.h"
+#include "save.h"
 #include "sound.h"
 #include "sprite.h"
 #include "string_util.h"
 #include "task.h"
 #include "trig.h"
+#include "util.h"
 #include "window.h"
-#include "constants/moves.h"
 #include "constants/battle_string_ids.h"
+#include "constants/event_objects.h"
+#include "constants/flags.h"
+#include "constants/items.h"
+#include "constants/moves.h"
+#include "constants/trainers.h"
 
-// Sourced from Bulbapedia and cut down to balance in a 2v1 setting.
-static const u16 sStarRatingHPMultiplierTable[] =
+// constant rom data
+extern struct Evolution gEvolutionTable[][EVOS_PER_MON];
+
+static const u16 sDynamaxBandTable[] =
 {
-    [1] = UQ_4_12(1.2),
-    [2] = UQ_4_12(1.3),
-    [3] = UQ_4_12(1.5),
-    [4] = UQ_4_12(1.7),
-    [5] = UQ_4_12(2.0),
-    [6] = UQ_4_12(2.0),
+	ITEM_DYNAMAX_BAND,
 };
 
-// Resets raid variables at the start of battle. Called in TryDoEventsBeforeFirstTurn.
-void InitRaidVariables(void)
+struct GMaxMove
+{
+	u16 species;
+	u8 moveType;
+	u16 gmaxMove;
+};
+
+static const struct GMaxMove sGMaxMoveTable[] =
+{
+	{SPECIES_VENUSAUR_GMAX,	            TYPE_GRASS,      MOVE_G_MAX_VINE_LASH_P},
+	{SPECIES_CHARIZARD_GMAX,            TYPE_FIRE,       MOVE_G_MAX_WILDFIRE_P},
+	{SPECIES_BLASTOISE_GMAX,            TYPE_WATER,      MOVE_G_MAX_CANNONADE_P},
+	{SPECIES_BUTTERFREE_GMAX,           TYPE_BUG,        MOVE_G_MAX_BEFUDDLE_P},
+	{SPECIES_PIKACHU_GMAX,              TYPE_ELECTRIC,   MOVE_G_MAX_VOLT_CRASH_P},
+	{SPECIES_MEOWTH_GMAX,               TYPE_NORMAL,     MOVE_G_MAX_GOLD_RUSH_P},
+	{SPECIES_MACHAMP_GMAX,              TYPE_FIGHTING,   MOVE_G_MAX_CHI_STRIKE_P},
+	{SPECIES_GENGAR_GMAX,               TYPE_GHOST,      MOVE_G_MAX_TERROR_P},
+	{SPECIES_KINGLER_GMAX,              TYPE_WATER,      MOVE_G_MAX_FOAM_BURST_P},
+	{SPECIES_LAPRAS_GMAX,               TYPE_ICE,        MOVE_G_MAX_RESONANCE_P},
+	{SPECIES_EEVEE_GMAX,                TYPE_NORMAL,     MOVE_G_MAX_CUDDLE_P},
+	{SPECIES_SNORLAX_GMAX,              TYPE_NORMAL,     MOVE_G_MAX_REPLENISH_P},
+	{SPECIES_GARBODOR_GMAX,             TYPE_POISON,     MOVE_G_MAX_MALODOR_P},
+	{SPECIES_MELMETAL_GMAX,             TYPE_STEEL,      MOVE_G_MAX_MELTDOWN_P},
+	{SPECIES_RILLABOOM_GMAX,            TYPE_GRASS,      MOVE_G_MAX_DRUM_SOLO_P},
+	{SPECIES_CINDERACE_GMAX,            TYPE_FIRE,       MOVE_G_MAX_FIREBALL_P},
+	{SPECIES_INTELEON_GMAX,             TYPE_WATER,      MOVE_G_MAX_HYDROSNIPE_P},
+	{SPECIES_CORVIKNIGHT_GMAX,          TYPE_FLYING,     MOVE_G_MAX_WIND_RAGE_P},
+	{SPECIES_ORBEETLE_GMAX,             TYPE_PSYCHIC,    MOVE_G_MAX_GRAVITAS_P},
+	{SPECIES_DREDNAW_GMAX,              TYPE_WATER,      MOVE_G_MAX_STONESURGE_P},
+	{SPECIES_COALOSSAL_GMAX,            TYPE_ROCK,       MOVE_G_MAX_VOLCALITH_P},
+	{SPECIES_FLAPPLE_GMAX,              TYPE_GRASS,      MOVE_G_MAX_TARTNESS_P},
+	{SPECIES_APPLETUN_GMAX,             TYPE_GRASS,      MOVE_G_MAX_SWEETNESS_P},
+	{SPECIES_SANDACONDA_GMAX,           TYPE_GROUND,     MOVE_G_MAX_SANDBLAST_P},
+	{SPECIES_TOXTRICITY_GMAX,           TYPE_ELECTRIC,   MOVE_G_MAX_STUN_SHOCK_P},
+	{SPECIES_CENTISKORCH_GMAX,          TYPE_FIRE,       MOVE_G_MAX_CENTIFERNO_P},
+	{SPECIES_HATTERENE_GMAX,                 TYPE_FAIRY,      MOVE_G_MAX_SMITE_P},
+	{SPECIES_GRIMMSNARL_GMAX,           TYPE_DARK,       MOVE_G_MAX_SNOOZE_P},
+	{SPECIES_ALCREMIE_GMAX,             TYPE_FAIRY,      MOVE_G_MAX_FINALE_P},
+	{SPECIES_COPPERAJAH_GMAX,           TYPE_STEEL,      MOVE_G_MAX_STEELSURGE_P},
+	{SPECIES_DURALUDON_GMAX,            TYPE_DRAGON,     MOVE_G_MAX_DEPLETION_P},
+	{SPECIES_URSHIFU_GMAX,              TYPE_DARK,       MOVE_G_MAX_ONE_BLOW_P},
+	{SPECIES_URSHIFU_RAPID_STRIKE_GMAX, TYPE_WATER,      MOVE_G_MAX_RAPID_FLOW_P},
+};
+
+const u8 gRaidBattleStarsByBadges[][2] =
+{
+	[0] = {NO_RAID,         NO_RAID},
+	[1] = {ONE_STAR_RAID, 	ONE_STAR_RAID},
+	[2] = {ONE_STAR_RAID,   TWO_STAR_RAID},
+	[3] = {TWO_STAR_RAID,   TWO_STAR_RAID},
+	[4] = {TWO_STAR_RAID,   THREE_STAR_RAID},
+	[5] = {THREE_STAR_RAID, THREE_STAR_RAID},
+	[6] = {THREE_STAR_RAID, FOUR_STAR_RAID},
+	[7] = {FOUR_STAR_RAID,  FOUR_STAR_RAID},
+	[8] = {FOUR_STAR_RAID,  FIVE_STAR_RAID},
+	[9] = {FIVE_STAR_RAID,  SIX_STAR_RAID}, //Beat Game
+};
+
+const u8 gRaidBattleLevelRanges[RAID_STAR_COUNT][2] =
+{
+	[ONE_STAR_RAID]   = {15, 20},
+	[TWO_STAR_RAID]   = {25, 30},
+	[THREE_STAR_RAID] = {35, 40},
+	[FOUR_STAR_RAID]  = {50, 55},
+	[FIVE_STAR_RAID]  = {60, 65},
+	[SIX_STAR_RAID]   = {75, 90},
+};
+
+//The chance that each move is replaced with an Egg Move
+const u8 gRaidBattleEggMoveChances[RAID_STAR_COUNT] =
+{
+	[ONE_STAR_RAID]   = 0,
+	[TWO_STAR_RAID]   = 10,
+	[THREE_STAR_RAID] = 30,
+	[FOUR_STAR_RAID]  = 50,
+	[FIVE_STAR_RAID]  = 70,
+	[SIX_STAR_RAID]   = 70,
+};
+
+static const u8 sRaidBattleDropRates[MAX_RAID_DROPS] =
+{	//In percent
+	100,
+	80,
+	80,
+	50,
+	50,
+	30,
+	30,
+	25,
+	25,
+	5,
+	4,
+	1,
+};
+
+static const u16 sRaidHPMultipliers[] =
+{
+    [1]     = UQ_4_12(1.2),
+    [2]     = UQ_4_12(1.3),
+    [3]     = UQ_4_12(1.5),
+    [4]     = UQ_4_12(1.7),
+    [5]     = UQ_4_12(2.0),
+    [6]     = UQ_4_12(2.0),
+};
+
+#include "data/raid_encounters.h"
+#include "data/raid_partners.h"
+
+// This file's functions:
+u16 GetGigantamaxSpecies(u16 species, bool8 canGigantamax);
+
+// EWRAM data
+EWRAM_DATA u8 gRaidBattleStars = 0;
+EWRAM_DATA u8 gRaidBattleLevel = 0;
+EWRAM_DATA u16 gRaidBattleSpecies = 0;
+
+// code:
+bool8 IsGigantamaxSpecies(u16 species)
+{
+    return species >= SPECIES_VENUSAUR_GMAX && species <= SPECIES_URSHIFU_RAPID_STRIKE_GMAX;
+}
+
+u16 GetGigantamaxSpecies(u16 species, bool8 canGigantamax)
+{
+	u32 i;
+	const struct Evolution* evolutions = gEvolutionTable[species];
+
+	if (canGigantamax) //Mon can Gigantamax
+	{
+		for (i = 0; i < EVOS_PER_MON; i++)
+		{
+			if (evolutions[i].method == EVO_GIGANTAMAX)
+				return evolutions[i].targetSpecies;
+		}
+	}
+
+	return SPECIES_NONE;
+}
+
+u16 GetGigantamaxBaseForm(u16 species)
+{
+	u16 baseForm = GET_BASE_SPECIES_ID(GetMonData(&gPlayerParty[species], MON_DATA_SPECIES));
+
+    if (baseForm != species)
+        return baseForm;
+
+	return SPECIES_NONE;
+}
+
+static bool8 IsItemDynamaxBand(u16 item)
 {
     u8 i;
+	for (i = 0; i < ARRAY_COUNT(sDynamaxBandTable); i++)
+	{
+		if (item == sDynamaxBandTable[i])
+			return TRUE;
+	}
 
-    gBattleStruct->raid.stars = gSpecialVar_0x8008; // variable is set before battle starts.
-    gBattleStruct->raid.shields = 0;
-    gBattleStruct->raid.storedDmg = 0; // used to "release" damage when barriers break.
-    gBattleStruct->raid.thresholdsRemaining = GetRaidThresholdNumber();
-    gBattleStruct->raid.stormTurns = 0;
-    gBattleStruct->raid.state = INTRO_COMPLETED;
+	return FALSE;
+}
 
-    for (i = 0; i < MAX_BARRIER_COUNT; i++)
+static u16 FindTrainerDynamaxBand(u16 trainerId)
+{
+    u8 i;
+	if (gBattleTypeFlags & (BATTLE_TYPE_FRONTIER | BATTLE_TYPE_LINK))
+		return ITEM_DYNAMAX_BAND;
+
+	for (i = 0; i < MAX_TRAINER_ITEMS; i++)
+	{
+		if (IsItemDynamaxBand(gTrainers[trainerId].items[i]))
+			return gTrainers[trainerId].items[i];
+	}
+
+	return ITEM_NONE;
+}
+
+static u16 FindPlayerDynamaxBand(void)
+{
+    u8 i;
+	if (gBattleTypeFlags & (BATTLE_TYPE_FRONTIER | BATTLE_TYPE_LINK))
+		return ITEM_DYNAMAX_BAND;
+	
+    for (i = 0; i < ARRAY_COUNT(sDynamaxBandTable); ++i)
     {
-        gBattleStruct->raid.shieldSpriteIds[i] = MAX_SPRITES;
+        if (CheckBagHasItem(sDynamaxBandTable[i], 1))
+            return sDynamaxBandTable[i];
     }
-
-    RecalcBattlerStats(GetBattlerAtPosition(B_POSITION_OPPONENT_LEFT), &gEnemyParty[0]); // to apply HP multiplier
-}
-
-// Handles Raid Storm end turn events. Called in BattleTurnPassed.
-void IncrementRaidStorm(void)
-{
-    if (gBattleStruct->raid.stormTurns < RAID_STORM_MAX)
-        gBattleStruct->raid.stormTurns++;
-    switch(gBattleStruct->raid.stormTurns)
-    {
-        case RAID_STORM_LEVEL_1:
-            gBattleCommunication[MULTISTRING_CHOOSER] = B_MSG_GETTING_STRONGER;
-            BattleScriptExecute(BattleScript_RaidStormBrews);
-            break;
-        case RAID_STORM_LEVEL_2:
-            gBattleCommunication[MULTISTRING_CHOOSER] = B_MSG_GETTING_STRONGER;
-            BattleScriptExecute(BattleScript_RaidStormBrews);
-            break;
-        case RAID_STORM_LEVEL_3:
-            gBattleCommunication[MULTISTRING_CHOOSER] = B_MSG_GETTING_EVEN_STRONGER;
-            BattleScriptExecute(BattleScript_RaidStormBrews);
-            break;
-        case RAID_STORM_MAX:
-            gBattleCommunication[MULTISTRING_CHOOSER] = B_MSG_GETTING_TOO_STRONG;
-            BattleScriptExecute(BattleScript_RaidDefeat);
-            break;
-    }
-}
-
-u16 GetRaidHPMultiplier(void)
-{
-    return sStarRatingHPMultiplierTable[gBattleStruct->raid.stars];
-}
-
-void ApplyRaidHPMultiplier(struct Pokemon *mon)
-{
-    u16 hp, maxHP, multiplier;
-    hp = GetMonData(mon, MON_DATA_HP, NULL);
-    maxHP = GetMonData(mon, MON_DATA_MAX_HP, NULL);
-    multiplier = sStarRatingHPMultiplierTable[gBattleStruct->raid.stars];
-
-    hp = UQ_4_12_TO_INT((hp * multiplier) + UQ_4_12_ROUND);
-    maxHP = UQ_4_12_TO_INT((maxHP * multiplier) + UQ_4_12_ROUND);
-
-    SetMonData(mon, MON_DATA_HP, &hp);
-    SetMonData(mon, MON_DATA_MAX_HP, &maxHP);
-}
-
-// Returns how many barriers to create at a threshold. Based on star rating and defensive stats.
-u8 GetRaidShieldNumber(void)
-{
-    u16 species = GetMonData(&gEnemyParty[0], MON_DATA_SPECIES, NULL);
-    u8 hp = gBaseStats[species].baseHP;
-    u8 def = gBaseStats[species].baseDefense;
-    u8 spDef = gBaseStats[species].baseSpDefense;
-    u8 retVal;
-
-    // Currently uses the sum of defenses to determine barrier count.
-    switch (hp + def + spDef)
-    {
-        case 0 ... 199:
-            retVal = 3;
-            break;
-        case 200 ... 300:
-            retVal = 4;
-            break;
-        default: // > 300
-            retVal = MAX_BARRIER_COUNT;
-            break;
-    }
-
-    if (gBattleStruct->raid.stars < 5)
-        retVal -= 1;
     
-    return retVal;
+    return ITEM_NONE;
 }
 
-// Returns how many HP thresholds a raid will have. Based on star rating.
-u8 GetRaidThresholdNumber(void)
+static u8 GetRaidMapSectionId(void)
 {
-    u8 starRating = gBattleStruct->raid.stars;
-    switch (starRating)
+    return GetCurrentRegionMapSectionId();
+}
+
+static u32 GetRaidRandomNumber(void)
+{
+	//Make sure no values are 0
+	//u8 dayOfWeek = (gClock.dayOfWeek == 0) ? 8 : gClock.dayOfWeek;
+	//u8 day = (gClock.day == 0) ? 32 : gClock.day;
+	//u8 month = (gClock.month == 0) ? 13 : gClock.month;
+    u8 hour = (RtcGetMinuteCount() / 60 == 0) ? 24 : RtcGetMinuteCount() / 60;
+	u8 lastMapGroup = (gSaveBlock1Ptr->dynamicWarp.mapGroup == 0) ? 0xFF : gSaveBlock1Ptr->dynamicWarp.mapGroup;
+	u8 lastMapNum = (gSaveBlock1Ptr->dynamicWarp.mapNum == 0) ? 0xFF : gSaveBlock1Ptr->dynamicWarp.mapNum;
+	u8 lastWarpId = (gSaveBlock1Ptr->dynamicWarp.warpId == 0) ? 0xFF : gSaveBlock1Ptr->dynamicWarp.warpId;
+	u16 lastPos = (gSaveBlock1Ptr->dynamicWarp.x + gSaveBlock1Ptr->dynamicWarp.y == 0) ? 0xFFFF : (u16) (gSaveBlock1Ptr->dynamicWarp.x + gSaveBlock1Ptr->dynamicWarp.y);
+	#ifdef VAR_RAID_NUMBER_OFFSET
+	u16 offset = VarGet(VAR_RAID_NUMBER_OFFSET); //Setting this var changes all the raid spawns for the current hour (helps with better Wishing Piece)
+	#else
+	u16 offset = 0;
+	#endif
+
+	//return ((hour * (day + month) * lastMapGroup * (lastMapNum + lastWarpId + lastPos)) + ((hour * (day + month)) ^ dayOfWeek) + offset) ^ T1_READ_32(gSaveBlock2Ptr->playerTrainerId);
+    return ((hour * lastMapGroup * (lastMapNum + lastWarpId + lastPos)) + ((hour) ^ 8) + offset) ^ T1_READ_32(gSaveBlock2Ptr->playerTrainerId);
+}
+
+static bool8 ShouldTryGigantamaxRaidMon(void)
+{
+	return gRaidBattleStars >= 6 //6-star Raid
+		&& (GetRaidRandomNumber() % 100 >= 95 || GetRaidRandomNumber() % 100 < 20); //25% chance
+}
+
+void DetermineRaidStars(void)
+{
+	u16 numBadges, badgeFlag, min, max;
+	u32 randomNum = GetRaidRandomNumber();
+
+    for (badgeFlag = FLAG_BADGE01_GET; badgeFlag < FLAG_BADGE01_GET + NUM_BADGES; badgeFlag++)
     {
-        case 5 ... MAX_STAR_RATING:
-            return 2;
-        case 3 ... 4:
-            return 1;
-        default:
-            return 0;
+        if (FlagGet(badgeFlag))
+            numBadges++;
     }
+
+    min = gRaidBattleStarsByBadges[numBadges][0];
+	max = gRaidBattleStarsByBadges[numBadges][1];
+
+    gRaidBattleStars = 3;
+    return;
+
+	if (min == max)
+		gRaidBattleStars = min;
+	else
+		gRaidBattleStars = (randomNum % ((max + 1) - min)) + min;
 }
 
-// Returns the next health threshold of a Raid Boss.
-u32 GetNextHealthThreshold(void)
+//Must call DetermineRaidStars first
+void DetermineRaidSpecies(void)
 {
-    u32 maxHP = GetMonData(&gEnemyParty[0], MON_DATA_MAX_HP, NULL);
-    u8 total = GetRaidThresholdNumber();
-    u8 remaining = gBattleStruct->raid.thresholdsRemaining;
+	u16 index, altSpecies;
+	u8 numStars = gRaidBattleStars;
+	const struct RaidData* raid = &gRaidsByMapSection[GetCurrentRegionMapSectionId()][numStars];
 
-    if (remaining == 0 || total == 0)
-        return 0;
-    else
-        return (remaining * maxHP) / (total + 1);
+	if (raid->data != NULL)
+	{
+		index = GetRaidRandomNumber() % raid->amount;
+		gRaidBattleSpecies = raid->data[index].species;
+
+		if (ShouldTryGigantamaxRaidMon())
+		{
+			altSpecies = GetGigantamaxSpecies(raid->data[index].species, TRUE);
+			if (altSpecies != SPECIES_NONE)
+				gRaidBattleSpecies = altSpecies; //Update with Gigantamax form
+		}
+	}
+	else
+		gRaidBattleSpecies = SPECIES_NONE;
 }
 
-// Returns whether a hit will reduce a Raid Boss to a health threshold.
-bool8 ShouldCreateBarrier(s32 dmg)
-{    
-    u32 hp = GetMonData(&gEnemyParty[0], MON_DATA_HP, NULL);
-    
-    if (!(gBattleTypeFlags & BATTLE_TYPE_RAID))
-        return FALSE;
-    if (gBattleStruct->raid.thresholdsRemaining == 0)
-        return FALSE;
-    
-    if (hp <= dmg + GetNextHealthThreshold())
-        return TRUE;
-    else
-        return FALSE;
+void DetermineRaidLevel(void)
+{
+	u8 numStars = gRaidBattleStars;
+	u8 min = gRaidBattleLevelRanges[numStars][0];
+	u8 max = gRaidBattleLevelRanges[numStars][1];
+	u32 randomNum = GetRaidRandomNumber();
+
+    if (min == max)
+		gRaidBattleLevel = min;
+	else
+		gRaidBattleLevel = (randomNum % (max - min)) + min;
+}
+
+u8 GetRandomRaidLevel(void)
+{
+	u8 numStars = gRaidBattleStars;
+    u8 min = gRaidBattleLevelRanges[numStars][0];
+    u8 max = gRaidBattleLevelRanges[numStars][1];
+	return (Random() % (max - min)) + min;
+}
+
+u8 GetRaidRecommendedLevel(void)
+{
+	u8 numStars = gRaidBattleStars;
+	return gRaidBattleLevelRanges[numStars][1] + 5; //Max level + 5
+}
+
+void DetermineRaidPartners(bool8* checkedPartners, u8 maxPartners)
+{
+	u32 i, index;
+	u8 numStars = gRaidBattleStars;
+	u16 numMarked = 0;
+	u16 numViable = 0;
+	u32 randomNum = GetRaidRandomNumber();
+
+	for (i = 1; i < /*1000*/ 0xFFFFFFFF; i++)
+	{
+		if (randomNum == 0) //0 causes an infinite loop
+			randomNum = 0xFFFFFFFF;
+
+		randomNum ^= i;
+		index = randomNum % gNumRaidPartners;
+
+		if (checkedPartners[index] == 0)
+		{
+			numMarked++;
+
+			if (gRaidPartners[index].sets[numStars] != NULL)
+			{
+				checkedPartners[index] = TRUE;
+				numViable++;
+			}
+			else
+				checkedPartners[index] = 0xFF;
+		}
+
+		if (numViable >= maxPartners) //Found at least 3 partners
+			return;
+
+		if (numMarked >= gNumRaidPartners)
+			break;
+	}
+
+	if (numMarked < gNumRaidPartners) //Couldn't mark off everyone
+	{
+		for (i = 0; i < gNumRaidPartners; i++)
+		{
+			if (gRaidPartners[i].sets[numStars] != NULL)
+			{
+				checkedPartners[i] = TRUE;
+				numViable++;
+			}
+
+			if (numViable >= maxPartners) //Found at least 3 partners
+				return;
+		}
+	}
+}
+
+const struct FixedMonSet *GetRaidMultiSpread(u8 partnerNum, u8 partyIndex, u8 starRating)
+{
+    return &gRaidPartners[partnerNum].sets[starRating][partyIndex];
+}
+
+u8 GetRaidSpeciesAbilityNum(u16 species)
+{
+	u32 i = 0;
+	u8 numStars = gRaidBattleStars;
+	const struct RaidData* raid = &gRaidsByMapSection[GetRaidMapSectionId()][numStars];
+
+	if (IsGigantamaxSpecies(species))
+		return RAID_ABILITY_RANDOM_ALL; //Gigantamax Pokemon can have any one of their abilities
+
+	if (raid->data != NULL)
+	{
+		for (i = 0; i < raid->amount; i++)
+		{
+			if (raid->data[i].species == species) //Max one species per dataset
+				return raid->data[i].ability;
+		}
+	}
+
+	return RAID_ABILITY_RANDOM_1_2;
+}
+
+// battle functions
+
+bool8 IsRaidBoss(u16 battlerId)
+{
+    return gBattleTypeFlags & BATTLE_TYPE_RAID && GetBattlerPosition(battlerId) == B_POSITION_OPPONENT_LEFT;
 }
 
 bool8 DoesRaidPreventMove(u16 move)
@@ -230,13 +478,151 @@ u8 GetRaidNullificationChance(void)
 	}
 }
 
+bool8 IsRaidBossUsingRegularMove(u8 battlerId, u16 baseMove)
+{
+	return gBattleMoves[baseMove].split == SPLIT_STATUS
+		|| baseMove == MOVE_STRUGGLE
+		|| (gRaidBattleStars < 4 && (gRandomTurnNumber & 3) == 0) //25 % chance to use regular damaging move
+		|| (gRaidBattleStars >= 4 && (gRandomTurnNumber % 100 >= 90)) //Harder foes have a lower chance of using regular moves
+		|| gBattleMons[battlerId].status2 & (STATUS2_RECHARGE | STATUS2_MULTIPLETURNS);
+}
+
+void InitRaidVariables(void)
+{
+    u8 i;
+
+    gBattleStruct->raid.stars = gSpecialVar_0x8008; // variable is set before battle starts.
+    gBattleStruct->raid.shields = 0;
+    gBattleStruct->raid.storedDmg = 0; // used to "release" damage when barriers break.
+    gBattleStruct->raid.thresholdsRemaining = GetRaidThresholdNumber();
+    gBattleStruct->raid.stormTurns = 0;
+    gBattleStruct->raid.state = INTRO_COMPLETED;
+
+    for (i = 0; i < MAX_BARRIER_COUNT; i++)
+    {
+        gBattleStruct->raid.shieldSpriteIds[i] = MAX_SPRITES;
+    }
+
+    RecalcBattlerStats(GetBattlerAtPosition(B_POSITION_OPPONENT_LEFT), &gEnemyParty[0]); // to apply HP multiplier
+}
+
+void IncrementRaidStorm(void)
+{
+    if (gBattleStruct->raid.stormTurns < RAID_STORM_MAX)
+        gBattleStruct->raid.stormTurns++;
+    switch(gBattleStruct->raid.stormTurns)
+    {
+        case RAID_STORM_LEVEL_1:
+            gBattleCommunication[MULTISTRING_CHOOSER] = B_MSG_GETTING_STRONGER;
+            BattleScriptExecute(BattleScript_RaidStormBrews);
+            break;
+        case RAID_STORM_LEVEL_2:
+            gBattleCommunication[MULTISTRING_CHOOSER] = B_MSG_GETTING_STRONGER;
+            BattleScriptExecute(BattleScript_RaidStormBrews);
+            break;
+        case RAID_STORM_LEVEL_3:
+            gBattleCommunication[MULTISTRING_CHOOSER] = B_MSG_GETTING_EVEN_STRONGER;
+            BattleScriptExecute(BattleScript_RaidStormBrews);
+            break;
+        case RAID_STORM_MAX:
+            gBattleCommunication[MULTISTRING_CHOOSER] = B_MSG_GETTING_TOO_STRONG;
+            BattleScriptExecute(BattleScript_RaidDefeat);
+            break;
+    }
+}
+
+void ApplyRaidHPMultiplier(struct Pokemon *mon)
+{
+    u16 hp, maxHP, multiplier;
+    hp = GetMonData(mon, MON_DATA_HP, NULL);
+    maxHP = GetMonData(mon, MON_DATA_MAX_HP, NULL);
+    multiplier = sRaidHPMultipliers[gBattleStruct->raid.stars];
+
+    hp = UQ_4_12_TO_INT((hp * multiplier) + UQ_4_12_ROUND);
+    maxHP = UQ_4_12_TO_INT((maxHP * multiplier) + UQ_4_12_ROUND);
+
+    SetMonData(mon, MON_DATA_HP, &hp);
+    SetMonData(mon, MON_DATA_MAX_HP, &maxHP);
+}
+
+u8 GetRaidShieldNumber(void)
+{
+    u16 species = GetMonData(&gEnemyParty[0], MON_DATA_SPECIES, NULL);
+    u8 hp = gBaseStats[species].baseHP;
+    u8 def = gBaseStats[species].baseDefense;
+    u8 spDef = gBaseStats[species].baseSpDefense;
+    u8 retVal;
+
+    // Currently uses the sum of defenses to determine barrier count.
+    switch (hp + def + spDef)
+    {
+        case 0 ... 199:
+            retVal = 3;
+            break;
+        case 200 ... 300:
+            retVal = 4;
+            break;
+        default: // > 300
+            retVal = MAX_BARRIER_COUNT;
+            break;
+    }
+
+    if (gBattleStruct->raid.stars < 5)
+        retVal -= 1;
+    
+    return retVal;
+}
+
+u8 GetRaidThresholdNumber(void)
+{
+    u8 starRating = gBattleStruct->raid.stars;
+    switch (starRating)
+    {
+        case 5 ... MAX_STAR_RATING:
+            return 2;
+        case 3 ... 4:
+            return 1;
+        default:
+            return 0;
+    }
+}
+
+u32 GetNextHealthThreshold(void)
+{
+    u32 maxHP = GetMonData(&gEnemyParty[0], MON_DATA_MAX_HP, NULL);
+    u8 total = GetRaidThresholdNumber();
+    u8 remaining = gBattleStruct->raid.thresholdsRemaining;
+
+    if (remaining == 0 || total == 0)
+        return 0;
+    else
+        return (remaining * maxHP) / (total + 1);
+}
+
+bool8 ShouldCreateBarrier(s32 dmg)
+{    
+    u32 hp = GetMonData(&gEnemyParty[0], MON_DATA_HP, NULL);
+    
+    if (!(gBattleTypeFlags & BATTLE_TYPE_RAID))
+        return FALSE;
+    if (gBattleStruct->raid.thresholdsRemaining == 0)
+        return FALSE;
+    
+    if (hp <= dmg + GetNextHealthThreshold())
+        return TRUE;
+    else
+        return FALSE;
+}
+
+
 // Used for opening the bag in the end sequence.
 void CB2_ChooseBall(void)
 {
     GoToBagMenu(ITEMMENULOCATION_BERRY_TREE, BALLS_POCKET, CB2_SetUpReshowBattleScreenAfterMenu2);
 }
 
-// Shield sprite data:
+// Sprite data
+
 static const u8 sRaidShieldGfx[] = INCBIN_U8("graphics/battle_interface/raid_barrier.4bpp");
 static const u16 sRaidShieldPal[] = INCBIN_U16("graphics/battle_interface/raid_barrier.gbapal");
 

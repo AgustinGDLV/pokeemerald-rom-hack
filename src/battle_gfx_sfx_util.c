@@ -627,7 +627,7 @@ static void BattleLoadMonSpriteGfx(struct Pokemon *mon, u32 battlerId, bool32 op
         CpuCopy32(gPlttBufferFaded + paletteOffset, gPlttBufferUnfaded + paletteOffset, 32);
     }
 
-    if (gBattleTypeFlags & BATTLE_TYPE_RAID && GetBattlerPosition(battlerId) == B_POSITION_OPPONENT_LEFT)
+    if (IsRaidBoss(battlerId))
     {
         BlendPalette(paletteOffset, 16, 4, RGB(31, 0, 12));
         CpuCopy32(gPlttBufferFaded + paletteOffset, gPlttBufferUnfaded + paletteOffset, 32);
