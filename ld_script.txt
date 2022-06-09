@@ -91,7 +91,6 @@ SECTIONS {
         src/battle_ai_switch_items.o(.text);
         src/battle_controller_link_opponent.o(.text);
         src/battle_debug.o(.text);
-        src/battle_raid.o(.text);
         src/pokemon.o(.text);
         src/trig.o(.text);
         src/random.o(.text);
@@ -334,6 +333,7 @@ SECTIONS {
         src/battle_transition_frontier.o(.text);
         src/international_string_util.o(.text);
         src/pokemon_debug.o(.text);
+        src/battle_raid.o(.text);
         src/raid_intro.o(.text);
     } =0
 
@@ -482,7 +482,6 @@ SECTIONS {
         src/battle_ai_switch_items.o(.rodata);
         src/battle_controller_link_opponent.o(.rodata);
         src/battle_debug.o(.rodata);
-        src/battle_raid.o(.rodata);
         src/pokemon.o(.rodata);
         src/trig.o(.rodata);
         src/util.o(.rodata);
@@ -699,6 +698,7 @@ SECTIONS {
         src/m4a_tables.o(.rodata);
         data/sound_data.o(.rodata);
         src/pokemon_debug.o(.rodata);
+        src/battle_raid.o(.rodata);
         src/raid_intro.o(.rodata);
     } =0
 

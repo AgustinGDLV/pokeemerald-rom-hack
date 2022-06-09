@@ -483,6 +483,40 @@ struct StolenItem
     u16 stolen:1;
 };
 
+struct FixedMonSet
+{
+    u16 species;
+    u16 nature;
+    u8 hpIv;
+    u8 atkIv;
+    u8 defIv;
+    u8 spAtkIv;
+    u8 spDefIv;
+    u8 spdIv;
+    u8 hpEv;
+    u8 atkEv;
+    u8 defEv;
+    u8 spAtkEv;
+    u8 spDefEv;
+    u8 spdEv;
+    u8 ability;
+    u16 item;
+    u16 moves[MAX_MON_MOVES];
+    u16 ball;
+};
+
+struct MultiRaidTrainer
+{
+    u16 owNum; // overworld graphics id
+    u8 trainerClass;
+    u8 backSpriteId;
+    u8 gender;
+    u32 otId;
+    const u8 *name[12];
+    const struct FixedMonSet *sets[RAID_STAR_COUNT];
+    u8 setSizes[RAID_STAR_COUNT];
+};
+
 struct RaidBattleData
 {
     u8 stars;
