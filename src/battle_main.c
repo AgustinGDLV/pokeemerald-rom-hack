@@ -5102,7 +5102,7 @@ static void HandleEndTurn_FinishBattle(void)
         BeginFastPaletteFade(3);
         FadeOutMapMusic(5);
         #if B_TRAINERS_KNOCK_OFF_ITEMS
-        if (gBattleTypeFlags & BATTLE_TYPE_TRAINER)
+        if (gBattleTypeFlags & BATTLE_TYPE_TRAINER || B_ALWAYS_RESTORE_ITEMS)
             TryRestoreStolenItems();
         #endif
         for (i = 0; i < PARTY_SIZE; i++)
