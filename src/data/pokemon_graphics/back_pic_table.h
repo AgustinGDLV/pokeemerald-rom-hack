@@ -1304,7 +1304,7 @@ const struct CompressedSpriteSheet gMonBackPicTable[] =
     SPECIES_SPRITE(COPPERAJAH_GMAX, gMonBackPic_CopperajahGmax),
     SPECIES_SPRITE(DURALUDON_GMAX, gMonBackPic_DuraludonGmax),
     SPECIES_SPRITE(URSHIFU_GMAX, gMonBackPic_UrshifuGmax),
-    SPECIES_SPRITE(URSHIFU_RAPID_STRIKE_GMAX, gMonBackPic_UrshifuGmax),
+    SPECIES_SPRITE(URSHIFU_RAPID_STRIKE_GMAX, gMonBackPic_UrshifuRapidStrikeGmax),
 
     SPECIES_SPRITE(EGG, gMonFrontPic_Egg),
 };

@@ -1304,7 +1304,7 @@ const struct CompressedSpritePalette gMonShinyPaletteTable[] =
     SPECIES_SHINY_PAL(COPPERAJAH_GMAX, gMonShinyPalette_CopperajahGmax),
     SPECIES_SHINY_PAL(DURALUDON_GMAX, gMonShinyPalette_DuraludonGmax),
     SPECIES_SHINY_PAL(URSHIFU_GMAX, gMonShinyPalette_UrshifuGmax),
-    SPECIES_SHINY_PAL(URSHIFU_RAPID_STRIKE_GMAX, gMonShinyPalette_UrshifuGmax),
+    SPECIES_SHINY_PAL(URSHIFU_RAPID_STRIKE_GMAX, gMonShinyPalette_UrshifuRapidStrikeGmax),
 
     SPECIES_SHINY_PAL(EGG, gMonPalette_Egg),
 };

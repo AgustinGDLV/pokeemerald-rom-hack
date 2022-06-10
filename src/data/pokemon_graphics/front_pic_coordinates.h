@@ -6108,7 +6108,7 @@ const struct MonCoords gMonFrontPicCoords[] =
     [SPECIES_VENUSAUR_GMAX] =
     {
         .size = MON_COORDS_SIZE(64, 64),
-        .y_offset = 0,
+        .y_offset = 5,
     },
 
     [SPECIES_CHARIZARD_GMAX] =
@@ -6120,25 +6120,25 @@ const struct MonCoords gMonFrontPicCoords[] =
     [SPECIES_BLASTOISE_GMAX] =
     {
         .size = MON_COORDS_SIZE(64, 64),
-        .y_offset = 0,
+        .y_offset = 4,
     },
 
     [SPECIES_BUTTERFREE_GMAX] =
     {
         .size = MON_COORDS_SIZE(64, 64),
-        .y_offset = 0,
+        .y_offset = 10,
     },
 
     [SPECIES_PIKACHU_GMAX] =
     {
         .size = MON_COORDS_SIZE(64, 64),
-        .y_offset = 0,
+        .y_offset = 1,
     },
 
     [SPECIES_MEOWTH_GMAX] =
     {
         .size = MON_COORDS_SIZE(64, 64),
-        .y_offset = 0,
+        .y_offset = 3,
     },
 
     [SPECIES_MACHAMP_GMAX] =
@@ -6150,7 +6150,7 @@ const struct MonCoords gMonFrontPicCoords[] =
     [SPECIES_GENGAR_GMAX] =
     {
         .size = MON_COORDS_SIZE(64, 64),
-        .y_offset = 0,
+        .y_offset = 8,
     },
 
     [SPECIES_KINGLER_GMAX] =
@@ -6168,7 +6168,7 @@ const struct MonCoords gMonFrontPicCoords[] =
     [SPECIES_EEVEE_GMAX] =
     {
         .size = MON_COORDS_SIZE(64, 64),
-        .y_offset = 0,
+        .y_offset = 6,
     },
 
     [SPECIES_SNORLAX_GMAX] =
@@ -6210,7 +6210,7 @@ const struct MonCoords gMonFrontPicCoords[] =
     [SPECIES_CORVIKNIGHT_GMAX] =
     {
         .size = MON_COORDS_SIZE(64, 64),
-        .y_offset = 0,
+        .y_offset = 3,
     },
 
     [SPECIES_ORBEETLE_GMAX] =
@@ -6234,13 +6234,13 @@ const struct MonCoords gMonFrontPicCoords[] =
     [SPECIES_FLAPPLE_GMAX] =
     {
         .size = MON_COORDS_SIZE(64, 64),
-        .y_offset = 0,
+        .y_offset = 2,
     },
 
     [SPECIES_APPLETUN_GMAX] =
     {
         .size = MON_COORDS_SIZE(64, 64),
-        .y_offset = 0,
+        .y_offset = 2,
     },
 
     [SPECIES_SANDACONDA_GMAX] =
@@ -6258,7 +6258,7 @@ const struct MonCoords gMonFrontPicCoords[] =
     [SPECIES_CENTISKORCH_GMAX] =
     {
         .size = MON_COORDS_SIZE(64, 64),
-        .y_offset = 0,
+        .y_offset = 5,
     },
 
     [SPECIES_HATTERENE_GMAX] =
