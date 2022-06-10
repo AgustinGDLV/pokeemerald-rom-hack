@@ -9434,3 +9434,9 @@ BattleScript_ItemDropped::
 	playse SE_BALL_BOUNCE_1
 	printfromtable gItemDroppedStringIds
 	return
+
+BattleScript_ItemDroppedDoubles::
+	playse SE_BALL_BOUNCE_1
+	printfromtable gItemDroppedStringIds
+	
+	return
