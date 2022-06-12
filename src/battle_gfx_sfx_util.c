@@ -627,7 +627,8 @@ static void BattleLoadMonSpriteGfx(struct Pokemon *mon, u32 battlerId, bool32 op
         CpuCopy32(gPlttBufferFaded + paletteOffset, gPlttBufferUnfaded + paletteOffset, 32);
     }
 
-    if (IsRaidBoss(battlerId))
+    // dynamax tint
+    if (IsRaidBoss(battlerId) || gBattleStruct->dynamax.dynamaxTurns[battlerId] > 0)
     {
         BlendPalette(paletteOffset, 16, 4, RGB(31, 0, 12));
         CpuCopy32(gPlttBufferFaded + paletteOffset, gPlttBufferUnfaded + paletteOffset, 32);

@@ -4189,6 +4189,10 @@ static void HandleTurnActionSelectionState(void)
                             *(gBattleStruct->moveTarget + gActiveBattler) = gBattleResources->bufferB[gActiveBattler][3];
                             if (gBattleResources->bufferB[gActiveBattler][2] & RET_MEGA_EVOLUTION)
                                 gBattleStruct->mega.toEvolve |= gBitTable[gActiveBattler];
+                            if (ShouldUseMaxMove(gActiveBattler, gChosenMoveByBattler[gActiveBattler]))
+                            {
+                                gBattleStruct->dynamax.usingMaxMove |= gBitTable[gActiveBattler];
+                            }
                             gBattleCommunication[gActiveBattler]++;
                         }
                         break;
@@ -4484,6 +4488,11 @@ s8 GetMovePriority(u32 battlerId, u16 move)
     u16 ability = GetBattlerAbility(battlerId);
 
     priority = gBattleMoves[move].priority;
+
+    // Max Guard check
+    if (gBattleStruct->dynamax.usingMaxMove & gBitTable[battlerId] && gBattleMoves[move].split == SPLIT_STATUS)
+        priority = gBattleMoves[MOVE_MAX_GUARD].priority;
+
     if (ability == ABILITY_GALE_WINGS
         && gBattleMoves[move].type == TYPE_FLYING
         && (B_GALE_WINGS <= GEN_6 || BATTLER_MAX_HP(battlerId)))

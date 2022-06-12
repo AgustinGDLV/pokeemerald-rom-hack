@@ -427,6 +427,9 @@ extern const u8 BattleScript_RaidVictory[];
 extern const u8 BattleScript_FaintRaidBoss[];
 extern const u8 BattleScript_RaidDefeat[];
 extern const u8 BattleScript_MovePreventedByDynamax[];
-
+extern const u8 BattleScript_EffectRaiseSideStats[];
+extern const u8 BattleScript_EffectLowerSideStats[];
+extern const u8 BattleScript_EffectSetWeather[];
+extern const u8 BattleScript_EffectSetTerrain[];
 
 #endif // GUARD_BATTLE_SCRIPTS_H

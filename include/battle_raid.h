@@ -4,6 +4,13 @@
 #include "constants/songs.h"
 
 // Functions
+bool8 ShouldUseMaxMove(u16 battlerId, u16 move);
+u16 GetMaxMove(u16 battlerId, u16 baseMove);
+bool8 IsMaxMove(u16 move);
+bool8 IsGigantamaxSpecies(u16 species);
+u16 GetGigantamaxSpecies(u16 species, bool8 canGigantamax);
+u16 GetGigantamaxBaseForm(u16 species);
+
 void DetermineRaidStars(void);
 void DetermineRaidSpecies(void);
 void DetermineRaidLevel(void);
@@ -68,9 +75,9 @@ enum MaxMoveEffect
 	MAX_EFFECT_RAIN,
 	MAX_EFFECT_SANDSTORM,
 	MAX_EFFECT_HAIL,
-	MAX_EFFECT_ELECTRIC_TERRAIN,
-	MAX_EFFECT_GRASSY_TERRAIN,
 	MAX_EFFECT_MISTY_TERRAIN,
+	MAX_EFFECT_GRASSY_TERRAIN,
+	MAX_EFFECT_ELECTRIC_TERRAIN,
 	MAX_EFFECT_PSYCHIC_TERRAIN,
 	MAX_EFFECT_VINE_LASH,
 	MAX_EFFECT_WILDFIRE,

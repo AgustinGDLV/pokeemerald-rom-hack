@@ -539,6 +539,7 @@
 #define B_ANIM_RAID_SHIELD_BROKE        37
 #define B_ANIM_RAID_SHOCKWAVE           38
 #define B_ANIM_RAID_BOSS_EXPLOSION      39
+#define B_ANIM_MAX_SET_WEATHER          40
 
 // special animations table (gBattleAnims_Special)
 #define B_ANIM_LVL_UP                   0

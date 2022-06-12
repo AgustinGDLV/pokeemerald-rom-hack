@@ -42,6 +42,28 @@ static const u16 sDynamaxBandTable[] =
 	ITEM_DYNAMAX_BAND,
 };
 
+static const u16 sMaxMoveTable[] =
+{
+	[TYPE_NORMAL] = MOVE_MAX_STRIKE_P,
+	[TYPE_FIGHTING] = MOVE_MAX_KNUCKLE_P,
+	[TYPE_FLYING] = MOVE_MAX_AIRSTREAM_P,
+	[TYPE_POISON] = MOVE_MAX_OOZE_P,
+	[TYPE_GROUND] = MOVE_MAX_QUAKE_P,
+	[TYPE_ROCK] = MOVE_MAX_ROCKFALL_P,
+	[TYPE_BUG] = MOVE_MAX_FLUTTERBY_P,
+	[TYPE_GHOST] = MOVE_MAX_PHANTASM_P,
+	[TYPE_STEEL] = MOVE_MAX_STEELSPIKE_P,
+	[TYPE_FIRE] = MOVE_MAX_FLARE_P,
+	[TYPE_WATER] = MOVE_MAX_GEYSER_P,
+	[TYPE_GRASS] = MOVE_MAX_OVERGROWTH_P,
+	[TYPE_ELECTRIC] = MOVE_MAX_LIGHTNING_P,
+	[TYPE_PSYCHIC] = MOVE_MAX_MINDSTORM_P,
+	[TYPE_ICE] = MOVE_MAX_HAILSTORM_P,
+	[TYPE_DRAGON] = MOVE_MAX_WYRMWIND_P,
+	[TYPE_DARK] = MOVE_MAX_DARKNESS_P,
+	[TYPE_FAIRY] = MOVE_MAX_STARFALL_P,
+};
+
 struct GMaxMove
 {
 	u16 species;
@@ -150,15 +172,40 @@ static const u16 sRaidHPMultipliers[] =
 #include "data/raid_encounters.h"
 #include "data/raid_partners.h"
 
-// This file's functions:
-u16 GetGigantamaxSpecies(u16 species, bool8 canGigantamax);
-
 // EWRAM data
 EWRAM_DATA u8 gRaidBattleStars = 0;
 EWRAM_DATA u8 gRaidBattleLevel = 0;
 EWRAM_DATA u16 gRaidBattleSpecies = 0;
 
 // code:
+bool8 ShouldUseMaxMove(u16 battlerId, u16 baseMove)
+{
+	if (IsRaidBoss(battlerId))
+		return !IsRaidBossUsingRegularMove(battlerId, baseMove);
+	else if (gBattleStruct->dynamax.dynamaxTurns[battlerId] > 0)
+		return TRUE;
+	return FALSE;
+}
+
+u16 GetMaxMove(u16 battlerId, u16 baseMove)
+{
+	u16 move = baseMove;
+	if (gBattleMoves[baseMove].split == SPLIT_STATUS)
+		move = MOVE_MAX_GUARD;
+	else
+		move = sMaxMoveTable[gBattleMoves[baseMove].type];
+	
+	if (gBattleMoves[baseMove].split == SPLIT_SPECIAL)
+		move++; // physical max move IDs are followed by a special counterpart
+	
+	return move;
+}
+
+bool8 IsMaxMove(u16 move)
+{
+	return move >= MAX_MOVES_START && move <= MOVE_G_MAX_RAPID_FLOW_S;
+}
+
 bool8 IsGigantamaxSpecies(u16 species)
 {
     return species >= SPECIES_VENUSAUR_GMAX && species <= SPECIES_URSHIFU_RAPID_STRIKE_GMAX;
@@ -498,6 +545,8 @@ void InitRaidVariables(void)
     gBattleStruct->raid.stormTurns = 0;
     gBattleStruct->raid.state = INTRO_COMPLETED;
 
+	gBattleStruct->dynamax.dynamaxTurns[0] = 3;
+
     for (i = 0; i < MAX_BARRIER_COUNT; i++)
     {
         gBattleStruct->raid.shieldSpriteIds[i] = MAX_SPRITES;
@@ -678,22 +727,14 @@ u32 CreateRaidShieldSprite(u8 index)
 {
     u32 spriteId, position;
     s16 x, y;
-
-    if (gBattleStruct->raid.shields > 0)
-    {
-        LoadSpritePalette(&sSpritePalette_RaidShield);
-        LoadSpriteSheet(&sSpriteSheet_RaidShield);
-    }
-
+    
     GetBattlerHealthboxCoords(GetBattlerAtPosition(B_POSITION_OPPONENT_LEFT), &x, &y);
-
     x += sShieldPosition[0] - (index * 10);
     y += sShieldPosition[1];
 
-    if (gBattleStruct->raid.shields > 0)
-    {
-        spriteId = CreateSpriteAtEnd(&sSpriteTemplate_RaidShield, x, y, 0);
-    }
+   	LoadSpritePalette(&sSpritePalette_RaidShield);
+   	LoadSpriteSheet(&sSpriteSheet_RaidShield);
+    spriteId = CreateSprite(&sSpriteTemplate_RaidShield, x, y, 0);
 
     gSprites[spriteId].tBattler = GetBattlerAtPosition(B_POSITION_OPPONENT_LEFT);
     return spriteId;

@@ -363,8 +363,12 @@
 #define MOVE_EFFECT_RELIC_SONG          0x47
 #define MOVE_EFFECT_TRAP_BOTH           0x48
 #define MOVE_EFFECT_SKY_DROP            0x49
+#define MOVE_EFFECT_RAISE_SIDE_STATS    0x50 
+#define MOVE_EFFECT_LOWER_SIDE_STATS    0x51
+#define MOVE_EFFECT_WEATHER             0x52
+#define MOVE_EFFECT_TERRAIN             0x53
 
-#define NUM_MOVE_EFFECTS                0x50
+#define NUM_MOVE_EFFECTS                0x54
 
 #define MOVE_EFFECT_AFFECTS_USER        0x4000
 #define MOVE_EFFECT_CERTAIN             0x8000

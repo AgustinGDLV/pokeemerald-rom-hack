@@ -517,6 +517,12 @@ struct MultiRaidTrainer
     u8 setSizes[RAID_STAR_COUNT];
 };
 
+struct DynamaxData
+{
+    u8 dynamaxTurns[MAX_BATTLERS_COUNT];
+    u8 usingMaxMove; // Bitfield with each battler using gBitTable
+};
+
 struct RaidBattleData
 {
     u8 stars;
@@ -654,6 +660,7 @@ struct BattleStruct
     u8 stickyWebUser;
     u8 appearedInBattle; // Bitfield to track which Pokemon appeared in battle. Used for Burmy's form change
     u8 skyDropTargets[MAX_BATTLERS_COUNT]; // For Sky Drop, to account for if multiple Pokemon use Sky Drop in a double battle.
+    struct DynamaxData dynamax;
     struct RaidBattleData raid;
 };
 

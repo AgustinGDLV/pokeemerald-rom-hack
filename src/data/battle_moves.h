@@ -11650,7 +11650,9 @@ const struct BattleMove gBattleMoves[MOVES_COUNT] =
         .priority = 0,
         .flags = FLAG_PROTECT_AFFECTED | FLAG_MIRROR_MOVE_AFFECTED | FLAG_KINGS_ROCK_AFFECTED | FLAG_SHEER_FORCE_BOOST | FLAG_SOUND,
         .split = SPLIT_SPECIAL,
-    },[MOVE_MAX_GUARD] =
+    },
+    
+    [MOVE_MAX_GUARD] =
 	{
 		.effect = EFFECT_PROTECT,
 		.power = 0,
@@ -11660,9 +11662,8 @@ const struct BattleMove gBattleMoves[MOVES_COUNT] =
 		.secondaryEffectChance = 0,
 		.target = MOVE_TARGET_USER,
 		.priority = 4,
-		.flags = 0,
+		.flags = FLAG_PROTECTION_MOVE,
 		.split = SPLIT_STATUS,
-		//.z_move_effect = 0,
 	},
 
 	[MOVE_MAX_FLARE_P] =

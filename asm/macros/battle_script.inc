@@ -2146,3 +2146,18 @@
 	.macro hidehealthboxesonside battler:req
 	various \battler, VARIOUS_HIDE_HEALTHBOXES_ON_SIDE
 	.endm
+
+	@ The next few macros are used by Max Moves.
+	.macro setmaxmoveeffect
+	various 0, VARIOUS_SET_MAX_MOVE_EFFECT
+	.endm
+
+	.macro jumpiftargetabsent, ptr:req
+	various 0, VARIOUS_JUMP_IF_TARGET_ABSENT
+	.4byte \ptr
+	.endm
+
+	.macro jumpiftargetnotally, ptr:req
+	various 0, VARIOUS_JUMP_IF_TARGET_NOT_ALLY
+	.4byte \ptr
+	.endm

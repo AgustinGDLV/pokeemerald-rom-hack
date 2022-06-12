@@ -5096,24 +5096,23 @@ void AnimTask_TerrainPulse(u8 taskId)
     DestroyAnimVisualTask(taskId);
 }
 
-// The following code is ported from CFRU.
-void AnimTask_GetRaidBattleStormLevel(u8 taskId)
+void AnimTask_GetRaidBattleStormLevel(u8 taskId) // from CFRU
 {
     switch (gBattleStruct->raid.stormTurns)
     {
         case 0 ... RAID_STORM_LEVEL_1:
-            gBattleAnimArgs[0] = 1;
+            gBattleAnimArgs[ARG_RET_ID] = 1;
         case (RAID_STORM_LEVEL_1 + 1) ... RAID_STORM_LEVEL_2:
-            gBattleAnimArgs[0] = 2;
+            gBattleAnimArgs[ARG_RET_ID] = 2;
         case (RAID_STORM_LEVEL_2 + 1) ... RAID_STORM_LEVEL_3:
-            gBattleAnimArgs[0] = 3;
+            gBattleAnimArgs[ARG_RET_ID] = 3;
         case RAID_STORM_MAX:
-            gBattleAnimArgs[0] = 4;
+            gBattleAnimArgs[ARG_RET_ID] = 4;
     }
 	DestroyAnimVisualTask(taskId);
 }
 
-static const union AffineAnimCmd sDynamaxGrowthAffineAnimCmds[] =
+static const union AffineAnimCmd sDynamaxGrowthAffineAnimCmds[] = // from CFRU
 {
 	AFFINEANIMCMD_FRAME(-2, -2, 0, 64), //Double in size over 1 second
 	AFFINEANIMCMD_FRAME(0, 0, 0, 64), //Pause for 1 seconds
@@ -5129,7 +5128,7 @@ static const union AffineAnimCmd sDynamaxGrowthAttackAnimationAffineAnimCmds[] =
 	AFFINEANIMCMD_END,
 };
 
-static void AnimTask_DynamaxGrowthStep(u8 taskId)
+static void AnimTask_DynamaxGrowthStep(u8 taskId) // from CFRU
 {
 	struct Task* task = &gTasks[taskId];
 	if (!RunAffineAnimFromTaskData(task))
@@ -5137,7 +5136,7 @@ static void AnimTask_DynamaxGrowthStep(u8 taskId)
 }
 
 //Arg 0: Animation for attack
-void AnimTask_DynamaxGrowth(u8 taskId)
+void AnimTask_DynamaxGrowth(u8 taskId) // from CFRU
 {
 	struct Task* task = &gTasks[taskId];
 	u8 spriteId = GetAnimBattlerSpriteId(ANIM_ATTACKER);
@@ -5147,4 +5146,24 @@ void AnimTask_DynamaxGrowth(u8 taskId)
 	else
 		PrepareAffineAnimInTaskData(task, spriteId, sDynamaxGrowthAttackAnimationAffineAnimCmds);
 	task->func = AnimTask_DynamaxGrowthStep;
+}
+
+void AnimTask_GetWeatherToSet(u8 taskId)
+{
+    switch (gBattleMoves[gCurrentMove].argument)
+    {
+        case MAX_EFFECT_SUN:
+            gBattleAnimArgs[ARG_RET_ID] = 1;
+            break;
+        case MAX_EFFECT_RAIN:
+            gBattleAnimArgs[ARG_RET_ID] = 2;
+            break;
+        case MAX_EFFECT_SANDSTORM:
+            gBattleAnimArgs[ARG_RET_ID] = 3;
+            break;
+        case MAX_EFFECT_HAIL:
+            gBattleAnimArgs[ARG_RET_ID] = 4;
+            break;
+    }
+	DestroyAnimVisualTask(taskId);
 }

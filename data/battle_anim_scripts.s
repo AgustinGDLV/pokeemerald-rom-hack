@@ -779,6 +779,44 @@ gBattleAnims_Moves::
 	.4byte Move_GLACIAL_LANCE
 	.4byte Move_ASTRAL_BARRAGE
 	.4byte Move_EERIE_SPELL
+@@@@@@@@@@@@ MAX MOVES @@@@@@@@@@@@
+	.4byte Move_MAX_GUARD
+	.4byte Move_MAX_STRIKE_P
+	.4byte Move_MAX_STRIKE_S 
+	.4byte Move_MAX_KNUCKLE_P
+	.4byte Move_MAX_KNUCKLE_S
+	.4byte Move_MAX_AIRSTREAM_P
+	.4byte Move_MAX_AIRSTREAM_S
+	.4byte Move_MAX_OOZE_P
+	.4byte Move_MAX_OOZE_S
+	.4byte Move_MAX_QUAKE_P
+	.4byte Move_MAX_QUAKE_S
+	.4byte Move_MAX_ROCKFALL_P
+	.4byte Move_MAX_ROCKFALL_S
+	.4byte Move_MAX_FLUTTERBY_P
+	.4byte Move_MAX_FLUTTERBY_S
+	.4byte Move_MAX_PHANTASM_P
+	.4byte Move_MAX_PHANTASM_S
+	.4byte Move_MAX_STEELSPIKE_P
+	.4byte Move_MAX_STEELSPIKE_S
+	.4byte Move_MAX_FLARE_P
+	.4byte Move_MAX_FLARE_S
+	.4byte Move_MAX_GEYSER_P
+	.4byte Move_MAX_GEYSER_S
+	.4byte Move_MAX_OVERGROWTH_P
+	.4byte Move_MAX_OVERGROWTH_S
+	.4byte Move_MAX_LIGHTNING_P
+	.4byte Move_MAX_LIGHTNING_S
+	.4byte Move_MAX_HAILSTORM_P
+	.4byte Move_MAX_HAILSTORM_S
+	.4byte Move_MAX_MINDSTORM_P
+	.4byte Move_MAX_MINDSTORM_S
+	.4byte Move_MAX_WYRMWIND_P
+	.4byte Move_MAX_WYRMWIND_S
+	.4byte Move_MAX_DARKNESS_P
+	.4byte Move_MAX_DARKNESS_S
+	.4byte Move_MAX_STARFALL_P
+	.4byte Move_MAX_STARFALL_S
 	.4byte Move_COUNT @ cannot be reached, because last move is Eerie Spell
 
 	.align 2
@@ -836,6 +874,7 @@ gBattleAnims_General::
 	.4byte General_RaidShieldBroken			@ B_ANIM_RAID_SHIELD_BROKE
 	.4byte General_RaidShockwave			@ B_ANIM_RAID_SHOCKWAVE
 	.4byte General_RaidBossExplosion		@ B_ANIM_RAID_BOSS_EXPLOSION
+	.4byte General_SetWeather				@ B_ANIM_MAX_SET_WEATHER
 
 	.align 2
 gBattleAnims_Special::
@@ -25021,3 +25060,89 @@ Special_CriticalCaptureBallThrow:
 	createvisualtask AnimTask_IsBallBlockedByTrainer, 2
 	jumpreteq -1, BallThrowTrainerBlock
 	goto BallThrowEnd
+
+@ MAX MOVES
+General_SetWeather::
+	createvisualtask AnimTask_GetWeatherToSet, 2
+	jumpreteq 1, General_Sun
+	jumpreteq 2, General_Rain
+	jumpreteq 3, General_Sandstorm
+	jumpreteq 4, General_Hail
+	end
+
+Move_MAX_GUARD:
+	launchtask AnimTask_DynamaxGrowth 0x5 0x1 0x1
+	waitforvisualfinish
+	goto Move_PROTECT
+	end
+
+Move_MAX_KNUCKLE_P::
+Move_MAX_KNUCKLE_S::
+Move_MAX_QUAKE_P::
+Move_MAX_QUAKE_S::
+Move_MAX_ROCKFALL_P::
+Move_MAX_ROCKFALL_S::
+Move_MAX_FLUTTERBY_P::
+Move_MAX_FLUTTERBY_S::
+Move_MAX_PHANTASM_P::
+Move_MAX_PHANTASM_S::
+Move_MAX_STEELSPIKE_P::
+Move_MAX_STEELSPIKE_S::
+Move_MAX_HAILSTORM_P::
+Move_MAX_HAILSTORM_S::
+Move_MAX_MINDSTORM_P::
+Move_MAX_MINDSTORM_S::
+Move_MAX_WYRMWIND_P::
+Move_MAX_WYRMWIND_S::
+Move_MAX_DARKNESS_P::
+Move_MAX_DARKNESS_S::
+Move_MAX_STARFALL_P::
+Move_MAX_STARFALL_S::
+Move_MAX_STRIKE_P::
+Move_MAX_STRIKE_S::
+	launchtask AnimTask_DynamaxGrowth 0x5 0x1 0x1
+	waitforvisualfinish
+	goto Move_GIGA_IMPACT
+	end
+
+Move_MAX_AIRSTREAM_P::
+Move_MAX_AIRSTREAM_S::
+	launchtask AnimTask_DynamaxGrowth 0x5 0x1 0x1
+	waitforvisualfinish
+	goto Move_AEROBLAST
+	end
+
+Move_MAX_OOZE_P::
+Move_MAX_OOZE_S::
+	launchtask AnimTask_DynamaxGrowth 0x5 0x1 0x1
+	waitforvisualfinish
+	goto Move_GUNK_SHOT
+	end
+
+Move_MAX_FLARE_P::
+Move_MAX_FLARE_S::
+	launchtask AnimTask_DynamaxGrowth 0x5 0x1 0x1
+	waitforvisualfinish
+	goto Move_BLAST_BURN
+	end
+
+Move_MAX_GEYSER_P::
+Move_MAX_GEYSER_S::
+	launchtask AnimTask_DynamaxGrowth 0x5 0x1 0x1
+	waitforvisualfinish
+	goto Move_HYDRO_CANNON
+	end
+
+Move_MAX_OVERGROWTH_P::
+Move_MAX_OVERGROWTH_S::
+	launchtask AnimTask_DynamaxGrowth 0x5 0x1 0x1
+	waitforvisualfinish
+	goto Move_FRENZY_PLANT
+	end
+
+Move_MAX_LIGHTNING_P::
+Move_MAX_LIGHTNING_S::
+	launchtask AnimTask_DynamaxGrowth 0x5 0x1 0x1
+	waitforvisualfinish
+	goto Move_ZAP_CANNON
+	end

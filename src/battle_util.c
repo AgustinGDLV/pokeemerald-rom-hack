@@ -47,6 +47,7 @@
 #include "constants/weather.h"
 
 extern struct Evolution gEvolutionTable[][EVOS_PER_MON];
+extern u8 gDynamaxMovePowers[MOVES_COUNT];
 
 /*
 NOTE: The data and functions in this file up until (but not including) sSoundMovesTable
@@ -292,6 +293,13 @@ void HandleAction_UseMove(void)
     else
     {
         gCurrentMove = gChosenMove = gBattleMons[gBattlerAttacker].moves[gCurrMovePos];
+    }
+
+    // regular moves are replaced by Max moves when Dynamaxed
+    if (gBattleStruct->dynamax.usingMaxMove & gBitTable[gBattlerAttacker])
+    {
+        gCurrentMove = gChosenMove = GetMaxMove(gBattlerAttacker, gCurrentMove);
+        *(gBattleStruct->moveTarget + gBattlerAttacker) = GetMoveTarget(gCurrentMove, NO_TARGET_OVERRIDE);
     }
 
     if (gBattleMons[gBattlerAttacker].hp != 0)
@@ -902,6 +910,7 @@ void HandleAction_ActionFinished(void)
     gBattleCommunication[4] = 0;
     gBattleScripting.multihitMoveEffect = 0;
     gBattleResources->battleScriptsStack->size = 0;
+    gBattleStruct->dynamax.usingMaxMove &= ~gBitTable[gBattlerAttacker];
 
     // Raid bosses can act twice if their last move was a status move or they KO'd their target (latter not implemented yet).
     if (gBattleTypeFlags & BATTLE_TYPE_RAID
@@ -8191,6 +8200,9 @@ static u16 CalcMoveBasePower(u16 move, u8 battlerAtk, u8 battlerDef)
         if ((gFieldStatuses & STATUS_FIELD_TERRAIN_ANY)
             && IsBattlerGrounded(gBattlerAttacker))
             basePower *= 2;
+        break;
+    case EFFECT_MAX_MOVE:
+        basePower = gDynamaxMovePowers[gBattleMons[battlerAtk].moves[*(gBattleStruct->chosenMovePositions + battlerAtk)]];
         break;
     }
 
