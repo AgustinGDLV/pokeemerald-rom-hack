@@ -40,16 +40,8 @@ OldaleTown_EventScript_Girl::
 OldaleTown_EventScript_MartEmployee::
 	lock
 	faceplayer
-	goto_if_set FLAG_RECEIVED_POTION_OLDALE, OldaleTown_EventScript_ExplainPotion
-	goto_if_set FLAG_TEMP_1, OldaleTown_EventScript_ExplainPotion
-	setflag FLAG_TEMP_1
-	playbgm MUS_FOLLOW_ME, FALSE
-	msgbox OldaleTown_Text_IWorkAtPokemonMart, MSGBOX_DEFAULT
-	closemessage
-	switch VAR_FACING
-	case DIR_SOUTH, OldaleTown_EventScript_GoToMartSouth
-	case DIR_NORTH, OldaleTown_EventScript_GoToMartNorth
-	case DIR_EAST, OldaleTown_EventScript_GoToMartEast
+	setwildbattle SPECIES_CHANSEY, 5, 0
+	startraidbattle 3
 	end
 
 OldaleTown_EventScript_GoToMartSouth::

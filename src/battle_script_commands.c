@@ -1362,10 +1362,10 @@ static void Cmd_attackcanceler(void)
     // Raid bosses try to do a shockwave before moving.
     if (gBattleTypeFlags & BATTLE_TYPE_RAID
         && GetBattlerPosition(gBattlerAttacker) == B_POSITION_OPPONENT_LEFT
-        && !gBattleStruct->raid.movedTwice // shockwave counts as a second move
+        && !gBattleStruct->raid.usedShockwave
         && Random() % 100 <= GetRaidNullificationChance())
     {
-        gBattleStruct->raid.movedTwice = TRUE;
+        gBattleStruct->raid.usedShockwave = TRUE;
         BattleScriptPushCursor();
         gBattlescriptCurrInstr = BattleScript_RaidShockwave;
         return;
@@ -7748,6 +7748,8 @@ void RecalcBattlerStats(u32 battler, struct Pokemon *mon)
     CalculateMonStats(mon);
     if (IsRaidBoss(battler) && !(gBattleStruct->raid.state & CATCHING_RAID_BOSS))
         ApplyRaidHPMultiplier(mon);
+    if (gBattleStruct->dynamax.dynamaxed & gBitTable[battler] && IsBattlerAlive(battler))
+        ApplyDynamaxHPMultiplier(mon);
     gBattleMons[battler].level = GetMonData(mon, MON_DATA_LEVEL);
     gBattleMons[battler].hp = GetMonData(mon, MON_DATA_HP);
     gBattleMons[battler].maxHP = GetMonData(mon, MON_DATA_MAX_HP);

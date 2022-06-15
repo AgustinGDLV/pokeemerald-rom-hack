@@ -9428,6 +9428,45 @@ BattleScript_MagicianActivates::
 	call BattleScript_ItemSteal
 	return
 
+BattleScript_DynamaxBegins::
+	printstring STRINGID_EMPTYSTRING3
+	playanimation BS_SCRIPTING, B_ANIM_SLIDE_OFFSCREEN
+	waitanimation
+	returntoball BS_SCRIPTING
+	switchinanim BS_SCRIPTING, TRUE
+	playanimation BS_SCRIPTING, B_ANIM_DYNAMAX_GROWTH
+	waitanimation
+	end2
+
+BattleScript_DynamaxEnds::
+	printstring STRINGID_EMPTYSTRING3
+	playanimation BS_SCRIPTING, B_ANIM_FORM_CHANGE
+	waitanimation
+	end2
+
+BattleScript_DynamaxRejoin:
+	waitstate
+	@callasm TryDoDynamaxTrainerSlide
+	@callasm SetAndTransferDontRemoveTransformSpecies
+	@callasm BackupScriptingBankMoveSelectionCursor @;Prevents the move selection cursor from being reset by the switch-in anim
+ @;Play the switch-in animation
+	waitanimation
+	@callasm RestoreScriptingBankMoveSelectionCursor
+	@callasm ClearAndTransferDontRemoveTransformSpecies
+	@orword HIT_MARKER, HITMARKER_IGNORE_SUBSTITUTE
+	@graphicalhpupdate BANK_SCRIPTING
+	@datahpupdate BANK_SCRIPTING
+	@bicword HIT_MARKER, HITMARKER_IGNORE_SUBSTITUTE
+	@setword BATTLE_STRING_LOADER gText_MonDynamaxed
+	@printstring 0x184
+	@waitmessage B_WAIT_TIME_LONG
+	end3
+BattleScript_TryRevertCramorant:
+	@formchange BANK_SCRIPTING SPECIES_CRAMORANT_GULPING SPECIES_CRAMORANT TRUE TRUE FALSE BattleScript_TryRevertGorgingCramorant
+BattleScript_TryRevertGorgingCramorant:
+	@formchange BANK_SCRIPTING SPECIES_CRAMORANT_GORGING SPECIES_CRAMORANT TRUE TRUE FALSE BattleScript_Dynamax_Rejoin
+	goto BattleScript_DynamaxRejoin
+
 BattleScript_RaidIntro::
 	playanimation BS_ATTACKER, B_ANIM_DYNAMAX_GROWTH
 	printstring STRINGID_PKMNAPPEARSMASSIVE

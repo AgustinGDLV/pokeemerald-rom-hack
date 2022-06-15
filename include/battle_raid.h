@@ -1,11 +1,17 @@
 #ifndef GUARD_BATTLE_RAID_H
 #define GUARD_BATTLE_RAID_H
 
-#include "constants/songs.h"
+// Config
+#define B_REQUIRE_DYNAMAX_BAND			TRUE	// If set to TRUE, players and trainers must have a Dynamax Band in order to Dynamax in trainer battles.
 
 // Functions
+bool8 CanDynamax(u16 battlerId);
+void ApplyDynamaxHPMultiplier(struct Pokemon *mon);
+void PrepareBattlerForDynamax(u16 battlerId);
+void UndoDynamax(u16 battlerId);
 bool8 ShouldUseMaxMove(u16 battlerId, u16 move);
 u16 GetMaxMove(u16 battlerId, u16 baseMove);
+bool8 ShouldDisplayMaxMoveInfo(u16 battlerId);
 bool8 IsMaxMove(u16 move);
 bool8 IsGigantamaxSpecies(u16 species);
 u16 GetGigantamaxSpecies(u16 species, bool8 canGigantamax);
@@ -57,6 +63,8 @@ void DestroyAllRaidShieldSprites(void);
 #define MAX_RAID_DROPS      12
 #define MAX_STAR_RATING     6
 #define MAX_BARRIER_COUNT   5
+
+#define DYNAMAX_TURNS		3
 
 enum MaxMoveEffect
 {

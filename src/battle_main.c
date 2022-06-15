@@ -3792,6 +3792,7 @@ void BattleTurnPassed(void)
     gBattleMainFunc = HandleTurnActionSelectionState;
     gRandomTurnNumber = Random();
 
+    // Raid storm checks
     if (gBattleTypeFlags & BATTLE_TYPE_RAID)
         IncrementRaidStorm();
     if (gBattleStruct->raid.stormTurns >= RAID_STORM_MAX)
@@ -4098,6 +4099,7 @@ static void HandleTurnActionSelectionState(void)
                         RecordedBattle_ClearBattlerAction(GetBattlerAtPosition(BATTLE_PARTNER(GetBattlerPosition(gActiveBattler))), 3);
                     }
 
+                    gBattleStruct->dynamax.toDynamax &= ~(gBitTable[BATTLE_PARTNER(GetBattlerPosition(gActiveBattler))]);
                     gBattleStruct->mega.toEvolve &= ~(gBitTable[BATTLE_PARTNER(GetBattlerPosition(gActiveBattler))]);
                     BtlController_EmitEndBounceEffect(BUFFER_A);
                     MarkBattlerForControllerExec(gActiveBattler);
@@ -4184,15 +4186,15 @@ static void HandleTurnActionSelectionState(void)
                                 RecordedBattle_SetBattlerAction(gActiveBattler, gBattleResources->bufferB[gActiveBattler][2]);
                                 RecordedBattle_SetBattlerAction(gActiveBattler, gBattleResources->bufferB[gActiveBattler][3]);
                             }
-                            *(gBattleStruct->chosenMovePositions + gActiveBattler) = gBattleResources->bufferB[gActiveBattler][2] & ~RET_MEGA_EVOLUTION;
+                            *(gBattleStruct->chosenMovePositions + gActiveBattler) = gBattleResources->bufferB[gActiveBattler][2] & ~RET_MEGA_EVOLUTION & ~RET_DYNAMAX;
                             gChosenMoveByBattler[gActiveBattler] = gBattleMons[gActiveBattler].moves[*(gBattleStruct->chosenMovePositions + gActiveBattler)];
                             *(gBattleStruct->moveTarget + gActiveBattler) = gBattleResources->bufferB[gActiveBattler][3];
+                            if (gBattleResources->bufferB[gActiveBattler][2] & RET_DYNAMAX && !(gBattleStruct->dynamax.dynamaxed & gBitTable[gActiveBattler]))
+                                gBattleStruct->dynamax.toDynamax |= gBitTable[gActiveBattler];
+                            if (ShouldUseMaxMove(gActiveBattler, gChosenMoveByBattler[gActiveBattler]))
+                                gBattleStruct->dynamax.usingMaxMove |= gBitTable[gActiveBattler];
                             if (gBattleResources->bufferB[gActiveBattler][2] & RET_MEGA_EVOLUTION)
                                 gBattleStruct->mega.toEvolve |= gBitTable[gActiveBattler];
-                            if (ShouldUseMaxMove(gActiveBattler, gChosenMoveByBattler[gActiveBattler]))
-                            {
-                                gBattleStruct->dynamax.usingMaxMove |= gBitTable[gActiveBattler];
-                            }
                             gBattleCommunication[gActiveBattler]++;
                         }
                         break;
@@ -4775,7 +4777,7 @@ static void TurnValuesCleanUp(bool8 var0)
     gSideTimers[1].followmeTimer = 0;
 
     if (gBattleTypeFlags & BATTLE_TYPE_RAID)
-        gBattleStruct->raid.movedTwice = FALSE;
+        gBattleStruct->raid.movedTwice = gBattleStruct->raid.usedShockwave = FALSE;
 }
 
 void SpecialStatusesClear(void)
@@ -4791,6 +4793,14 @@ static void CheckMegaEvolutionBeforeTurn(void)
         {
             gActiveBattler = gBattlerAttacker = gBattleStruct->mega.battlerId;
             gBattleStruct->mega.battlerId++;
+            if (gBattleStruct->dynamax.toDynamax & gBitTable[gActiveBattler])
+            {
+                gBattleStruct->dynamax.toDynamax &= ~(gBitTable[gActiveBattler]);
+                gBattleScripting.battler = gActiveBattler;
+                PrepareBattlerForDynamax(gActiveBattler);
+                BattleScriptExecute(BattleScript_DynamaxBegins);
+                return;
+            }
             if (gBattleStruct->mega.toEvolve & gBitTable[gActiveBattler]
                 && !(gProtectStructs[gActiveBattler].noValidMoves))
             {

@@ -3866,7 +3866,12 @@ void SetPpNumbersPaletteInMoveSelection(void)
 {
     struct ChooseMoveStruct *chooseMoveStruct = (struct ChooseMoveStruct*)(&gBattleResources->bufferA[gActiveBattler][4]);
     const u16 *palPtr = gPPTextPalette;
-    u8 var = GetCurrentPpToMaxPpState(chooseMoveStruct->currentPp[gMoveSelectionCursor[gActiveBattler]],
+    u8 var;
+    
+    if (ShouldDisplayMaxMoveInfo(gActiveBattler)) // max moves all have 10 max PP, too hacky?
+        var = GetCurrentPpToMaxPpState(chooseMoveStruct->currentPp[gMoveSelectionCursor[gActiveBattler]], 10);
+    else
+        var = GetCurrentPpToMaxPpState(chooseMoveStruct->currentPp[gMoveSelectionCursor[gActiveBattler]],
                          chooseMoveStruct->maxPp[gMoveSelectionCursor[gActiveBattler]]);
 
     gPlttBufferUnfaded[92] = palPtr[(var * 2) + 0];

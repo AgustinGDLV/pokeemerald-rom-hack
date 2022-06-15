@@ -66,46 +66,45 @@ static const u16 sMaxMoveTable[] =
 
 struct GMaxMove
 {
-	u16 species;
 	u8 moveType;
 	u16 gmaxMove;
 };
 
 static const struct GMaxMove sGMaxMoveTable[] =
 {
-	{SPECIES_VENUSAUR_GMAX,	            TYPE_GRASS,      MOVE_G_MAX_VINE_LASH_P},
-	{SPECIES_CHARIZARD_GMAX,            TYPE_FIRE,       MOVE_G_MAX_WILDFIRE_P},
-	{SPECIES_BLASTOISE_GMAX,            TYPE_WATER,      MOVE_G_MAX_CANNONADE_P},
-	{SPECIES_BUTTERFREE_GMAX,           TYPE_BUG,        MOVE_G_MAX_BEFUDDLE_P},
-	{SPECIES_PIKACHU_GMAX,              TYPE_ELECTRIC,   MOVE_G_MAX_VOLT_CRASH_P},
-	{SPECIES_MEOWTH_GMAX,               TYPE_NORMAL,     MOVE_G_MAX_GOLD_RUSH_P},
-	{SPECIES_MACHAMP_GMAX,              TYPE_FIGHTING,   MOVE_G_MAX_CHI_STRIKE_P},
-	{SPECIES_GENGAR_GMAX,               TYPE_GHOST,      MOVE_G_MAX_TERROR_P},
-	{SPECIES_KINGLER_GMAX,              TYPE_WATER,      MOVE_G_MAX_FOAM_BURST_P},
-	{SPECIES_LAPRAS_GMAX,               TYPE_ICE,        MOVE_G_MAX_RESONANCE_P},
-	{SPECIES_EEVEE_GMAX,                TYPE_NORMAL,     MOVE_G_MAX_CUDDLE_P},
-	{SPECIES_SNORLAX_GMAX,              TYPE_NORMAL,     MOVE_G_MAX_REPLENISH_P},
-	{SPECIES_GARBODOR_GMAX,             TYPE_POISON,     MOVE_G_MAX_MALODOR_P},
-	{SPECIES_MELMETAL_GMAX,             TYPE_STEEL,      MOVE_G_MAX_MELTDOWN_P},
-	{SPECIES_RILLABOOM_GMAX,            TYPE_GRASS,      MOVE_G_MAX_DRUM_SOLO_P},
-	{SPECIES_CINDERACE_GMAX,            TYPE_FIRE,       MOVE_G_MAX_FIREBALL_P},
-	{SPECIES_INTELEON_GMAX,             TYPE_WATER,      MOVE_G_MAX_HYDROSNIPE_P},
-	{SPECIES_CORVIKNIGHT_GMAX,          TYPE_FLYING,     MOVE_G_MAX_WIND_RAGE_P},
-	{SPECIES_ORBEETLE_GMAX,             TYPE_PSYCHIC,    MOVE_G_MAX_GRAVITAS_P},
-	{SPECIES_DREDNAW_GMAX,              TYPE_WATER,      MOVE_G_MAX_STONESURGE_P},
-	{SPECIES_COALOSSAL_GMAX,            TYPE_ROCK,       MOVE_G_MAX_VOLCALITH_P},
-	{SPECIES_FLAPPLE_GMAX,              TYPE_GRASS,      MOVE_G_MAX_TARTNESS_P},
-	{SPECIES_APPLETUN_GMAX,             TYPE_GRASS,      MOVE_G_MAX_SWEETNESS_P},
-	{SPECIES_SANDACONDA_GMAX,           TYPE_GROUND,     MOVE_G_MAX_SANDBLAST_P},
-	{SPECIES_TOXTRICITY_GMAX,           TYPE_ELECTRIC,   MOVE_G_MAX_STUN_SHOCK_P},
-	{SPECIES_CENTISKORCH_GMAX,          TYPE_FIRE,       MOVE_G_MAX_CENTIFERNO_P},
-	{SPECIES_HATTERENE_GMAX,                 TYPE_FAIRY,      MOVE_G_MAX_SMITE_P},
-	{SPECIES_GRIMMSNARL_GMAX,           TYPE_DARK,       MOVE_G_MAX_SNOOZE_P},
-	{SPECIES_ALCREMIE_GMAX,             TYPE_FAIRY,      MOVE_G_MAX_FINALE_P},
-	{SPECIES_COPPERAJAH_GMAX,           TYPE_STEEL,      MOVE_G_MAX_STEELSURGE_P},
-	{SPECIES_DURALUDON_GMAX,            TYPE_DRAGON,     MOVE_G_MAX_DEPLETION_P},
-	{SPECIES_URSHIFU_GMAX,              TYPE_DARK,       MOVE_G_MAX_ONE_BLOW_P},
-	{SPECIES_URSHIFU_RAPID_STRIKE_GMAX, TYPE_WATER,      MOVE_G_MAX_RAPID_FLOW_P},
+	[SPECIES_VENUSAUR_GMAX] = 	          {TYPE_GRASS,      MOVE_G_MAX_VINE_LASH_P},
+	[SPECIES_CHARIZARD_GMAX] =            {TYPE_FIRE,       MOVE_G_MAX_WILDFIRE_P},
+	[SPECIES_BLASTOISE_GMAX] =            {TYPE_WATER,      MOVE_G_MAX_CANNONADE_P},
+	[SPECIES_BUTTERFREE_GMAX] =           {TYPE_BUG,        MOVE_G_MAX_BEFUDDLE_P},
+	[SPECIES_PIKACHU_GMAX] =              {TYPE_ELECTRIC,   MOVE_G_MAX_VOLT_CRASH_P},
+	[SPECIES_MEOWTH_GMAX] =               {TYPE_NORMAL,     MOVE_G_MAX_GOLD_RUSH_P},
+	[SPECIES_MACHAMP_GMAX] =              {TYPE_FIGHTING,   MOVE_G_MAX_CHI_STRIKE_P},
+	[SPECIES_GENGAR_GMAX] =               {TYPE_GHOST,      MOVE_G_MAX_TERROR_P},
+	[SPECIES_KINGLER_GMAX] =              {TYPE_WATER,      MOVE_G_MAX_FOAM_BURST_P},
+	[SPECIES_LAPRAS_GMAX] =               {TYPE_ICE,        MOVE_G_MAX_RESONANCE_P},
+	[SPECIES_EEVEE_GMAX] =                {TYPE_NORMAL,     MOVE_G_MAX_CUDDLE_P},
+	[SPECIES_SNORLAX_GMAX] =              {TYPE_NORMAL,     MOVE_G_MAX_REPLENISH_P},
+	[SPECIES_GARBODOR_GMAX] =             {TYPE_POISON,     MOVE_G_MAX_MALODOR_P},
+	[SPECIES_MELMETAL_GMAX] =             {TYPE_STEEL,      MOVE_G_MAX_MELTDOWN_P},
+	[SPECIES_RILLABOOM_GMAX] =            {TYPE_GRASS,      MOVE_G_MAX_DRUM_SOLO_P},
+	[SPECIES_CINDERACE_GMAX] =            {TYPE_FIRE,       MOVE_G_MAX_FIREBALL_P},
+	[SPECIES_INTELEON_GMAX] =             {TYPE_WATER,      MOVE_G_MAX_HYDROSNIPE_P},
+	[SPECIES_CORVIKNIGHT_GMAX] =          {TYPE_FLYING,     MOVE_G_MAX_WIND_RAGE_P},
+	[SPECIES_ORBEETLE_GMAX] =             {TYPE_PSYCHIC,    MOVE_G_MAX_GRAVITAS_P},
+	[SPECIES_DREDNAW_GMAX] =              {TYPE_WATER,      MOVE_G_MAX_STONESURGE_P},
+	[SPECIES_COALOSSAL_GMAX] =            {TYPE_ROCK,       MOVE_G_MAX_VOLCALITH_P},
+	[SPECIES_FLAPPLE_GMAX] =              {TYPE_GRASS,      MOVE_G_MAX_TARTNESS_P},
+	[SPECIES_APPLETUN_GMAX] =             {TYPE_GRASS,      MOVE_G_MAX_SWEETNESS_P},
+	[SPECIES_SANDACONDA_GMAX] =           {TYPE_GROUND,     MOVE_G_MAX_SANDBLAST_P},
+	[SPECIES_TOXTRICITY_GMAX] =           {TYPE_ELECTRIC,   MOVE_G_MAX_STUN_SHOCK_P},
+	[SPECIES_CENTISKORCH_GMAX] =          {TYPE_FIRE,       MOVE_G_MAX_CENTIFERNO_P},
+	[SPECIES_HATTERENE_GMAX] =			  {TYPE_FAIRY,      MOVE_G_MAX_SMITE_P},
+	[SPECIES_GRIMMSNARL_GMAX] =           {TYPE_DARK,       MOVE_G_MAX_SNOOZE_P},
+	[SPECIES_ALCREMIE_GMAX] =             {TYPE_FAIRY,      MOVE_G_MAX_FINALE_P},
+	[SPECIES_COPPERAJAH_GMAX] =           {TYPE_STEEL,      MOVE_G_MAX_STEELSURGE_P},
+	[SPECIES_DURALUDON_GMAX] =            {TYPE_DRAGON,     MOVE_G_MAX_DEPLETION_P},
+	[SPECIES_URSHIFU_GMAX] =              {TYPE_DARK,       MOVE_G_MAX_ONE_BLOW_P},
+	[SPECIES_URSHIFU_RAPID_STRIKE_GMAX] = {TYPE_WATER,      MOVE_G_MAX_RAPID_FLOW_P},
 };
 
 const u8 gRaidBattleStarsByBadges[][2] =
@@ -172,31 +171,129 @@ static const u16 sRaidHPMultipliers[] =
 #include "data/raid_encounters.h"
 #include "data/raid_partners.h"
 
+// this file's functions
+static u16 FindPlayerDynamaxBand(void);
+static u16 FindTrainerDynamaxBand(u16 trainerId);
+
 // EWRAM data
 EWRAM_DATA u8 gRaidBattleStars = 0;
 EWRAM_DATA u8 gRaidBattleLevel = 0;
 EWRAM_DATA u16 gRaidBattleSpecies = 0;
 
 // code:
+bool8 CanDynamax(u16 battlerId)
+{
+	u8 side = GetBattlerSide(battlerId);
+	if (gBattleTypeFlags & BATTLE_TYPE_RAID
+		//&& gBattleStruct->raid.energyPos == battlerId
+		&& !(gBattleStruct->dynamax.dynamaxed & gBitTable[battlerId])
+		&& !(gBattleStruct->dynamax.dynamaxed & gBitTable[BATTLE_PARTNER(battlerId)]))
+		return TRUE;
+	
+	else if (FlagGet(FLAG_DYNAMAX_BATTLE) 
+			&& side == B_SIDE_PLAYER && FindPlayerDynamaxBand()
+		&& !(gBattleStruct->dynamax.dynamaxed & gBitTable[battlerId])
+		&& !(gBattleStruct->dynamax.dynamaxed & gBitTable[BATTLE_PARTNER(battlerId)]))
+		return TRUE;
+
+	return FALSE;
+}
+
+void ApplyDynamaxHPMultiplier(struct Pokemon *mon)
+{
+    u16 hp, maxHP, multiplier;
+
+	if (GetMonData(mon, MON_DATA_SPECIES, NULL) == SPECIES_SHEDINJA)
+		return;
+
+    hp = GetMonData(mon, MON_DATA_HP, NULL);
+    maxHP = GetMonData(mon, MON_DATA_MAX_HP, NULL);
+    multiplier = UQ_4_12(2.0); // placeholder; TODO: Dynamax level
+
+    hp = UQ_4_12_TO_INT((hp * multiplier) + UQ_4_12_ROUND);
+    maxHP = UQ_4_12_TO_INT((maxHP * multiplier) + UQ_4_12_ROUND);
+
+    SetMonData(mon, MON_DATA_HP, &hp);
+    SetMonData(mon, MON_DATA_MAX_HP, &maxHP);
+}
+
+void PrepareBattlerForDynamax(u16 battlerId)
+{
+	u8 i;
+	struct Pokemon *mon;
+	u8 side = GetBattlerSide(battlerId);
+
+	gBattleStruct->dynamax.dynamaxed |= gBitTable[battlerId];
+	gBattleStruct->dynamax.dynamaxTurns[side] = DYNAMAX_TURNS;
+	for (i = 0; i < MAX_MON_MOVES; i++)
+	{
+		gBattleStruct->dynamax.ppBuffer[side][i] = gBattleMons[battlerId].pp[i];
+		gBattleMons[battlerId].pp[i] = 10;
+	}
+
+	if (side == B_SIDE_PLAYER)
+		mon = &gPlayerParty[gBattlerPartyIndexes[battlerId]];
+	else
+		mon = &gEnemyParty[gBattlerPartyIndexes[battlerId]];
+	RecalcBattlerStats(battlerId, mon);
+}
+
+void UndoDynamax(u16 battlerId)
+{
+	u16 hp, maxHP, i;
+	struct Pokemon *mon;
+	u8 side = GetBattlerSide(battlerId);	
+
+	gBattleStruct->dynamax.dynamaxed &= ~gBitTable[gActiveBattler];
+
+	for (i = 0; i < MAX_MON_MOVES; i++) // revert move PP
+	{
+		gBattleMons[battlerId].pp[i] = gBattleStruct->dynamax.ppBuffer[side][i];
+	}
+
+	if (side == B_SIDE_PLAYER) // revert HP multiplier
+		mon = &gPlayerParty[gBattlerPartyIndexes[battlerId]];
+	else
+		mon = &gEnemyParty[gBattlerPartyIndexes[battlerId]];
+	RecalcBattlerStats(battlerId, mon);
+
+	UpdateHealthboxAttribute(gHealthboxSpriteIds[battlerId], mon, HEALTHBOX_ALL); // update healthbox
+}
+
 bool8 ShouldUseMaxMove(u16 battlerId, u16 baseMove)
 {
 	if (IsRaidBoss(battlerId))
 		return !IsRaidBossUsingRegularMove(battlerId, baseMove);
-	else if (gBattleStruct->dynamax.dynamaxTurns[battlerId] > 0)
+	else if (gBattleStruct->dynamax.dynamaxed & gBitTable[battlerId]
+			 || gBattleStruct->dynamax.toDynamax & gBitTable[battlerId])
 		return TRUE;
 	return FALSE;
 }
 
 u16 GetMaxMove(u16 battlerId, u16 baseMove)
 {
+	u8 side = GetBattlerSide(battlerId);
 	u16 move = baseMove;
+	u16 species;
+
+	if (baseMove == MOVE_NONE)
+		return MOVE_NONE;
+
+	if (side == B_SIDE_PLAYER) // Gigantamax Check
+		species = GetMonData(&gPlayerParty[gBattlerPartyIndexes[battlerId]], MON_DATA_SPECIES, NULL);
+	else
+		species = GetMonData(&gEnemyParty[gBattlerPartyIndexes[battlerId]], MON_DATA_SPECIES, NULL);
+
 	if (gBattleMoves[baseMove].split == SPLIT_STATUS)
 		move = MOVE_MAX_GUARD;
+	else if (IsGigantamaxSpecies(species)
+			 && sGMaxMoveTable[species].moveType == gBattleMoves[baseMove].type)
+		move = sGMaxMoveTable[species].gmaxMove;
 	else
 		move = sMaxMoveTable[gBattleMoves[baseMove].type];
 	
 	if (gBattleMoves[baseMove].split == SPLIT_SPECIAL)
-		move++; // physical max move IDs are followed by a special counterpart
+		move++; // physical max move IDs are followed by their special counterpart
 	
 	return move;
 }
@@ -204,6 +301,14 @@ u16 GetMaxMove(u16 battlerId, u16 baseMove)
 bool8 IsMaxMove(u16 move)
 {
 	return move >= MAX_MOVES_START && move <= MOVE_G_MAX_RAPID_FLOW_S;
+}
+
+bool8 ShouldDisplayMaxMoveInfo(u16 battlerId)
+{
+	if (gBattleStruct->dynamax.dynamaxed & gBitTable[battlerId] ||
+		(gBattleStruct->dynamax.playerSelect && !(gBattleStruct->dynamax.toDynamax & gBitTable[BATTLE_PARTNER(gActiveBattler)])))
+		return TRUE;
+	return FALSE;
 }
 
 bool8 IsGigantamaxSpecies(u16 species)
@@ -544,8 +649,7 @@ void InitRaidVariables(void)
     gBattleStruct->raid.thresholdsRemaining = GetRaidThresholdNumber();
     gBattleStruct->raid.stormTurns = 0;
     gBattleStruct->raid.state = INTRO_COMPLETED;
-
-	gBattleStruct->dynamax.dynamaxTurns[0] = 3;
+	gBattleStruct->raid.energyPos = B_POSITION_PLAYER_LEFT;
 
     for (i = 0; i < MAX_BARRIER_COUNT; i++)
     {
@@ -583,6 +687,10 @@ void IncrementRaidStorm(void)
 void ApplyRaidHPMultiplier(struct Pokemon *mon)
 {
     u16 hp, maxHP, multiplier;
+
+	if (GetMonData(mon, MON_DATA_SPECIES, NULL) == SPECIES_SHEDINJA)
+		return;
+
     hp = GetMonData(mon, MON_DATA_HP, NULL);
     maxHP = GetMonData(mon, MON_DATA_MAX_HP, NULL);
     multiplier = sRaidHPMultipliers[gBattleStruct->raid.stars];
@@ -670,9 +778,9 @@ void CB2_ChooseBall(void)
     GoToBagMenu(ITEMMENULOCATION_BERRY_TREE, BALLS_POCKET, CB2_SetUpReshowBattleScreenAfterMenu2);
 }
 
-// Sprite data
+// Sprite data and functions
 
-static const u8 sRaidShieldGfx[] = INCBIN_U8("graphics/battle_interface/raid_barrier.4bpp");
+static const u16 sRaidShieldGfx[] = INCBIN_U16("graphics/battle_interface/raid_barrier.4bpp");
 static const u16 sRaidShieldPal[] = INCBIN_U16("graphics/battle_interface/raid_barrier.gbapal");
 
 static const struct SpriteSheet sSpriteSheet_RaidShield =
@@ -722,6 +830,7 @@ static const struct SpriteTemplate sSpriteTemplate_RaidShield =
 };
 
 #define tBattler    data[0]
+#define tHide       data[1]
 
 u32 CreateRaidShieldSprite(u8 index)
 {
@@ -783,3 +892,4 @@ void DestroyAllRaidShieldSprites(void)
 }
 
 #undef tBattler
+#undef tHide
