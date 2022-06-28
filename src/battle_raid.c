@@ -186,14 +186,18 @@ bool8 CanDynamax(u16 battlerId)
 	u8 side = GetBattlerSide(battlerId);
 	if (gBattleTypeFlags & BATTLE_TYPE_RAID
 		//&& gBattleStruct->raid.energyPos == battlerId
-		&& !(gBattleStruct->dynamax.dynamaxed & gBitTable[battlerId])
-		&& !(gBattleStruct->dynamax.dynamaxed & gBitTable[BATTLE_PARTNER(battlerId)]))
+		&& !(gBattleStruct->dynamax.dynamaxedIds & gBitTable[battlerId])
+		&& !(gBattleStruct->dynamax.dynamaxedIds & gBitTable[BATTLE_PARTNER(battlerId)])
+		&& !(gBattleStruct->dynamax.toDynamax & gBitTable[BATTLE_PARTNER(battlerId)])
+		&& !gBattleStruct->dynamax.alreadyDynamaxed[side])
 		return TRUE;
 	
 	else if (FlagGet(FLAG_DYNAMAX_BATTLE) 
 			&& side == B_SIDE_PLAYER && FindPlayerDynamaxBand()
-		&& !(gBattleStruct->dynamax.dynamaxed & gBitTable[battlerId])
-		&& !(gBattleStruct->dynamax.dynamaxed & gBitTable[BATTLE_PARTNER(battlerId)]))
+		&& !(gBattleStruct->dynamax.dynamaxedIds & gBitTable[battlerId])
+		&& !(gBattleStruct->dynamax.dynamaxedIds & gBitTable[BATTLE_PARTNER(battlerId)])
+		&& !(gBattleStruct->dynamax.toDynamax & gBitTable[BATTLE_PARTNER(battlerId)])
+		&& !gBattleStruct->dynamax.alreadyDynamaxed[side])
 		return TRUE;
 
 	return FALSE;
@@ -223,7 +227,8 @@ void PrepareBattlerForDynamax(u16 battlerId)
 	struct Pokemon *mon;
 	u8 side = GetBattlerSide(battlerId);
 
-	gBattleStruct->dynamax.dynamaxed |= gBitTable[battlerId];
+	gBattleStruct->dynamax.alreadyDynamaxed[side] = TRUE;
+	gBattleStruct->dynamax.dynamaxedIds |= gBitTable[battlerId];
 	gBattleStruct->dynamax.dynamaxTurns[side] = DYNAMAX_TURNS;
 	for (i = 0; i < MAX_MON_MOVES; i++)
 	{
@@ -235,6 +240,7 @@ void PrepareBattlerForDynamax(u16 battlerId)
 		mon = &gPlayerParty[gBattlerPartyIndexes[battlerId]];
 	else
 		mon = &gEnemyParty[gBattlerPartyIndexes[battlerId]];
+
 	RecalcBattlerStats(battlerId, mon);
 }
 
@@ -244,7 +250,7 @@ void UndoDynamax(u16 battlerId)
 	struct Pokemon *mon;
 	u8 side = GetBattlerSide(battlerId);	
 
-	gBattleStruct->dynamax.dynamaxed &= ~gBitTable[gActiveBattler];
+	gBattleStruct->dynamax.dynamaxedIds &= ~gBitTable[gActiveBattler];
 
 	for (i = 0; i < MAX_MON_MOVES; i++) // revert move PP
 	{
@@ -257,6 +263,7 @@ void UndoDynamax(u16 battlerId)
 		mon = &gEnemyParty[gBattlerPartyIndexes[battlerId]];
 	RecalcBattlerStats(battlerId, mon);
 
+	DestroyDynamaxIndicatorSprite(gHealthboxSpriteIds[battlerId]);
 	UpdateHealthboxAttribute(gHealthboxSpriteIds[battlerId], mon, HEALTHBOX_ALL); // update healthbox
 }
 
@@ -264,7 +271,7 @@ bool8 ShouldUseMaxMove(u16 battlerId, u16 baseMove)
 {
 	if (IsRaidBoss(battlerId))
 		return !IsRaidBossUsingRegularMove(battlerId, baseMove);
-	else if (gBattleStruct->dynamax.dynamaxed & gBitTable[battlerId]
+	else if (gBattleStruct->dynamax.dynamaxedIds & gBitTable[battlerId]
 			 || gBattleStruct->dynamax.toDynamax & gBitTable[battlerId])
 		return TRUE;
 	return FALSE;
@@ -305,7 +312,7 @@ bool8 IsMaxMove(u16 move)
 
 bool8 ShouldDisplayMaxMoveInfo(u16 battlerId)
 {
-	if (gBattleStruct->dynamax.dynamaxed & gBitTable[battlerId] ||
+	if (gBattleStruct->dynamax.dynamaxedIds & gBitTable[battlerId] ||
 		(gBattleStruct->dynamax.playerSelect && !(gBattleStruct->dynamax.toDynamax & gBitTable[BATTLE_PARTNER(gActiveBattler)])))
 		return TRUE;
 	return FALSE;
@@ -778,8 +785,9 @@ void CB2_ChooseBall(void)
     GoToBagMenu(ITEMMENULOCATION_BERRY_TREE, BALLS_POCKET, CB2_SetUpReshowBattleScreenAfterMenu2);
 }
 
-// Sprite data and functions
+// Sprite data and functions:
 
+// Raid Shields
 static const u16 sRaidShieldGfx[] = INCBIN_U16("graphics/battle_interface/raid_barrier.4bpp");
 static const u16 sRaidShieldPal[] = INCBIN_U16("graphics/battle_interface/raid_barrier.gbapal");
 
@@ -831,6 +839,7 @@ static const struct SpriteTemplate sSpriteTemplate_RaidShield =
 
 #define tBattler    data[0]
 #define tHide       data[1]
+#define hOther_IndicatorSpriteId data[6]
 
 u32 CreateRaidShieldSprite(u8 index)
 {
@@ -891,5 +900,305 @@ void DestroyAllRaidShieldSprites(void)
     FreeSpriteTilesByTag(TAG_RAID_SHIELD_TILE);
 }
 
+// Dynamax Trigger
+
+static const u8 sDynamaxTriggerGfx[] = INCBIN_U8("graphics/battle_interface/dynamax_trigger.4bpp");
+static const u16 sDynamaxTriggerPal[] = INCBIN_U16("graphics/battle_interface/dynamax_trigger.gbapal");
+
+static const struct SpriteSheet sSpriteSheet_DynamaxTrigger =
+{
+    sDynamaxTriggerGfx, sizeof(sDynamaxTriggerGfx), TAG_DYNAMAX_TRIGGER_TILE
+};
+static const struct SpritePalette sSpritePalette_DynamaxTrigger =
+{
+    sDynamaxTriggerPal, TAG_DYNAMAX_TRIGGER_PAL
+};
+
+static const struct OamData sOamData_DynamaxTrigger =
+{
+    .y = 0,
+    .affineMode = 0,
+    .objMode = 0,
+    .mosaic = 0,
+    .bpp = 0,
+    .shape = ST_OAM_SQUARE,
+    .x = 0,
+    .matrixNum = 0,
+    .size = 2,
+    .tileNum = 0,
+    .priority = 1,
+    .paletteNum = 0,
+    .affineParam = 0,
+};
+
+static const union AnimCmd sSpriteAnim_DynamaxTriggerOff[] =
+{
+    ANIMCMD_FRAME(0, 0),
+    ANIMCMD_END
+};
+
+static const union AnimCmd sSpriteAnim_DynamaxTriggerOn[] =
+{
+    ANIMCMD_FRAME(16, 0),
+    ANIMCMD_END
+};
+
+static const union AnimCmd *const sSpriteAnimTable_DynamaxTrigger[] =
+{
+    sSpriteAnim_DynamaxTriggerOff,
+    sSpriteAnim_DynamaxTriggerOn,
+};
+
+static void SpriteCb_DynamaxTrigger(struct Sprite *sprite);
+
+static const struct SpriteTemplate sSpriteTemplate_DynamaxTrigger =
+{
+    .tileTag = TAG_DYNAMAX_TRIGGER_TILE,
+    .paletteTag = TAG_DYNAMAX_TRIGGER_PAL,
+    .oam = &sOamData_DynamaxTrigger,
+    .anims = sSpriteAnimTable_DynamaxTrigger,
+    .images = NULL,
+    .affineAnims = gDummySpriteAffineAnimTable,
+    .callback = SpriteCb_DynamaxTrigger
+};
+
+void ChangeDynamaxTriggerSprite(u8 spriteId, u8 animId)
+{
+    StartSpriteAnim(&gSprites[spriteId], animId);
+}
+
+#define SINGLES_DYNAMAX_TRIGGER_POS_X_OPTIMAL (30)
+#define SINGLES_DYNAMAX_TRIGGER_POS_X_PRIORITY (31)
+#define SINGLES_DYNAMAX_TRIGGER_POS_X_SLIDE (15)
+#define SINGLES_DYNAMAX_TRIGGER_POS_Y_DIFF (-11)
+
+#define DOUBLES_DYNAMAX_TRIGGER_POS_X_OPTIMAL (30)
+#define DOUBLES_DYNAMAX_TRIGGER_POS_X_PRIORITY (31)
+#define DOUBLES_DYNAMAX_TRIGGER_POS_X_SLIDE (15)
+#define DOUBLES_DYNAMAX_TRIGGER_POS_Y_DIFF (-4)
+
+void CreateDynamaxTriggerSprite(u8 battlerId, u8 palId)
+{
+    LoadSpritePalette(&sSpritePalette_DynamaxTrigger);
+    if (GetSpriteTileStartByTag(TAG_DYNAMAX_TRIGGER_TILE) == 0xFFFF)
+        LoadSpriteSheet(&sSpriteSheet_DynamaxTrigger);
+    if (gBattleStruct->dynamax.triggerSpriteId == 0xFF)
+    {
+        if (gBattleTypeFlags & BATTLE_TYPE_DOUBLE)
+            gBattleStruct->dynamax.triggerSpriteId = CreateSprite(&sSpriteTemplate_DynamaxTrigger,
+                                                             gSprites[gHealthboxSpriteIds[battlerId]].x - DOUBLES_DYNAMAX_TRIGGER_POS_X_SLIDE,
+                                                             gSprites[gHealthboxSpriteIds[battlerId]].y - DOUBLES_DYNAMAX_TRIGGER_POS_Y_DIFF, 0);
+        else
+            gBattleStruct->dynamax.triggerSpriteId = CreateSprite(&sSpriteTemplate_DynamaxTrigger,
+                                                             gSprites[gHealthboxSpriteIds[battlerId]].x - SINGLES_DYNAMAX_TRIGGER_POS_X_SLIDE,
+                                                             gSprites[gHealthboxSpriteIds[battlerId]].y - SINGLES_DYNAMAX_TRIGGER_POS_Y_DIFF, 0);
+    }
+    gSprites[gBattleStruct->dynamax.triggerSpriteId].tBattler = battlerId;
+    gSprites[gBattleStruct->dynamax.triggerSpriteId].tHide = FALSE;
+
+    ChangeDynamaxTriggerSprite(gBattleStruct->dynamax.triggerSpriteId, palId);
+}
+
+static void SpriteCb_DynamaxTrigger(struct Sprite *sprite)
+{
+    s32 xSlide, xPriority, xOptimal;
+    s32 yDiff;
+
+    if (gBattleTypeFlags & BATTLE_TYPE_DOUBLE)
+    {
+        xSlide = DOUBLES_DYNAMAX_TRIGGER_POS_X_SLIDE;
+        xPriority = DOUBLES_DYNAMAX_TRIGGER_POS_X_PRIORITY;
+        xOptimal = DOUBLES_DYNAMAX_TRIGGER_POS_X_OPTIMAL;
+        yDiff = DOUBLES_DYNAMAX_TRIGGER_POS_Y_DIFF;
+    }
+    else
+    {
+        xSlide = SINGLES_DYNAMAX_TRIGGER_POS_X_SLIDE;
+        xPriority = SINGLES_DYNAMAX_TRIGGER_POS_X_PRIORITY;
+        xOptimal = SINGLES_DYNAMAX_TRIGGER_POS_X_OPTIMAL;
+        yDiff = SINGLES_DYNAMAX_TRIGGER_POS_Y_DIFF;
+    }
+
+    if (sprite->tHide)
+    {
+        if (sprite->x != gSprites[gHealthboxSpriteIds[sprite->tBattler]].x - xSlide)
+            sprite->x++;
+
+        if (sprite->x >= gSprites[gHealthboxSpriteIds[sprite->tBattler]].x - xPriority)
+            sprite->oam.priority = 2;
+        else
+            sprite->oam.priority = 1;
+
+        sprite->y = gSprites[gHealthboxSpriteIds[sprite->tBattler]].y - yDiff;
+        sprite->y2 = gSprites[gHealthboxSpriteIds[sprite->tBattler]].y2 - yDiff;
+        if (sprite->x == gSprites[gHealthboxSpriteIds[sprite->tBattler]].x - xSlide)
+            DestroyDynamaxTriggerSprite();
+    }
+    else
+    {
+        if (sprite->x != gSprites[gHealthboxSpriteIds[sprite->tBattler]].x - xOptimal)
+            sprite->x--;
+
+        if (sprite->x >= gSprites[gHealthboxSpriteIds[sprite->tBattler]].x - xPriority)
+            sprite->oam.priority = 2;
+        else
+            sprite->oam.priority = 1;
+
+        sprite->y = gSprites[gHealthboxSpriteIds[sprite->tBattler]].y - yDiff;
+        sprite->y2 = gSprites[gHealthboxSpriteIds[sprite->tBattler]].y2 - yDiff;
+    }
+}
+
+bool32 IsDynamaxTriggerSpriteActive(void)
+{
+    if (GetSpriteTileStartByTag(TAG_DYNAMAX_TRIGGER_TILE) == 0xFFFF)
+        return FALSE;
+    else if (IndexOfSpritePaletteTag(TAG_DYNAMAX_TRIGGER_PAL) != 0xFF)
+        return TRUE;
+    else
+        return FALSE;
+}
+
+void HideDynamaxTriggerSprite(void)
+{
+    if (gBattleStruct->dynamax.triggerSpriteId != 0xFF)
+    {
+        ChangeDynamaxTriggerSprite(gBattleStruct->dynamax.triggerSpriteId, 0);
+        gSprites[gBattleStruct->dynamax.triggerSpriteId].tHide = TRUE;
+    }
+}
+
+void DestroyDynamaxTriggerSprite(void)
+{
+    FreeSpritePaletteByTag(TAG_DYNAMAX_TRIGGER_PAL);
+    FreeSpriteTilesByTag(TAG_DYNAMAX_TRIGGER_TILE);
+    if (gBattleStruct->dynamax.triggerSpriteId != 0xFF)
+        DestroySprite(&gSprites[gBattleStruct->dynamax.triggerSpriteId]);
+    gBattleStruct->dynamax.triggerSpriteId = 0xFF;
+}
+
+// Dynamax Indicator
+
+static const u8 sDynamaxIndicatorGfx[] = INCBIN_U8("graphics/battle_interface/dynamax_indicator.4bpp");
+static const u16 sDynamaxIndicatorPal[] = INCBIN_U16("graphics/battle_interface/dynamax_indicator.gbapal");
+
+static const struct SpriteSheet sSpriteSheet_DynamaxIndicator =
+{
+    sDynamaxIndicatorGfx, sizeof(sDynamaxIndicatorGfx), TAG_DYNAMAX_INDICATOR_TILE
+};
+static const struct SpritePalette sSpritePalette_DynamaxIndicator =
+{
+    sDynamaxIndicatorPal, TAG_DYNAMAX_INDICATOR_PAL
+};
+
+static const struct OamData sOamData_DynamaxIndicator =
+{
+    .y = 0,
+    .affineMode = 0,
+    .objMode = 0,
+    .mosaic = 0,
+    .bpp = 0,
+    .shape = SPRITE_SHAPE(16x16),
+    .x = 0,
+    .matrixNum = 0,
+    .size = SPRITE_SIZE(16x16),
+    .tileNum = 0,
+    .priority = 1,
+    .paletteNum = 0,
+    .affineParam = 0,
+};
+
+static void SpriteCb_DynamaxIndicator(struct Sprite *sprite);
+
+static const struct SpriteTemplate sSpriteTemplate_DynamaxIndicator =
+{
+    .tileTag = TAG_DYNAMAX_INDICATOR_TILE,
+    .paletteTag = TAG_DYNAMAX_INDICATOR_PAL,
+    .oam = &sOamData_DynamaxIndicator,
+    .anims = gDummySpriteAnimTable,
+    .images = NULL,
+    .affineAnims = gDummySpriteAffineAnimTable,
+    .callback = SpriteCb_DynamaxIndicator,
+};
+
+static const s8 sIndicatorPositions[][2] =
+{
+    [B_POSITION_PLAYER_LEFT] = {52, -9},
+    [B_POSITION_OPPONENT_LEFT] = {44, -9},
+    [B_POSITION_PLAYER_RIGHT] = {52, -9},
+    [B_POSITION_OPPONENT_RIGHT] = {44, -9},
+};
+
+u8 GetDynamaxIndicatorSpriteId(u32 healthboxSpriteId)
+{
+    u8 spriteId = gSprites[healthboxSpriteId].oam.affineParam;
+    if (spriteId >= MAX_SPRITES)
+        return 0xFF;
+    return gSprites[spriteId].hOther_IndicatorSpriteId;
+}
+
+u32 CreateDynamaxIndicatorSprite(u32 battlerId)
+{
+    u32 spriteId, position;
+    s16 x, y;
+
+    if (gBattleStruct->dynamax.dynamaxedIds & gBitTable[battlerId])
+    {
+        LoadSpritePalette(&sSpritePalette_DynamaxIndicator);
+        LoadSpriteSheet(&sSpriteSheet_DynamaxIndicator);
+    }
+
+    position = GetBattlerPosition(battlerId);
+    GetBattlerHealthboxCoords(battlerId, &x, &y);
+
+    x += sIndicatorPositions[position][0];
+    y += sIndicatorPositions[position][1];
+
+    if (gBattleMons[battlerId].level >= 100)
+        x -= 4;
+    else if (gBattleMons[battlerId].level < 10)
+        x += 5;
+
+   if (gBattleStruct->dynamax.dynamaxedIds & gBitTable[battlerId])
+    {
+        spriteId = CreateSpriteAtEnd(&sSpriteTemplate_DynamaxIndicator, x, y, 0);
+    }
+
+    gSprites[gSprites[gHealthboxSpriteIds[battlerId]].oam.affineParam].hOther_IndicatorSpriteId = spriteId;
+    gSprites[spriteId].tBattler = battlerId;
+    return spriteId;
+}
+
+void DestroyDynamaxIndicatorSprite(u32 healthboxSpriteId)
+{
+    u32 i;
+    s16 *spriteId = &gSprites[gSprites[healthboxSpriteId].oam.affineParam].hOther_IndicatorSpriteId;
+
+    if (*spriteId != 0xFF)
+    {
+        DestroySprite(&gSprites[*spriteId]);
+        *spriteId = 0xFF;
+    }
+
+    for (i = 0; i < MAX_BATTLERS_COUNT; i++)
+    {
+        if (gSprites[gSprites[gHealthboxSpriteIds[i]].oam.affineParam].hOther_IndicatorSpriteId != 0xFF)
+            break;
+    }
+    // Free Sprite pal/tiles only if no indicator sprite is active for all battlers.
+    if (i == MAX_BATTLERS_COUNT)
+    {
+        FreeSpritePaletteByTag(TAG_DYNAMAX_INDICATOR_PAL);
+        FreeSpriteTilesByTag(TAG_DYNAMAX_INDICATOR_TILE);
+    }
+}
+
+static void SpriteCb_DynamaxIndicator(struct Sprite *sprite)
+{
+    u8 healthboxSpriteId = gBattleSpritesDataPtr->battleBars[GetBattlerAtPosition(B_POSITION_OPPONENT_LEFT)].healthboxSpriteId;
+    sprite->y2 = gSprites[healthboxSpriteId].y2;
+}
+
 #undef tBattler
 #undef tHide
+#undef hOther_IndicatorSpriteId

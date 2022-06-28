@@ -3149,11 +3149,11 @@ u8 DoBattlerEndTurnEffects(void)
             break;
         case ENDTURN_DYNAMAX:
             if (gBattleStruct->dynamax.dynamaxTurns[GetBattlerSide(gActiveBattler)] > 0
-                && gBattleStruct->dynamax.dynamaxed & gBitTable[gActiveBattler])
+                && gBattleStruct->dynamax.dynamaxedIds & gBitTable[gActiveBattler])
                 gBattleStruct->dynamax.dynamaxTurns[GetBattlerSide(gActiveBattler)]--;
 
             if (gBattleStruct->dynamax.dynamaxTurns[GetBattlerSide(gActiveBattler)] == 0
-                && gBattleStruct->dynamax.dynamaxed & gBitTable[gActiveBattler])
+                && gBattleStruct->dynamax.dynamaxedIds & gBitTable[gActiveBattler])
             {
                 UndoDynamax(gActiveBattler);
                 gBattleScripting.battler = gActiveBattler;
@@ -8187,7 +8187,7 @@ static u16 CalcMoveBasePower(u16 move, u8 battlerAtk, u8 battlerDef)
             MulModifier(&basePower, UQ_4_12(1.5));
         break;
     case EFFECT_DYNAMAX_DOUBLE_DMG:
-        if (gBattleStruct->dynamax.dynamaxed & gBitTable[battlerDef])
+        if (gBattleStruct->dynamax.dynamaxedIds & gBitTable[battlerDef])
             basePower *= 2;
         break;
     case EFFECT_HIDDEN_POWER:

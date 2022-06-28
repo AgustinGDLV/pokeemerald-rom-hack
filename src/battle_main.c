@@ -4189,7 +4189,7 @@ static void HandleTurnActionSelectionState(void)
                             *(gBattleStruct->chosenMovePositions + gActiveBattler) = gBattleResources->bufferB[gActiveBattler][2] & ~RET_MEGA_EVOLUTION & ~RET_DYNAMAX;
                             gChosenMoveByBattler[gActiveBattler] = gBattleMons[gActiveBattler].moves[*(gBattleStruct->chosenMovePositions + gActiveBattler)];
                             *(gBattleStruct->moveTarget + gActiveBattler) = gBattleResources->bufferB[gActiveBattler][3];
-                            if (gBattleResources->bufferB[gActiveBattler][2] & RET_DYNAMAX && !(gBattleStruct->dynamax.dynamaxed & gBitTable[gActiveBattler]))
+                            if (gBattleResources->bufferB[gActiveBattler][2] & RET_DYNAMAX && !(gBattleStruct->dynamax.dynamaxedIds & gBitTable[gActiveBattler]))
                                 gBattleStruct->dynamax.toDynamax |= gBitTable[gActiveBattler];
                             if (ShouldUseMaxMove(gActiveBattler, gChosenMoveByBattler[gActiveBattler]))
                                 gBattleStruct->dynamax.usingMaxMove |= gBitTable[gActiveBattler];

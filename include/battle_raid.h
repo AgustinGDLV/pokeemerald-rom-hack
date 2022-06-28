@@ -47,6 +47,16 @@ void CreateAllRaidShieldSprites(void);
 void DestroyRaidShieldSprite(u8 index);
 void DestroyAllRaidShieldSprites(void);
 
+void ChangeDynamaxTriggerSprite(u8 spriteId, u8 animId);
+void CreateDynamaxTriggerSprite(u8 battlerId, u8 palId);
+bool32 IsDynamaxTriggerSpriteActive(void);
+void HideDynamaxTriggerSprite(void);
+void DestroyDynamaxTriggerSprite(void);
+
+u8 GetDynamaxIndicatorSpriteId(u32 healthboxSpriteId);
+u32 CreateDynamaxIndicatorSprite(u32 battlerId);
+void DestroyDynamaxIndicatorSprite(u32 healthboxSpriteId);
+
 // Raid Battle State Flags
 #define INTRO_COMPLETED             (1 << 0)
 #define SHOULD_CREATE_SHIELDS       (1 << 1)

@@ -520,11 +520,13 @@ struct MultiRaidTrainer
 struct DynamaxData
 {
     u8 toDynamax;
+    u8 dynamaxedIds; // flags using gBitTable
     u8 dynamaxTurns[2]; // used to store dynamax turns remaining for each side
     u8 ppBuffer[2][MAX_MON_MOVES]; // used to store base move PP for each side
     u8 usingMaxMove; // flags using gBitTable
+    u16 triggerSpriteId;
     bool8 playerSelect;
-    bool8 dynamaxed; // flags using gBitTable
+    bool8 alreadyDynamaxed[2]; // for each side
 };
 
 struct RaidBattleData

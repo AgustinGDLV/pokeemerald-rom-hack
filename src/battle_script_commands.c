@@ -7748,7 +7748,7 @@ void RecalcBattlerStats(u32 battler, struct Pokemon *mon)
     CalculateMonStats(mon);
     if (IsRaidBoss(battler) && !(gBattleStruct->raid.state & CATCHING_RAID_BOSS))
         ApplyRaidHPMultiplier(mon);
-    if (gBattleStruct->dynamax.dynamaxed & gBitTable[battler] && IsBattlerAlive(battler))
+    if (gBattleStruct->dynamax.dynamaxedIds & gBitTable[battler] && IsBattlerAlive(battler))
         ApplyDynamaxHPMultiplier(mon);
     gBattleMons[battler].level = GetMonData(mon, MON_DATA_LEVEL);
     gBattleMons[battler].hp = GetMonData(mon, MON_DATA_HP);
@@ -9721,14 +9721,15 @@ static void Cmd_various(void)
     case VARIOUS_HIDE_HEALTHBOXES_ON_SIDE:
         {
         u8 side = GetBattlerSide(gActiveBattler);
-        u8 i, healthboxLeftSpriteId, healthboxRightSpriteId, healthbarSpriteId, indicatorSpriteId;
+        u8 i, healthboxLeftSpriteId, healthboxRightSpriteId, healthbarSpriteId, megaIndicatorSpriteId, dynamaxIndicatorSpriteId;
         for (i = 0; i < 2; i++)
         {
             healthboxLeftSpriteId = gHealthboxSpriteIds[i*2 + side];
             healthboxRightSpriteId = gSprites[gHealthboxSpriteIds[i*2 + side]].oam.affineParam;
             healthbarSpriteId = gSprites[gHealthboxSpriteIds[i*2 + side]].data[5];
-            indicatorSpriteId = GetMegaIndicatorSpriteId(healthboxLeftSpriteId);
-            TryToggleHealboxVisibility(0, healthboxLeftSpriteId, healthboxRightSpriteId, healthbarSpriteId, indicatorSpriteId);
+            megaIndicatorSpriteId = GetMegaIndicatorSpriteId(healthboxLeftSpriteId);
+            dynamaxIndicatorSpriteId = GetDynamaxIndicatorSpriteId(healthboxLeftSpriteId);
+            TryToggleHealboxVisibility(0, healthboxLeftSpriteId, healthboxRightSpriteId, healthbarSpriteId, megaIndicatorSpriteId, dynamaxIndicatorSpriteId);
         }
         }
         break;

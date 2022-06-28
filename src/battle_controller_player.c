@@ -383,6 +383,7 @@ static void HandleInputChooseTarget(void)
         EndBounceEffect(gMultiUsePlayerCursor, BOUNCE_HEALTHBOX);
         TryHideLastUsedBall();
         HideMegaTriggerSprite();
+        HideDynamaxTriggerSprite();
         PlayerBufferExecCompleted();
     }
     else if (JOY_NEW(B_BUTTON) || gPlayerDpadHoldFrames > 59)
@@ -539,6 +540,7 @@ static void HandleInputShowEntireFieldTargets(void)
         else
             BtlController_EmitTwoReturnValues(BUFFER_B, 10, gMoveSelectionCursor[gActiveBattler] | (gMultiUsePlayerCursor << 8));
         HideMegaTriggerSprite();
+        HideDynamaxTriggerSprite();
         PlayerBufferExecCompleted();
     }
     else if (gMain.newKeys & B_BUTTON || gPlayerDpadHoldFrames > 59)
@@ -569,6 +571,7 @@ static void HandleInputShowTargets(void)
         else
             BtlController_EmitTwoReturnValues(BUFFER_B, 10, gMoveSelectionCursor[gActiveBattler] | (gMultiUsePlayerCursor << 8));
         HideMegaTriggerSprite();
+        HideDynamaxTriggerSprite();
         TryHideLastUsedBall();
         PlayerBufferExecCompleted();
     }
@@ -677,6 +680,7 @@ static void HandleInputChooseMove(void)
             else
                 BtlController_EmitTwoReturnValues(BUFFER_B, 10, gMoveSelectionCursor[gActiveBattler] | (gMultiUsePlayerCursor << 8));
             HideMegaTriggerSprite();
+            HideDynamaxTriggerSprite();
             TryHideLastUsedBall();
             PlayerBufferExecCompleted();
             break;
@@ -707,6 +711,7 @@ static void HandleInputChooseMove(void)
         gBattleStruct->mega.playerSelect = FALSE;
         BtlController_EmitTwoReturnValues(BUFFER_B, 10, 0xFFFF);
         HideMegaTriggerSprite();
+        HideDynamaxTriggerSprite();
         PlayerBufferExecCompleted();
     }
     else if (JOY_NEW(DPAD_LEFT))
@@ -780,6 +785,7 @@ static void HandleInputChooseMove(void)
         if (CanDynamax(gActiveBattler))
         {
             gBattleStruct->dynamax.playerSelect ^= 1;
+            ChangeDynamaxTriggerSprite(gBattleStruct->dynamax.triggerSpriteId, gBattleStruct->dynamax.playerSelect);
             MoveSelectionDisplayMoveNames();
             MoveSelectionCreateCursorAt(gMoveSelectionCursor[gActiveBattler], 0);
             MoveSelectionDisplayPpString();
@@ -2856,6 +2862,10 @@ static void PlayerHandleChooseMove(void)
             gBattleStruct->mega.triggerSpriteId = 0xFF;
         if (CanMegaEvolve(gActiveBattler))
             CreateMegaTriggerSprite(gActiveBattler, 0);
+        if (!IsDynamaxTriggerSpriteActive())
+            gBattleStruct->dynamax.triggerSpriteId = 0xFF;
+        if (CanDynamax(gActiveBattler))
+            CreateDynamaxTriggerSprite(gActiveBattler, 0);
         
         gBattlerControllerFuncs[gActiveBattler] = HandleChooseMoveAfterDma3;
     }
