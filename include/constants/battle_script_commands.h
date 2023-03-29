@@ -238,6 +238,15 @@
 #define VARIOUS_SAVE_BATTLER_ITEM                   148
 #define VARIOUS_RESTORE_BATTLER_ITEM                149
 #define VARIOUS_BATTLER_ITEM_TO_LAST_USED_ITEM      150
+#define VARIOUS_SET_RAID_BARRIER                    151
+#define VARIOUS_CLEAR_RAID_BARRIER                  152
+#define VARIOUS_DO_RAID_SHOCKWAVE                   153
+#define VARIOUS_JUMP_IF_NO_BALLS                    154
+#define VARIOUS_CATCH_RAID_BOSS                     155
+#define VARIOUS_HIDE_HEALTHBOXES_ON_SIDE            156
+#define VARIOUS_SET_MAX_MOVE_EFFECT                 157
+#define VARIOUS_JUMP_IF_TARGET_NOT_ALLY             158
+#define VARIOUS_JUMP_IF_TARGET_ABSENT               159
 
 // Cmd_manipulatedamage
 #define DMG_CHANGE_SIGN            0
@@ -308,7 +317,8 @@
 #define MOVEEND_DANCER                            28
 #define MOVEEND_EMERGENCY_EXIT                    29
 #define MOVEEND_CLEAR_BITS                        30
-#define MOVEEND_COUNT                             31
+#define MOVEEND_RAID                              31
+#define MOVEEND_COUNT                             32
 
 // switch cases
 #define B_SWITCH_NORMAL     0

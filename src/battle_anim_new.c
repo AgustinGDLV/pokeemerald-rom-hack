@@ -55,6 +55,7 @@ static void AnimSkyDropBallUp(struct Sprite *sprite);
 static void SpriteCB_SearingShotRock(struct Sprite* sprite);
 static void AnimHappyHourCoinShower(struct Sprite *sprite);
 static void SpriteCB_Geyser(struct Sprite* sprite);
+static void AnimTask_DynamaxGrowthStep(u8 taskId);
 
 //////// const data
 //// general
@@ -5093,4 +5094,76 @@ void AnimTask_TerrainPulse(u8 taskId)
         gBattleAnimArgs[0] = 0;
     }
     DestroyAnimVisualTask(taskId);
+}
+
+void AnimTask_GetRaidBattleStormLevel(u8 taskId) // from CFRU
+{
+    switch (gBattleStruct->raid.stormTurns)
+    {
+        case 0 ... RAID_STORM_LEVEL_1:
+            gBattleAnimArgs[ARG_RET_ID] = 1;
+        case (RAID_STORM_LEVEL_1 + 1) ... RAID_STORM_LEVEL_2:
+            gBattleAnimArgs[ARG_RET_ID] = 2;
+        case (RAID_STORM_LEVEL_2 + 1) ... RAID_STORM_LEVEL_3:
+            gBattleAnimArgs[ARG_RET_ID] = 3;
+        case RAID_STORM_MAX:
+            gBattleAnimArgs[ARG_RET_ID] = 4;
+    }
+	DestroyAnimVisualTask(taskId);
+}
+
+static const union AffineAnimCmd sDynamaxGrowthAffineAnimCmds[] = // from CFRU
+{
+	AFFINEANIMCMD_FRAME(-2, -2, 0, 64), //Double in size over 1 second
+	AFFINEANIMCMD_FRAME(0, 0, 0, 64), //Pause for 1 seconds
+	AFFINEANIMCMD_FRAME(16, 16, 0, 8), //Shrink back down in 1/8 of a second
+	AFFINEANIMCMD_END,
+};
+
+static const union AffineAnimCmd sDynamaxGrowthAttackAnimationAffineAnimCmds[] =
+{
+	AFFINEANIMCMD_FRAME(-4, -4, 0, 32), //Double in size quicker
+	AFFINEANIMCMD_FRAME(0, 0, 0, 32), //Pause for less
+	AFFINEANIMCMD_FRAME(16, 16, 0, 8),
+	AFFINEANIMCMD_END,
+};
+
+static void AnimTask_DynamaxGrowthStep(u8 taskId) // from CFRU
+{
+	struct Task* task = &gTasks[taskId];
+	if (!RunAffineAnimFromTaskData(task))
+		DestroyAnimVisualTask(taskId);
+}
+
+//Arg 0: Animation for attack
+void AnimTask_DynamaxGrowth(u8 taskId) // from CFRU
+{
+	struct Task* task = &gTasks[taskId];
+	u8 spriteId = GetAnimBattlerSpriteId(ANIM_ATTACKER);
+
+	if (gBattleAnimArgs[0] == 0)
+		PrepareAffineAnimInTaskData(task, spriteId, sDynamaxGrowthAffineAnimCmds);
+	else
+		PrepareAffineAnimInTaskData(task, spriteId, sDynamaxGrowthAttackAnimationAffineAnimCmds);
+	task->func = AnimTask_DynamaxGrowthStep;
+}
+
+void AnimTask_GetWeatherToSet(u8 taskId)
+{
+    switch (gBattleMoves[gCurrentMove].argument)
+    {
+        case MAX_EFFECT_SUN:
+            gBattleAnimArgs[ARG_RET_ID] = 1;
+            break;
+        case MAX_EFFECT_RAIN:
+            gBattleAnimArgs[ARG_RET_ID] = 2;
+            break;
+        case MAX_EFFECT_SANDSTORM:
+            gBattleAnimArgs[ARG_RET_ID] = 3;
+            break;
+        case MAX_EFFECT_HAIL:
+            gBattleAnimArgs[ARG_RET_ID] = 4;
+            break;
+    }
+	DestroyAnimVisualTask(taskId);
 }

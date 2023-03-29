@@ -54,6 +54,14 @@ enum
 #define TAG_ALPHA_INDICATOR_PAL         0xD779
 #define TAG_OMEGA_INDICATOR_PAL         0xD77A
 
+#define TAG_RAID_SHIELD_TILE            0xD77B
+#define TAG_RAID_SHIELD_PAL             0xD77B
+
+#define TAG_DYNAMAX_TRIGGER_TILE        0xD77C
+#define TAG_DYNAMAX_TRIGGER_PAL         0xD77C
+#define TAG_DYNAMAX_INDICATOR_TILE      0xD77D
+#define TAG_DYNAMAX_INDICATOR_PAL       0xD77D
+
 enum
 {
     HEALTHBOX_ALL,
@@ -70,6 +78,7 @@ enum
     HEALTHBOX_SAFARI_BALLS_TEXT
 };
 
+void GetBattlerHealthboxCoords(u8 battler, s16 *x, s16 *y);
 u8 GetMegaIndicatorSpriteId(u32 healthboxSpriteId);
 u8 CreateBattlerHealthboxSprites(u8 battler);
 u8 CreateSafariPlayerHealthboxSprites(void);
@@ -78,6 +87,7 @@ void SetHealthboxSpriteInvisible(u8 healthboxSpriteId);
 void SetHealthboxSpriteVisible(u8 healthboxSpriteId);
 void DestoryHealthboxSprite(u8 healthboxSpriteId);
 void DummyBattleInterfaceFunc(u8 healthboxSpriteId, bool8 isDoubleBattleBankOnly);
+void TryToggleHealboxVisibility(u8 priority, u8 healthboxLeftSpriteId, u8 healthboxRightSpriteId, u8 healthbarSpriteId, u8 megaIndicatorSpriteId, u8 dynamaxIndicatorSpriteId);
 void UpdateOamPriorityInAllHealthboxes(u8 priority, bool32 hideHpBoxes);
 void InitBattlerHealthboxCoords(u8 battler);
 void UpdateHpTextInHealthbox(u8 healthboxSpriteId, s16 value, u8 maxOrCurrent);

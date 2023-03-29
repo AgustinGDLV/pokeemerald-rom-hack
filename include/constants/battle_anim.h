@@ -532,6 +532,14 @@
 #define B_ANIM_STRONG_WINDS             30
 #define B_ANIM_PRIMAL_REVERSION         31
 #define B_ANIM_AQUA_RING_HEAL           32
+#define B_ANIM_DYNAMAX_GROWTH           33
+#define B_ANIM_RAID_STORM_BREWS         34
+#define B_ANIM_RAID_BARRIER_APPEARED    35
+#define B_ANIM_RAID_BARRIER_DISAPPEARED 36
+#define B_ANIM_RAID_SHIELD_BROKE        37
+#define B_ANIM_RAID_SHOCKWAVE           38
+#define B_ANIM_RAID_BOSS_EXPLOSION      39
+#define B_ANIM_MAX_SET_WEATHER          40
 
 // special animations table (gBattleAnims_Special)
 #define B_ANIM_LVL_UP                   0

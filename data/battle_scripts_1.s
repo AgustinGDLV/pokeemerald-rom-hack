@@ -404,6 +404,7 @@ gBattleScriptsForMoveEffects::
 	.4byte BattleScript_EffectClangorousSoul          @ EFFECT_CLANGOROUS_SOUL
 	.4byte BattleScript_EffectHit                     @ EFFECT_BOLT_BEAK
 	.4byte BattleScript_EffectSkyDrop                 @ EFFECT_SKY_DROP
+	.4byte BattleScript_EffectMaxMove				  @ EFFECT_MAX_MOVE
   
 BattleScript_EffectSkyDrop:
 	jumpifstatus2 BS_ATTACKER, STATUS2_MULTIPLETURNS, BattleScript_SkyDropTurn2
@@ -9425,4 +9426,221 @@ BattleScript_NeutralizingGasExitsLoop:
 BattleScript_MagicianActivates::
 	call BattleScript_AbilityPopUp
 	call BattleScript_ItemSteal
+	return
+
+BattleScript_DynamaxBegins::
+	printstring STRINGID_EMPTYSTRING3
+	playanimation BS_SCRIPTING, B_ANIM_SLIDE_OFFSCREEN
+	waitanimation
+	returntoball BS_SCRIPTING
+	switchinanim BS_SCRIPTING, TRUE
+	playanimation BS_SCRIPTING, B_ANIM_DYNAMAX_GROWTH
+	waitanimation
+	end2
+
+BattleScript_DynamaxEnds::
+	printstring STRINGID_EMPTYSTRING3
+	playanimation BS_SCRIPTING, B_ANIM_FORM_CHANGE
+	waitanimation
+	end2
+
+BattleScript_DynamaxRejoin:
+	waitstate
+	@callasm TryDoDynamaxTrainerSlide
+	@callasm SetAndTransferDontRemoveTransformSpecies
+	@callasm BackupScriptingBankMoveSelectionCursor @;Prevents the move selection cursor from being reset by the switch-in anim
+ @;Play the switch-in animation
+	waitanimation
+	@callasm RestoreScriptingBankMoveSelectionCursor
+	@callasm ClearAndTransferDontRemoveTransformSpecies
+	@orword HIT_MARKER, HITMARKER_IGNORE_SUBSTITUTE
+	@graphicalhpupdate BANK_SCRIPTING
+	@datahpupdate BANK_SCRIPTING
+	@bicword HIT_MARKER, HITMARKER_IGNORE_SUBSTITUTE
+	@setword BATTLE_STRING_LOADER gText_MonDynamaxed
+	@printstring 0x184
+	@waitmessage B_WAIT_TIME_LONG
+	end3
+BattleScript_TryRevertCramorant:
+	@formchange BANK_SCRIPTING SPECIES_CRAMORANT_GULPING SPECIES_CRAMORANT TRUE TRUE FALSE BattleScript_TryRevertGorgingCramorant
+BattleScript_TryRevertGorgingCramorant:
+	@formchange BANK_SCRIPTING SPECIES_CRAMORANT_GORGING SPECIES_CRAMORANT TRUE TRUE FALSE BattleScript_Dynamax_Rejoin
+	goto BattleScript_DynamaxRejoin
+
+BattleScript_RaidIntro::
+	playanimation BS_ATTACKER, B_ANIM_DYNAMAX_GROWTH
+	printstring STRINGID_PKMNAPPEARSMASSIVE
+	waitmessage B_WAIT_TIME_LONG
+	jumpifbyte CMP_EQUAL, gBattleCommunication, 0x0, BattleScript_RaidIntroEnd
+	setbyte gIsCriticalHit, 0
+	handlemegaevo BS_ATTACKER, 0
+	handlemegaevo BS_ATTACKER, 1
+	playanimation BS_ATTACKER, B_ANIM_MEGA_EVOLUTION
+	waitanimation
+	handlemegaevo BS_ATTACKER, 2
+	printstring STRINGID_MEGAEVOEVOLVED
+	waitmessage B_WAIT_TIME_LONG
+	switchinabilities BS_ATTACKER
+BattleScript_RaidIntroEnd:
+	goto BattleScript_RaidStormBrews
+
+BattleScript_RaidStormBrews::
+	playanimation BS_BATTLER_0, B_ANIM_RAID_STORM_BREWS
+	waitanimation
+	printfromtable gRaidStormStringIds
+	waitmessage B_WAIT_TIME_LONG
+	end2
+
+BattleScript_RaidBarrierAppeared::
+	setraidbarrier
+	playanimation BS_TARGET, B_ANIM_RAID_BARRIER_APPEARED
+	printstring STRINGID_RAIDBARRIERAPPEARED
+	waitanimation
+	end2
+
+BattleScript_RaidBarrierDisappeared::
+	playanimation BS_TARGET, B_ANIM_RAID_BARRIER_DISAPPEARED
+	printstring STRINGID_RAIDBARRIERDISAPPEARED
+	waitanimation
+	jumpifstat BS_TARGET, CMP_GREATER_THAN, STAT_DEF, MIN_STAT_STAGE, BattleScript_RaidDefenseDrop
+	jumpifstat BS_TARGET, CMP_EQUAL, STAT_SPDEF, MIN_STAT_STAGE, BattleScript_RaidBarrierDisappearedEnd
+BattleScript_RaidDefenseDrop:
+	setbyte sSTAT_ANIM_PLAYED, FALSE
+	playstatchangeanimation BS_TARGET, BIT_DEF | BIT_SPDEF, STAT_CHANGE_BY_TWO | STAT_CHANGE_NEGATIVE
+	setstatchanger STAT_DEF, 2, TRUE
+	statbuffchange STAT_BUFF_ALLOW_PTR, BattleScript_RaidSpDefenseDrop
+	jumpifbyte CMP_EQUAL, cMULTISTRING_CHOOSER, B_MSG_STAT_WONT_DECREASE, BattleScript_RaidSpDefenseDrop
+	printfromtable gStatDownStringIds
+	waitmessage B_WAIT_TIME_LONG
+BattleScript_RaidSpDefenseDrop:
+	setstatchanger STAT_SPDEF, 2, TRUE
+	statbuffchange STAT_BUFF_ALLOW_PTR, BattleScript_RaidBarrierDisappearedEnd
+	jumpifbyte CMP_EQUAL, cMULTISTRING_CHOOSER, B_MSG_STAT_WONT_DECREASE, BattleScript_RaidBarrierDisappearedEnd
+	printfromtable gStatDownStringIds
+	waitmessage B_WAIT_TIME_LONG
+BattleScript_RaidBarrierDisappearedEnd:
+	clearraidbarrier
+	healthbarupdate BS_TARGET
+	datahpupdate BS_TARGET
+	tryfaintmon BS_TARGET
+	end2
+
+BattleScript_RaidShieldBroken::
+	playanimation BS_TARGET, B_ANIM_RAID_SHIELD_BROKE
+	waitanimation
+	end2
+
+BattleScript_RaidShockwave::
+	printstring STRINGID_PKMNNULLIFIEDOTHERS
+	waitmessage B_WAIT_TIME_LONG
+	playanimation BS_ATTACKER, B_ANIM_RAID_SHOCKWAVE
+	waitanimation
+	doraidshockwave
+	clearstatus BS_ATTACKER
+	updatestatusicon BS_ATTACKER
+	return
+
+BattleScript_RaidVictory::
+	hidehealthboxesonside BS_OPPONENT1
+	hidehealthboxesonside BS_PLAYER1
+	playanimation BS_TARGET, B_ANIM_RAID_BOSS_EXPLOSION
+	waitanimation
+	setbyte sGIVEEXP_STATE, 0
+	getexp BS_TARGET
+	hidehealthboxesonside BS_PLAYER1
+	jumpifnoballs BattleScript_FaintRaidBoss
+	printstring STRINGID_CATCHRAIDMON
+	setbyte gBattleCommunication, 0
+	yesnobox
+	jumpifbyte CMP_NOT_EQUAL, gBattleCommunication + 1, 0, BattleScript_FaintRaidBoss
+	catchraidboss
+	end2
+
+BattleScript_FaintRaidBoss::
+	pause B_WAIT_TIME_LONG
+	dofaintanimation BS_TARGET
+	printstring STRINGID_RAIDPKMNDISAPPEARED
+	setbyte gBattleOutcome, B_OUTCOME_WON
+	finishturn
+
+BattleScript_RaidDefeat::
+	printfromtable gRaidStormStringIds
+	playanimation BS_BATTLER_0, B_ANIM_RAID_STORM_BREWS
+	waitanimation
+	printstring STRINGID_BLOWNOUTOFDEN
+	waitmessage B_WAIT_TIME_LONG
+	playse SE_FLEE
+	pause 8
+	end2
+
+BattleScript_MovePreventedByDynamax::
+	attackstring
+	ppreduce
+	pause B_WAIT_TIME_SHORT
+	orhalfword gMoveResultFlags, MOVE_RESULT_FAILED
+	printstring STRINGID_MOVEPREVENTEDBYDYNAMAX
+	waitmessage B_WAIT_TIME_LONG
+	goto BattleScript_MoveEnd
+
+BattleScript_EffectMaxMove::
+	attackcanceler
+	setmaxmoveeffect
+	accuracycheck BattleScript_ButItFailed, NO_ACC_CALC_CHECK_LOCK_ON
+	attackstring
+	ppreduce
+	goto BattleScript_HitFromCritCalc
+
+BattleScript_EffectRaiseSideStats::
+	savetarget
+	setbyte gBattlerTarget, 0
+BattleScript_RaiseSideStatsLoop:
+	jumpiftargetnotally BattleScript_RaiseSideStatsIncrement
+	jumpiftargetabsent BattleScript_RaiseSideStatsIncrement
+	statbuffchange STAT_BUFF_ALLOW_PTR, BattleScript_RaiseSideStatsIncrement
+	jumpifbyte CMP_EQUAL, cMULTISTRING_CHOOSER, B_MSG_STAT_WONT_INCREASE, BattleScript_RaiseSideStatsIncrement
+	setgraphicalstatchangevalues
+	playanimation BS_TARGET, B_ANIM_STATS_CHANGE, sB_ANIM_ARG1
+	printfromtable gStatUpStringIds
+	waitmessage B_WAIT_TIME_LONG
+BattleScript_RaiseSideStatsIncrement:
+	setbyte sSTAT_ANIM_PLAYED, FALSE
+	addbyte gBattlerTarget, 1
+	jumpifbytenotequal gBattlerTarget, gBattlersCount, BattleScript_RaiseSideStatsLoop
+BattleScript_RaiseSideStatsEnd:
+	restoretarget
+	return
+
+BattleScript_EffectLowerSideStats::
+	savetarget
+	setbyte gBattlerTarget, 0
+BattleScript_LowerSideStatsLoop:
+	jumpiftargetally BattleScript_LowerSideStatsIncrement
+	jumpiftargetabsent BattleScript_LowerSideStatsIncrement
+	statbuffchange STAT_BUFF_ALLOW_PTR, BattleScript_LowerSideStatsIncrement
+	jumpifbyte CMP_EQUAL, cMULTISTRING_CHOOSER, B_MSG_STAT_WONT_DECREASE, BattleScript_LowerSideStatsIncrement
+	setgraphicalstatchangevalues
+	playanimation BS_TARGET, B_ANIM_STATS_CHANGE, sB_ANIM_ARG1
+	printfromtable gStatDownStringIds
+	waitmessage B_WAIT_TIME_LONG
+BattleScript_LowerSideStatsIncrement:
+	setbyte sSTAT_ANIM_PLAYED, FALSE
+	addbyte gBattlerTarget, 1
+	jumpifbytenotequal gBattlerTarget, gBattlersCount, BattleScript_LowerSideStatsLoop
+BattleScript_LowerSideStatsEnd:
+	restoretarget
+	return
+
+BattleScript_EffectSetWeather::
+	playanimation 0, B_ANIM_MAX_SET_WEATHER
+	printfromtable gMoveWeatherChangeStringIds
+	waitmessage B_WAIT_TIME_LONG
+	call BattleScript_WeatherFormChanges
+	return
+
+BattleScript_EffectSetTerrain::
+	printfromtable gTerrainStringIds
+	waitmessage B_WAIT_TIME_LONG
+	playanimation BS_SCRIPTING, B_ANIM_RESTORE_BG
+	call BattleScript_TerrainSeedLoop
+	jumpifabilitypresent ABILITY_MIMICRY, BattleScript_ApplyMimicry
 	return

@@ -47,6 +47,7 @@
 #include "constants/weather.h"
 
 extern struct Evolution gEvolutionTable[][EVOS_PER_MON];
+extern u8 gDynamaxMovePowers[MOVES_COUNT];
 
 /*
 NOTE: The data and functions in this file up until (but not including) sSoundMovesTable
@@ -292,6 +293,13 @@ void HandleAction_UseMove(void)
     else
     {
         gCurrentMove = gChosenMove = gBattleMons[gBattlerAttacker].moves[gCurrMovePos];
+    }
+
+    // regular moves are replaced by Max moves when Dynamaxed
+    if (gBattleStruct->dynamax.usingMaxMove & gBitTable[gBattlerAttacker])
+    {
+        gCurrentMove = gChosenMove = GetMaxMove(gBattlerAttacker, gCurrentMove);
+        *(gBattleStruct->moveTarget + gBattlerAttacker) = GetMoveTarget(gCurrentMove, NO_TARGET_OVERRIDE);
     }
 
     if (gBattleMons[gBattlerAttacker].hp != 0)
@@ -893,7 +901,7 @@ void HandleAction_ActionFinished(void)
     gMoveResultFlags = 0;
     gBattleScripting.animTurn = 0;
     gBattleScripting.animTargetsHit = 0;
-    gLastLandedMoves[gBattlerAttacker] = 0;
+    //gLastLandedMoves[gBattlerAttacker] = 0; -- moved below the raid check
     gLastHitByType[gBattlerAttacker] = 0;
     gBattleStruct->dynamicMoveType = 0;
     gBattleScripting.moveendState = 0;
@@ -902,6 +910,38 @@ void HandleAction_ActionFinished(void)
     gBattleCommunication[4] = 0;
     gBattleScripting.multihitMoveEffect = 0;
     gBattleResources->battleScriptsStack->size = 0;
+    gBattleStruct->dynamax.usingMaxMove &= ~gBitTable[gBattlerAttacker];
+
+    // Raid bosses can act twice if their last move was a status move or they KO'd their target (latter not implemented yet).
+    if (gBattleTypeFlags & BATTLE_TYPE_RAID
+        && GetBattlerPosition(gBattlerAttacker) == B_POSITION_OPPONENT_LEFT
+        && (gBattleMoves[gLastLandedMoves[gBattlerAttacker]].split == SPLIT_STATUS)
+        && !gBattleStruct->raid.movedTwice
+        && Random() % 100 <= GetRaidRepeatedAttackChance())
+    {
+        u16 chosenMoveId;
+        u8 chosenMoveTarget;
+
+        if (IsWildMonSmart())
+            chosenMoveId = BattleAI_ChooseMoveOrAction();
+        else
+            chosenMoveId = Random() % 4;
+
+        chosenMoveTarget = GetMoveTarget(gBattleMons[gBattlerAttacker].moves[chosenMoveId], NO_TARGET_OVERRIDE);
+        if (gBattleMoves[gBattleMons[gBattlerAttacker].moves[chosenMoveId]].target == MOVE_TARGET_BOTH) // override to fix bug
+            chosenMoveTarget = GetBattlerAtPosition(B_POSITION_PLAYER_LEFT);
+
+        *(gBattleStruct->chosenMovePositions + gBattlerAttacker) = chosenMoveId;
+        gChosenMoveByBattler[gBattlerAttacker] = gBattleMons[gBattlerAttacker].moves[*(gBattleStruct->chosenMovePositions + gBattlerAttacker)];
+        *(gBattleStruct->moveTarget + gBattlerAttacker) = chosenMoveTarget;
+        gHitMarker &= ~HITMARKER_NO_ATTACKSTRING; // bug fix, could have issues
+        gCurrentActionFuncId = B_ACTION_USE_MOVE;
+        gBattleStruct->raid.movedTwice = TRUE;
+        gCurrentTurnActionNumber--;
+        return;
+    }
+
+    gLastLandedMoves[gBattlerAttacker] = 0;
     
     #if B_RECALC_TURN_AFTER_ACTIONS >= GEN_8
     // i starts at `gCurrentTurnActionNumber` because we don't want to recalculate turn order for mon that have already
@@ -1701,7 +1741,7 @@ static bool32 IsBelchPreventingMove(u32 battler, u32 move)
 u8 TrySetCantSelectMoveBattleScript(void)
 {
     u32 limitations = 0;
-    u8 moveId = gBattleResources->bufferB[gActiveBattler][2] & ~RET_MEGA_EVOLUTION;
+    u8 moveId = gBattleResources->bufferB[gActiveBattler][2] & ~RET_MEGA_EVOLUTION & ~RET_DYNAMAX;
     u32 move = gBattleMons[gActiveBattler].moves[moveId];
     u32 holdEffect = GetBattlerHoldEffect(gActiveBattler, TRUE);
     u16 *choicedMove = &gBattleStruct->choicedMove[gActiveBattler];
@@ -2577,6 +2617,7 @@ enum
     ENDTURN_THROAT_CHOP,
     ENDTURN_SLOW_START,
     ENDTURN_PLASMA_FISTS,
+    ENDTURN_DYNAMAX,
     ENDTURN_BATTLER_COUNT
 };
 
@@ -3104,6 +3145,21 @@ u8 DoBattlerEndTurnEffects(void)
         case ENDTURN_PLASMA_FISTS:
             for (i = 0; i < gBattlersCount; i++)
                 gStatuses4[i] &= ~STATUS4_PLASMA_FISTS;
+            gBattleStruct->turnEffectsTracker++;
+            break;
+        case ENDTURN_DYNAMAX:
+            if (gBattleStruct->dynamax.dynamaxTurns[GetBattlerSide(gActiveBattler)] > 0
+                && gBattleStruct->dynamax.dynamaxedIds & gBitTable[gActiveBattler])
+                gBattleStruct->dynamax.dynamaxTurns[GetBattlerSide(gActiveBattler)]--;
+
+            if (gBattleStruct->dynamax.dynamaxTurns[GetBattlerSide(gActiveBattler)] == 0
+                && gBattleStruct->dynamax.dynamaxedIds & gBitTable[gActiveBattler])
+            {
+                UndoDynamax(gActiveBattler);
+                gBattleScripting.battler = gActiveBattler;
+                BattleScriptExecute(BattleScript_DynamaxEnds);
+                effect++;
+            }
             gBattleStruct->turnEffectsTracker++;
             break;
         case ENDTURN_BATTLER_COUNT:  // done
@@ -8131,10 +8187,8 @@ static u16 CalcMoveBasePower(u16 move, u8 battlerAtk, u8 battlerDef)
             MulModifier(&basePower, UQ_4_12(1.5));
         break;
     case EFFECT_DYNAMAX_DOUBLE_DMG:
-        #ifdef B_DYNAMAX
-        if (IsDynamaxed(battlerDef))
+        if (gBattleStruct->dynamax.dynamaxedIds & gBitTable[battlerDef])
             basePower *= 2;
-        #endif
         break;
     case EFFECT_HIDDEN_POWER:
     {
@@ -8160,6 +8214,9 @@ static u16 CalcMoveBasePower(u16 move, u8 battlerAtk, u8 battlerDef)
         if ((gFieldStatuses & STATUS_FIELD_TERRAIN_ANY)
             && IsBattlerGrounded(gBattlerAttacker))
             basePower *= 2;
+        break;
+    case EFFECT_MAX_MOVE:
+        basePower = gDynamaxMovePowers[gBattleMons[battlerAtk].moves[*(gBattleStruct->chosenMovePositions + battlerAtk)]];
         break;
     }
 
@@ -9031,6 +9088,22 @@ s32 CalculateMoveDamage(u16 move, u8 battlerAtk, u8 battlerDef, u8 moveType, s32
 
     if (dmg == 0)
         dmg = 1;
+    
+    // Prevent inflicting damage through a barrier in raid battles.
+    if (gBattleStruct->raid.shields > 0 && GetBattlerPosition(battlerDef) == B_POSITION_OPPONENT_LEFT)
+    {
+        gBattleStruct->raid.storedDmg += dmg;
+        gBattleStruct->raid.state |= SHOULD_BREAK_SHIELD;
+        dmg = 0;
+    }
+
+    // Prevent passing health threshold in raid battles.
+    else if (ShouldCreateBarrier(dmg) && GetBattlerPosition(battlerDef) == B_POSITION_OPPONENT_LEFT)
+    {
+        dmg = gBattleMons[battlerDef].hp - GetNextHealthThreshold();
+        gBattleStruct->raid.thresholdsRemaining--;
+        gBattleStruct->raid.state |= SHOULD_CREATE_SHIELDS;
+    }
 
     return dmg;
 }

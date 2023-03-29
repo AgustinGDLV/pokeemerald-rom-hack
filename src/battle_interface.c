@@ -767,7 +767,7 @@ u8 CreateBattlerHealthboxSprites(u8 battlerId)
 {
     s16 data6 = 0;
     u8 healthboxLeftSpriteId, healthboxRightSpriteId;
-    u8 healthbarSpriteId, megaIndicatorSpriteId;
+    u8 healthbarSpriteId, megaIndicatorSpriteId, dynamaxIndicatorSpriteId;
     struct Sprite *healthBarSpritePtr;
 
     if (!IsDoubleBattle())
@@ -852,6 +852,13 @@ u8 CreateBattlerHealthboxSprites(u8 battlerId)
         megaIndicatorSpriteId = CreateMegaIndicatorSprite(battlerId, 0);
         gSprites[megaIndicatorSpriteId].invisible = TRUE;
     }
+
+    // Create Dynamax indicator sprite for Raid bosses (BUGGED)
+    /*if (IsRaidBoss(battlerId))
+    {
+        dynamaxIndicatorSpriteId = CreateDynamaxIndicatorSprite(battlerId);
+        gSprites[dynamaxIndicatorSpriteId].invisible = TRUE;
+    }*/
 
     gBattleStruct->ballSpriteIds[0] = MAX_SPRITES;
     gBattleStruct->ballSpriteIds[1] = MAX_SPRITES;
@@ -942,6 +949,7 @@ void SetBattleBarStruct(u8 battlerId, u8 healthboxSpriteId, s32 maxVal, s32 oldV
 void SetHealthboxSpriteInvisible(u8 healthboxSpriteId)
 {
     DestroyMegaIndicatorSprite(healthboxSpriteId);
+    DestroyDynamaxIndicatorSprite(healthboxSpriteId);
     gSprites[healthboxSpriteId].invisible = TRUE;
     gSprites[gSprites[healthboxSpriteId].hMain_HealthBarSpriteId].invisible = TRUE;
     gSprites[gSprites[healthboxSpriteId].oam.affineParam].invisible = TRUE;
@@ -963,6 +971,14 @@ void SetHealthboxSpriteVisible(u8 healthboxSpriteId)
         else
             CreateMegaIndicatorSprite(battlerId, 0);
     }
+    if (gBattleStruct->dynamax.dynamaxedIds & gBitTable[battlerId] || IsRaidBoss(battlerId))
+    {
+        u8 spriteId = GetDynamaxIndicatorSpriteId(healthboxSpriteId);
+        if (spriteId != 0xFF)
+            gSprites[spriteId].invisible = FALSE;
+        else
+            CreateDynamaxIndicatorSprite(battlerId);
+    }
 }
 
 static void UpdateSpritePos(u8 spriteId, s16 x, s16 y)
@@ -974,6 +990,7 @@ static void UpdateSpritePos(u8 spriteId, s16 x, s16 y)
 void DestoryHealthboxSprite(u8 healthboxSpriteId)
 {
     DestroyMegaIndicatorSprite(healthboxSpriteId);
+    DestroyDynamaxIndicatorSprite(healthboxSpriteId);
     DestroySprite(&gSprites[gSprites[healthboxSpriteId].oam.affineParam]);
     DestroySprite(&gSprites[gSprites[healthboxSpriteId].hMain_HealthBarSpriteId]);
     DestroySprite(&gSprites[healthboxSpriteId]);
@@ -984,9 +1001,10 @@ void DummyBattleInterfaceFunc(u8 healthboxSpriteId, bool8 isDoubleBattleBattlerO
 
 }
 
-static void TryToggleHealboxVisibility(u8 priority, u8 healthboxLeftSpriteId, u8 healthboxRightSpriteId, u8 healthbarSpriteId, u8 indicatorSpriteId)
+void TryToggleHealboxVisibility(u8 priority, u8 healthboxLeftSpriteId, u8 healthboxRightSpriteId, u8 healthbarSpriteId, u8 megaIndicatorSpriteId, u8 dynamaxIndicatorSpriteId)
 {
-    u8 spriteIds[4] = {healthboxLeftSpriteId, healthboxRightSpriteId, healthbarSpriteId, indicatorSpriteId};
+    u8 battlerId = gSprites[healthboxLeftSpriteId].hMain_Battler;
+    u8 spriteIds[5] = {healthboxLeftSpriteId, healthboxRightSpriteId, healthbarSpriteId, megaIndicatorSpriteId, dynamaxIndicatorSpriteId};
     int i;
 
     for (i = 0; i < NELEMS(spriteIds); i++)
@@ -998,9 +1016,15 @@ static void TryToggleHealboxVisibility(u8 priority, u8 healthboxLeftSpriteId, u8
         {
         case 0: //start of anim -> make invisible
             gSprites[spriteIds[i]].invisible = TRUE;
+            if (GetBattlerPosition(battlerId) == B_POSITION_OPPONENT_LEFT && gBattleStruct->raid.shields > 0)
+                DestroyAllRaidShieldSprites();
             break;
         case 1: //end of anim -> make visible
+            if (gBattleStruct->raid.state & CATCHING_RAID_BOSS) // catching pesky bug
+                return;
             gSprites[spriteIds[i]].invisible = FALSE;
+            if (GetBattlerPosition(battlerId) == B_POSITION_OPPONENT_LEFT && gBattleStruct->raid.shields > 0)
+                CreateAllRaidShieldSprites();
             break;
         }
     }
@@ -1008,24 +1032,38 @@ static void TryToggleHealboxVisibility(u8 priority, u8 healthboxLeftSpriteId, u8
 
 void UpdateOamPriorityInAllHealthboxes(u8 priority, bool32 hideHPBoxes)
 {
-    s32 i;
+    s32 i, j;
 
     for (i = 0; i < gBattlersCount; i++)
     {
         u8 healthboxLeftSpriteId = gHealthboxSpriteIds[i];
         u8 healthboxRightSpriteId = gSprites[gHealthboxSpriteIds[i]].oam.affineParam;
         u8 healthbarSpriteId = gSprites[gHealthboxSpriteIds[i]].hMain_HealthBarSpriteId;
-        u8 indicatorSpriteId = GetMegaIndicatorSpriteId(healthboxLeftSpriteId);
+        u8 megaIndicatorSpriteId = GetMegaIndicatorSpriteId(healthboxLeftSpriteId);
+        u8 dynamaxIndicatorSpriteId = GetDynamaxIndicatorSpriteId(healthboxLeftSpriteId);
+
+        if (!IsBattlerAlive(i))
+            continue;
 
         gSprites[healthboxLeftSpriteId].oam.priority = priority;
         gSprites[healthboxRightSpriteId].oam.priority = priority;
         gSprites[healthbarSpriteId].oam.priority = priority;
-        if (indicatorSpriteId != 0xFF)
-            gSprites[indicatorSpriteId].oam.priority = priority;
+        if (megaIndicatorSpriteId != 0xFF)
+            gSprites[megaIndicatorSpriteId].oam.priority = priority;
+        if (dynamaxIndicatorSpriteId != 0xFF)
+            gSprites[dynamaxIndicatorSpriteId].oam.priority = priority;
+        if (IsRaidBoss(i))
+        {
+            for (j = 0; j < MAX_BARRIER_COUNT; j++)
+            {
+                if (gBattleStruct->raid.shieldSpriteIds[j] != MAX_SPRITES)
+                    gSprites[gBattleStruct->raid.shieldSpriteIds[j]].oam.priority = priority;
+            }
+        }
 
         #if B_HIDE_HEALTHBOX_IN_ANIMS
-        if (hideHPBoxes && IsBattlerAlive(i))
-            TryToggleHealboxVisibility(priority, healthboxLeftSpriteId, healthboxRightSpriteId, healthbarSpriteId, indicatorSpriteId);
+        if (hideHPBoxes)
+            TryToggleHealboxVisibility(priority, healthboxLeftSpriteId, healthboxRightSpriteId, healthbarSpriteId, megaIndicatorSpriteId, dynamaxIndicatorSpriteId);
         #endif
     }
 }
@@ -1034,7 +1072,25 @@ void GetBattlerHealthboxCoords(u8 battler, s16 *x, s16 *y)
 {
     *x = 0, *y = 0;
 
-    if (!IsDoubleBattle())
+    if (gBattleTypeFlags & BATTLE_TYPE_RAID)
+    {
+        switch (GetBattlerPosition(battler))
+        {
+        case B_POSITION_PLAYER_LEFT:
+            *x = 159, *y = 76;
+            break;
+        case B_POSITION_PLAYER_RIGHT:
+            *x = 171, *y = 101;
+            break;
+        case B_POSITION_OPPONENT_LEFT:
+            *x = 44, *y = 30;
+            break;
+        case B_POSITION_OPPONENT_RIGHT:
+            *x = DISPLAY_WIDTH, *y = DISPLAY_HEIGHT;
+            break;
+        }
+    }
+    else if (!IsDoubleBattle())
     {
         if (GetBattlerSide(battler) != B_SIDE_PLAYER)
             *x = 44, *y = 30;
@@ -2485,7 +2541,9 @@ static void MoveBattleBarGraphically(u8 battlerId, u8 whichBar)
                             &gBattleSpritesDataPtr->battleBars[battlerId].currValue,
                             array, B_HEALTHBAR_PIXELS / 8);
 
-        if (filledPixelsCount > (B_HEALTHBAR_PIXELS * 50 / 100)) // more than 50 % hp
+        if (IsRaidBoss(battlerId)) // raid bosses have red healthbars
+            barElementId = HEALTHBOX_GFX_HP_BAR_RED;
+        else if (filledPixelsCount > (B_HEALTHBAR_PIXELS * 50 / 100)) // more than 50 % hp
             barElementId = HEALTHBOX_GFX_HP_BAR_GREEN;
         else if (filledPixelsCount > (B_HEALTHBAR_PIXELS * 20 / 100)) // more than 20% hp
             barElementId = HEALTHBOX_GFX_HP_BAR_YELLOW;
@@ -3129,7 +3187,7 @@ void CreateAbilityPopUp(u8 battlerId, u32 ability, bool32 isDoubleBattle)
     gBattleStruct->activeAbilityPopUps |= gBitTable[battlerId];
     battlerPosition = GetBattlerPosition(battlerId);
 
-    if (isDoubleBattle)
+    if (isDoubleBattle && !(gBattleTypeFlags & BATTLE_TYPE_RAID && GetBattlerSide(battlerId) == B_SIDE_OPPONENT))
         coords = sAbilityPopUpCoordsDoubles;
     else
         coords = sAbilityPopUpCoordsSingles;
@@ -3312,6 +3370,8 @@ bool32 CanThrowLastUsedBall(void)
     if (gBattleTypeFlags & BATTLE_TYPE_TRAINER)
         return FALSE;
     if (!CheckBagHasItem(gLastThrownBall, 1))
+        return FALSE;
+    if (gBattleTypeFlags & BATTLE_TYPE_RAID)
         return FALSE;
 
     return TRUE;

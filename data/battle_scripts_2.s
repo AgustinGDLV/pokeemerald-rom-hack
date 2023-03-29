@@ -52,6 +52,7 @@ BattleScript_SuccessBallThrow::
 BattleScript_PrintCaughtMonInfo::
 	printstring STRINGID_GOTCHAPKMNCAUGHT
 	jumpifbyte CMP_NOT_EQUAL, sEXP_CATCH, TRUE, BattleScript_TryPrintCaughtMonInfo
+	jumpifbattletype BATTLE_TYPE_RAID, BattleScript_TryPrintCaughtMonInfo
 	setbyte sGIVEEXP_STATE, 0
 	getexp BS_TARGET
 	sethword gBattle_BG2_X, 0
@@ -97,6 +98,12 @@ BattleScript_TrainerBallBlock::
 	printstring STRINGID_TRAINERBLOCKEDBALL
 	waitmessage B_WAIT_TIME_LONG
 	printstring STRINGID_DONTBEATHIEF
+	waitmessage B_WAIT_TIME_LONG
+	finishaction
+
+BattleScript_RaidBallBlock::
+	waitmessage B_WAIT_TIME_LONG
+	printstring STRINGID_PKMNISTOOSTRONG
 	waitmessage B_WAIT_TIME_LONG
 	finishaction
 

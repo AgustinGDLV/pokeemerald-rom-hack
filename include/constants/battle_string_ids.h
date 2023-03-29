@@ -609,8 +609,21 @@
 #define STRINGID_NEUTRALIZINGGASOVER                  607
 #define STRINGID_TARGETTOOHEAVY                       608
 #define STRINGID_PKMNTOOKTARGETHIGH                   609
+#define STRINGID_PKMNAPPEARSMASSIVE                   610
+#define STRINGID_RAIDBARRIERAPPEARED                  611
+#define STRINGID_RAIDBARRIERDISAPPEARED               612
+#define STRINGID_CATCHRAIDMON                         613
+#define STRINGID_PKMNISTOOSTRONG                      614
+#define STRINGID_PKMNNULLIFIEDOTHERS                  615
+#define STRINGID_MOVEPREVENTEDBYDYNAMAX               616
+#define STRINGID_RAIDPKMNDISAPPEARED                  617
+#define STRINGID_STORMSTARTEDBREWING                  618
+#define STRINGID_STORMGETTINGSTRONGER                 619
+#define STRINGID_STORMGETTINGEVENSTRONGER             620
+#define STRINGID_STORMGETTINGTOOSTRONG                621
+#define STRINGID_BLOWNOUTOFDEN                        622
 
-#define BATTLESTRINGS_COUNT                           610
+#define BATTLESTRINGS_COUNT                           623
 
 // This is the string id that gBattleStringsTable starts with.
 // String ids before this (e.g. STRINGID_INTROMSG) are not in the table,
@@ -866,5 +879,12 @@
 #define B_MSG_TERRAINPREVENTS_MISTY     0
 #define B_MSG_TERRAINPREVENTS_ELECTRIC  1
 #define B_MSG_TERRAINPREVENTS_PSYCHIC   2
+
+// gRaidStormStringIds
+#define B_MSG_RAID_STORM_STARTED        0
+#define B_MSG_GETTING_STRONGER          1
+#define B_MSG_GETTING_EVEN_STRONGER     2
+#define B_MSG_GETTING_TOO_STRONG        3
+#define B_MSG_BLOWN_OUT_OF_DEN          4
 
 #endif // GUARD_CONSTANTS_BATTLE_STRING_IDS_H

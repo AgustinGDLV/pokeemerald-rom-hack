@@ -2120,3 +2120,44 @@
 	.macro skydropyawn
 	various 0, VARIOUS_SKY_DROP_YAWN
 	.endm
+
+	@ The next few macros are all used to execute Max Raids.
+	.macro setraidbarrier
+	various 0, VARIOUS_SET_RAID_BARRIER
+	.endm
+
+	.macro clearraidbarrier
+	various 0, VARIOUS_CLEAR_RAID_BARRIER
+	.endm
+
+	.macro doraidshockwave
+	various 0, VARIOUS_DO_RAID_SHOCKWAVE
+	.endm
+
+	.macro jumpifnoballs ptr:req
+	various 0, VARIOUS_JUMP_IF_NO_BALLS
+	.4byte \ptr
+	.endm
+
+	.macro catchraidboss
+	various 0, VARIOUS_CATCH_RAID_BOSS
+	.endm
+
+	.macro hidehealthboxesonside battler:req
+	various \battler, VARIOUS_HIDE_HEALTHBOXES_ON_SIDE
+	.endm
+
+	@ The next few macros are used by Max Moves.
+	.macro setmaxmoveeffect
+	various 0, VARIOUS_SET_MAX_MOVE_EFFECT
+	.endm
+
+	.macro jumpiftargetabsent, ptr:req
+	various 0, VARIOUS_JUMP_IF_TARGET_ABSENT
+	.4byte \ptr
+	.endm
+
+	.macro jumpiftargetnotally, ptr:req
+	various 0, VARIOUS_JUMP_IF_TARGET_NOT_ALLY
+	.4byte \ptr
+	.endm
